@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MOP - CNC | Credvix</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body class="login-page">
+  <main class="login-shell">
+    <section class="login-brand" aria-label="Apresentação do sistema">
+      <div class="brand-lockup brand-lockup--hero"><span>CRED</span><strong>VIX</strong></div>
+      <p class="eyebrow">SISTEMA DE EMISSÕES</p>
+      <h1>MOP - CNC</h1>
+      <p class="login-lead">Solicite a emissão do relatório da franquia e acompanhe cada etapa do processamento.</p>
+      <div class="login-features">
+        <div><span class="feature-dot">✓</span> Solicitação centralizada</div>
+        <div><span class="feature-dot">✓</span> Acompanhamento do pedido</div>
+        <div><span class="feature-dot">✓</span> Histórico de emissões</div>
+      </div>
+    </section>
+
+    <section class="login-panel" aria-labelledby="login-title">
+      <div class="login-card">
+        <div class="icon-tile icon-tile--brand">↗</div>
+        <p class="eyebrow eyebrow--dark">ACESSO RESTRITO</p>
+        <h2 id="login-title">Acesse o sistema</h2>
+        <p class="text-muted">Nesta versão de protótipo, qualquer usuário e senha preenchidos liberam a interface.</p>
+        <form id="loginForm" novalidate>
+          <label class="field">
+            <span>Usuário</span>
+            <input id="loginUser" type="text" autocomplete="username" placeholder="Seu usuário" required />
+          </label>
+          <label class="field">
+            <span>Senha</span>
+            <div class="input-with-action">
+              <input id="loginPass" type="password" autocomplete="current-password" placeholder="Sua senha" required />
+              <button class="icon-button" type="button" id="togglePass" aria-label="Mostrar ou ocultar senha">◉</button>
+            </div>
+          </label>
+          <p id="loginError" class="field-error" hidden>Preencha usuário e senha.</p>
+          <button class="button button--primary button--full" type="submit">Entrar <span aria-hidden="true">→</span></button>
+        </form>
+        <p class="login-note">Protótipo visual. A autenticação real será conectada na etapa do banco.</p>
+      </div>
+    </section>
+  </main>
+  <script src="js/auth.js"></script>
+</body>
+</html>
