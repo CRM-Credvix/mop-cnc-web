@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Histórico | MOP - CNC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand-lockup" href="app.html"><span>CRED</span><strong>VIX</strong></a>
+      <div class="product-name"><strong>MOP - CNC</strong><span>Sistema de Emissões</span></div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" href="app.html"><span>▣</span> Nova solicitação</a>
+        <a class="nav-item active" href="historico.html"><span>◷</span> Histórico</a>
+        <a class="nav-item" href="historico.html?mine=1"><span>▤</span> Minhas solicitações</a>
+        <a class="nav-item" href="app.html#ajuda"><span>?</span> Ajuda</a>
+      </nav>
+    </aside>
+    <div class="app-main">
+      <header class="topbar"><p class="breadcrumb">Início / Histórico</p><div class="topbar-actions"><div class="user-chip"><span class="avatar">US</span><div><strong id="userName">Usuário</strong><small>Operações</small></div></div><button class="button button--ghost button--sm" id="logoutButton">Sair</button></div></header>
+      <main class="content">
+        <section class="page-header"><div><p class="eyebrow eyebrow--dark">ACOMPANHAMENTO</p><h1>Histórico de <span class="brand-text">Emissões</span></h1><p>Consulte as solicitações registradas, filtre por status e abra os detalhes de cada pedido.</p></div></section>
+        <section class="card">
+          <div class="filter-bar">
+            <label class="field field--compact"><span>Buscar</span><input id="historySearch" type="search" placeholder="Pedido, franquia ou WhatsApp" /></label>
+            <label class="field field--compact"><span>Status</span><select id="statusFilter"><option value="">Todos os status</option><option value="na_fila">Na fila</option><option value="emitindo">Emitindo</option><option value="enviado">Enviado</option><option value="erro">Erro</option></select></label>
+            <button class="button button--secondary" id="clearFilters">Limpar filtros</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table"><thead><tr><th>Pedido</th><th>Data e hora</th><th>Franquia</th><th>WhatsApp</th><th>Status</th><th>Ações</th></tr></thead><tbody id="historyTableBody"></tbody></table>
+          </div>
+          <div class="empty-state" id="historyEmpty" hidden>Nenhum pedido encontrado com os filtros atuais.</div>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script src="js/data.js"></script>
+  <script src="js/history.js"></script>
+</body>
+</html>
