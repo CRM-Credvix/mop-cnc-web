@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nova solicitação | MOP - CNC</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand-lockup" href="app.html" aria-label="Credvix"><span>CRED</span><strong>VIX</strong></a>
+      <div class="product-name"><strong>MOP - CNC</strong><span>Sistema de Emissões</span></div>
+      <nav class="sidebar-nav" aria-label="Navegação principal">
+        <a class="nav-item active" href="app.html"><span>▣</span> Nova solicitação</a>
+        <a class="nav-item" href="historico.html"><span>◷</span> Histórico</a>
+        <a class="nav-item" href="historico.html?mine=1"><span>▤</span> Minhas solicitações</a>
+        <a class="nav-item" href="#ajuda"><span>?</span> Ajuda</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="system-indicator"><i></i><span>Interface de demonstração</span></div>
+      </div>
+    </aside>
+
+    <div class="app-main">
+      <header class="topbar">
+        <div>
+          <p class="breadcrumb">Início / Nova solicitação</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-button" aria-label="Notificações">◔</button>
+          <div class="user-chip"><span class="avatar">US</span><div><strong id="userName">Usuário</strong><small>Operações</small></div></div>
+          <button class="button button--ghost button--sm" id="logoutButton">Sair</button>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="page-header">
+          <div>
+            <p class="eyebrow eyebrow--dark">EMISSÃO DE DOCUMENTO</p>
+            <h1>Solicitação de Emissão <span class="brand-text">MOP - CNC</span></h1>
+            <p>Selecione a franquia, informe o WhatsApp e solicite a emissão pelo robô existente.</p>
+          </div>
+          <div class="robot-status"><i></i><span>Fila preparada</span></div>
+        </section>
+
+        <section class="request-card card">
+          <div class="section-heading">
+            <div class="icon-tile">▤</div>
+            <div><h2>Nova solicitação</h2><p>Os dados abaixo serão enviados à fila assim que a integração estiver conectada.</p></div>
+          </div>
+          <form id="requestForm" class="request-form" novalidate>
+            <div class="field combobox" id="franchiseCombobox">
+              <label for="franchiseSearch">Franquia <b>*</b></label>
+              <div class="search-input"><span>⌕</span><input id="franchiseSearch" type="text" autocomplete="off" placeholder="Busque pelo código ou nome da franquia..." aria-autocomplete="list" aria-controls="franchiseOptions" /></div>
+              <input id="franchiseCode" type="hidden" />
+              <div id="franchiseOptions" class="combo-options" role="listbox" hidden></div>
+              <small>Digite o código ou parte do nome da franquia.</small>
+              <p class="field-error" id="franchiseError" hidden>Selecione uma franquia válida da lista.</p>
+            </div>
+
+            <label class="field">
+              <span>WhatsApp <b>*</b></span>
+              <div class="search-input"><span>◉</span><input id="whatsapp" type="text" inputmode="numeric" maxlength="13" placeholder="55DDDNÚMERO" /></div>
+              <small>Formato obrigatório: 55 + DDD + número, somente dígitos.</small>
+              <p class="field-error" id="whatsappError" hidden>Informe um número válido no formato 55DDDNÚMERO.</p>
+            </label>
+
+            <div class="form-action">
+              <button class="button button--primary button--lg" type="submit"><span>➤</span> Solicitar emissão</button>
+            </div>
+          </form>
+          <div id="requestFeedback" class="inline-alert" hidden></div>
+        </section>
+
+        <section class="metric-grid" aria-label="Resumo de status">
+          <article class="metric-card"><div class="metric-icon metric-icon--neutral">◷</div><div><span>Na fila</span><strong id="metricQueue">0</strong><small>Aguardando processamento</small></div></article>
+          <article class="metric-card"><div class="metric-icon metric-icon--warning">⚙</div><div><span>Emitindo</span><strong id="metricProcessing">0</strong><small>Em processamento</small></div></article>
+          <article class="metric-card"><div class="metric-icon metric-icon--success">✓</div><div><span>Enviado</span><strong id="metricSent">0</strong><small>Concluído com sucesso</small></div></article>
+          <article class="metric-card"><div class="metric-icon metric-icon--danger">!</div><div><span>Erro</span><strong id="metricError">0</strong><small>Requer verificação</small></div></article>
+        </section>
+
+        <section class="card history-card">
+          <div class="section-heading section-heading--between">
+            <div class="section-heading"><div class="icon-tile icon-tile--soft">◷</div><div><h2>Últimas emissões</h2><p>Solicitações mais recentes deste protótipo.</p></div></div>
+            <a class="text-link" href="historico.html">Ver histórico completo →</a>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Pedido</th><th>Data e hora</th><th>Franquia</th><th>WhatsApp</th><th>Status</th><th>Ações</th></tr></thead>
+              <tbody id="recentTableBody"></tbody>
+            </table>
+          </div>
+          <div id="recentEmpty" class="empty-state" hidden>Nenhuma solicitação registrada ainda.</div>
+        </section>
+
+        <section id="ajuda" class="help-card card">
+          <div><p class="eyebrow eyebrow--dark">AJUDA</p><h2>Como este protótipo funciona?</h2><p>As solicitações são armazenadas apenas no navegador para validarmos a interface. A conexão com a fila real será feita em uma etapa posterior.</p></div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
