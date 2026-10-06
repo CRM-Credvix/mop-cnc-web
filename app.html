@@ -18,22 +18,19 @@
       <nav class="sidebar-nav" aria-label="Navegação principal">
         <a class="nav-item active" href="app.html"><span>▣</span> Nova solicitação</a>
         <a class="nav-item" href="historico.html"><span>◷</span> Histórico</a>
-        <a class="nav-item" href="historico.html?mine=1"><span>▤</span> Minhas solicitações</a>
+        <a class="nav-item" href="historico.html"><span>▤</span> Minhas solicitações</a>
         <a class="nav-item" href="#ajuda"><span>?</span> Ajuda</a>
       </nav>
       <div class="sidebar-bottom">
-        <div class="system-indicator"><i></i><span>Interface de demonstração</span></div>
+        <div class="system-indicator"><i></i><span>Banco conectado</span></div>
       </div>
     </aside>
 
     <div class="app-main">
       <header class="topbar">
-        <div>
-          <p class="breadcrumb">Início / Nova solicitação</p>
-        </div>
+        <div><p class="breadcrumb">Início / Nova solicitação</p></div>
         <div class="topbar-actions">
-          <button class="icon-button" aria-label="Notificações">◔</button>
-          <div class="user-chip"><span class="avatar">US</span><div><strong id="userName">Usuário</strong><small>Operações</small></div></div>
+          <div class="user-chip"><span class="avatar">US</span><div><strong id="userName">Usuário</strong><small>Usuário autenticado</small></div></div>
           <button class="button button--ghost button--sm" id="logoutButton">Sair</button>
         </div>
       </header>
@@ -43,15 +40,15 @@
           <div>
             <p class="eyebrow eyebrow--dark">EMISSÃO DE DOCUMENTO</p>
             <h1>Solicitação de Emissão <span class="brand-text">MOP - CNC</span></h1>
-            <p>Selecione a franquia, informe o WhatsApp e solicite a emissão pelo robô existente.</p>
+            <p>Selecione a franquia, informe o WhatsApp e envie a solicitação para a fila.</p>
           </div>
-          <div class="robot-status"><i></i><span>Fila preparada</span></div>
+          <div class="robot-status"><i></i><span>Fila online</span></div>
         </section>
 
         <section class="request-card card">
           <div class="section-heading">
             <div class="icon-tile">▤</div>
-            <div><h2>Nova solicitação</h2><p>Os dados abaixo serão enviados à fila assim que a integração estiver conectada.</p></div>
+            <div><h2>Nova solicitação</h2><p>A solicitação será registrada no banco com o status inicial “Na fila”.</p></div>
           </div>
           <form id="requestForm" class="request-form" novalidate>
             <div class="field combobox" id="franchiseCombobox">
@@ -86,7 +83,7 @@
 
         <section class="card history-card">
           <div class="section-heading section-heading--between">
-            <div class="section-heading"><div class="icon-tile icon-tile--soft">◷</div><div><h2>Últimas emissões</h2><p>Solicitações mais recentes deste protótipo.</p></div></div>
+            <div class="section-heading"><div class="icon-tile icon-tile--soft">◷</div><div><h2>Últimas emissões</h2><p>Suas solicitações mais recentes.</p></div></div>
             <a class="text-link" href="historico.html">Ver histórico completo →</a>
           </div>
           <div class="table-wrap">
@@ -99,12 +96,14 @@
         </section>
 
         <section id="ajuda" class="help-card card">
-          <div><p class="eyebrow eyebrow--dark">AJUDA</p><h2>Como este protótipo funciona?</h2><p>As solicitações são armazenadas apenas no navegador para validarmos a interface. A conexão com a fila real será feita em uma etapa posterior.</p></div>
+          <div><p class="eyebrow eyebrow--dark">AJUDA</p><h2>Como funciona?</h2><p>Ao solicitar uma emissão, o pedido é salvo no Supabase. Você verá somente suas próprias solicitações. O processamento pelo robô será conectado na próxima etapa.</p></div>
         </section>
       </main>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
   <script src="js/data.js"></script>
   <script src="js/app.js"></script>
 </body>
