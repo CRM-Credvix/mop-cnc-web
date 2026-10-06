@@ -20,7 +20,7 @@
       <div class="login-features">
         <div><span class="feature-dot">✓</span> Solicitação centralizada</div>
         <div><span class="feature-dot">✓</span> Acompanhamento do pedido</div>
-        <div><span class="feature-dot">✓</span> Histórico de emissões</div>
+        <div><span class="feature-dot">✓</span> Histórico individual</div>
       </div>
     </section>
 
@@ -29,11 +29,11 @@
         <div class="icon-tile icon-tile--brand">↗</div>
         <p class="eyebrow eyebrow--dark">ACESSO RESTRITO</p>
         <h2 id="login-title">Acesse o sistema</h2>
-        <p class="text-muted">Nesta versão de protótipo, qualquer usuário e senha preenchidos liberam a interface.</p>
+        <p class="text-muted">Entre com o e-mail e a senha cadastrados para seu usuário.</p>
         <form id="loginForm" novalidate>
           <label class="field">
-            <span>Usuário</span>
-            <input id="loginUser" type="text" autocomplete="username" placeholder="Seu usuário" required />
+            <span>E-mail</span>
+            <input id="loginUser" type="email" autocomplete="username" placeholder="seuemail@empresa.com" required />
           </label>
           <label class="field">
             <span>Senha</span>
@@ -42,13 +42,15 @@
               <button class="icon-button" type="button" id="togglePass" aria-label="Mostrar ou ocultar senha">◉</button>
             </div>
           </label>
-          <p id="loginError" class="field-error" hidden>Preencha usuário e senha.</p>
+          <p id="loginError" class="field-error" hidden>E-mail ou senha inválidos.</p>
           <button class="button button--primary button--full" type="submit">Entrar <span aria-hidden="true">→</span></button>
         </form>
-        <p class="login-note">Protótipo visual. A autenticação real será conectada na etapa do banco.</p>
+        <p class="login-note">Acesso individual. Cada usuário visualiza somente as próprias solicitações.</p>
       </div>
     </section>
   </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
   <script src="js/auth.js"></script>
 </body>
 </html>
