@@ -27,6 +27,11 @@ def claim_next():
     return rows[0] if rows else None
 
 
+def is_authorized(order_id: int) -> bool:
+    result = supabase.rpc("mop_pedido_autorizado", {"p_id": order_id}).execute()
+    return bool(result.data)
+
+
 def finish(order_id: int, success: bool, error: str | None = None):
     payload = {
         "p_id": order_id,
@@ -83,6 +88,15 @@ def main():
                 f"[MOP] Pedido #{order_id} assumido | franquia={order['franquia_codigo']} | whatsapp={order['whatsapp']}",
                 flush=True,
             )
+
+            if not is_authorized(order_id):
+                finish(order_id, False, "ACESSO_LOJA_REVOGADO")
+                print(
+                    f"[MOP] Pedido #{order_id} bloqueado: vínculo da loja não está autorizado.",
+                    file=sys.stderr,
+                    flush=True,
+                )
+                continue
 
             completed = run_robot(order)
 
