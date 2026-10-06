@@ -18,7 +18,7 @@
       <nav class="sidebar-nav"><a class="nav-item" href="app.html"><span>▣</span> Nova solicitação</a><a class="nav-item" href="historico.html"><span>◷</span> Histórico</a><a class="nav-item active" href="#"><span>▤</span> Detalhes</a></nav>
     </aside>
     <div class="app-main">
-      <header class="topbar"><p class="breadcrumb">Histórico / Detalhes do pedido</p><div class="topbar-actions"><div class="user-chip"><span class="avatar">US</span><div><strong id="userName">Usuário</strong><small>Operações</small></div></div><button class="button button--ghost button--sm" id="logoutButton">Sair</button></div></header>
+      <header class="topbar"><p class="breadcrumb">Histórico / Detalhes do pedido</p><div class="topbar-actions"><div class="user-chip"><span class="avatar">US</span><div><strong id="userName">Usuário</strong><small>Usuário autenticado</small></div></div><button class="button button--ghost button--sm" id="logoutButton">Sair</button></div></header>
       <main class="content">
         <div class="detail-top"><a class="button button--secondary" href="historico.html">← Voltar</a><span id="detailStatus"></span></div>
         <section class="page-header"><div><p class="eyebrow eyebrow--dark">PEDIDO <span id="detailIdEyebrow"></span></p><h1>Detalhes da <span class="brand-text">Solicitação</span></h1><p>Acompanhe o estado e os dados enviados no pedido.</p></div></section>
@@ -26,10 +26,11 @@
           <article class="card detail-card"><h2>Dados do pedido</h2><dl class="detail-list"><div><dt>ID do pedido</dt><dd id="detailId">—</dd></div><div><dt>Franquia</dt><dd id="detailFranchise">—</dd></div><div><dt>WhatsApp</dt><dd id="detailWhatsapp">—</dd></div><div><dt>Solicitado em</dt><dd id="detailCreated">—</dd></div></dl></article>
           <article class="card detail-card"><h2>Linha do tempo</h2><ol class="timeline" id="timeline"></ol></article>
         </section>
-        <section class="card demo-controls"><div><p class="eyebrow eyebrow--dark">CONTROLES DO PROTÓTIPO</p><h2>Simular mudança de status</h2><p>Use estes botões apenas para validar a experiência visual antes da integração real.</p></div><div class="button-row"><button class="button button--secondary status-sim" data-status="na_fila">Na fila</button><button class="button button--warning status-sim" data-status="emitindo">Emitindo</button><button class="button button--success status-sim" data-status="enviado">Enviado</button><button class="button button--danger status-sim" data-status="erro">Erro</button></div></section>
       </main>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script>
   <script src="js/data.js"></script>
   <script src="js/detail.js"></script>
 </body>
