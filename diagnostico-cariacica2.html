@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>Diagnóstico de acesso | MOP - CNC</title>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    .diag-wrap{max-width:920px;margin:48px auto;padding:0 20px}
+    .diag-card{background:#fff;border:1px solid #e7ded7;border-radius:16px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.05)}
+    .diag-table{width:100%;border-collapse:collapse;margin-top:18px}
+    .diag-table th,.diag-table td{padding:12px;border-bottom:1px solid #eee;text-align:left}
+    .ok{font-weight:700}.fail{font-weight:700}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  </style>
+</head>
+<body>
+  <main class="diag-wrap">
+    <div class="diag-card">
+      <p class="eyebrow eyebrow--dark">HOMOLOGAÇÃO DE ACESSO</p>
+      <h1>Diagnóstico Cariacica 2</h1>
+      <p class="text-muted">Teste somente leitura. Nenhum pedido será criado ou alterado.</p>
+      <p id="state" class="inline-alert">Validando sessão...</p>
+      <table class="diag-table" aria-label="Resultados do diagnóstico">
+        <thead><tr><th>Teste</th><th>Esperado</th><th>Obtido</th><th>Resultado</th></tr></thead>
+        <tbody id="results"></tbody>
+      </table>
+      <p style="margin-top:18px"><a class="text-link" href="historico.html">Voltar ao histórico</a></p>
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2"></script>
+  <script src="js/config.js"></script>
+  <script>
+  (async()=>{
+    const state=document.getElementById('state');
+    const body=document.getElementById('results');
+    const {data:userData,error:userError}=await window.MOP_SUPABASE.auth.getUser();
+    const user=userData?.user;
+    if(userError||!user){
+      state.className='inline-alert error';
+      state.textContent='Sessão não encontrada. Entre novamente no sistema e abra esta página na mesma janela do navegador.';
+      return;
+    }
+    if((user.email||'').toLowerCase()!=='helpcariacica2@lojacredvix.com'){
+      state.className='inline-alert error';
+      state.textContent='Conta incorreta para este piloto. Usuário atual: '+(user.email||'desconhecido');
+      return;
+    }
+    state.className='inline-alert success';
+    state.textContent='Sessão confirmada para helpcariacica2@lojacredvix.com.';
+
+    const [lojaOk,lojaNo,pedOk,pedNo]=await Promise.all([
+      window.MOP_SUPABASE.from('franquias_mop').select('codigo').eq('codigo','56891'),
+      window.MOP_SUPABASE.from('franquias_mop').select('codigo').eq('codigo','53743'),
+      window.MOP_SUPABASE.from('pedidos_mop').select('id').eq('id',5),
+      window.MOP_SUPABASE.from('pedidos_mop').select('id').eq('id',2)
+    ]);
+
+    const tests=[
+      ['Loja 56891 permitida',1,lojaOk],
+      ['Loja 53743 bloqueada',0,lojaNo],
+      ['Pedido #5 próprio',1,pedOk],
+      ['Pedido #2 alheio',0,pedNo]
+    ];
+    let all=true;
+    for(const [label,expected,res] of tests){
+      const count=res.error?'ERRO':(res.data?.length??0);
+      const pass=!res.error && count===expected;
+      all=all&&pass;
+      const tr=document.createElement('tr');
+      for(const v of [label,String(expected),String(count),pass?'PASSOU':'FALHOU']){
+        const td=document.createElement('td'); td.textContent=v; tr.appendChild(td);
+      }
+      tr.lastChild.className=pass?'ok':'fail';
+      body.appendChild(tr);
+    }
+    const summary=document.createElement('p');
+    summary.className=all?'inline-alert success':'inline-alert error';
+    summary.textContent=all?'RESULTADO FINAL: 4/4 testes passaram.':'RESULTADO FINAL: houve falha. Não avance e envie uma captura desta página.';
+    document.querySelector('.diag-card').appendChild(summary);
+  })();
+  </script>
+</body>
+</html>
