@@ -1,6 +1,6 @@
 window.MOP_DATA = (() => {
   let franchises=[];
-  const PEDIDO_FIELDS='id,user_id,franquia_codigo,franquia_nome,whatsapp,status,criado_em,iniciado_em,finalizado_em,tentativas';
+  const PEDIDO_FIELDS='id,user_id,franquia_codigo,franquia_nome,whatsapp,status,criado_em,iniciado_em,finalizado_em,tentativas,erro_publico';
   const STATUS = {
     na_fila:{label:'Na fila',className:'status-na_fila'},
     emitindo:{label:'Emitindo',className:'status-emitindo'},

@@ -24,7 +24,14 @@
         <section class="page-header"><div><p class="eyebrow eyebrow--dark">PEDIDO <span id="detailIdEyebrow"></span></p><h1>Detalhes da <span class="brand-text">Solicitação</span></h1><p>Acompanhe o estado e os dados enviados no pedido.</p></div></section>
         <section class="detail-grid">
           <article class="card detail-card"><h2>Dados do pedido</h2><dl class="detail-list"><div><dt>ID do pedido</dt><dd id="detailId">—</dd></div><div><dt>Franquia</dt><dd id="detailFranchise">—</dd></div><div><dt>WhatsApp</dt><dd id="detailWhatsapp">—</dd></div><div><dt>Solicitado em</dt><dd id="detailCreated">—</dd></div></dl></article>
-          <article class="card detail-card"><h2>Linha do tempo</h2><ol class="timeline" id="timeline"></ol></article>
+          <article class="card detail-card">
+            <h2>Linha do tempo</h2>
+            <ol class="timeline" id="timeline"></ol>
+            <div class="error-reason-box" id="detailErrorReason" role="alert" hidden>
+              <strong>Motivo do erro</strong>
+              <p id="detailErrorReasonText"></p>
+            </div>
+          </article>
         </section>
       </main>
     </div>
