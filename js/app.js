@@ -29,9 +29,18 @@
     options.hidden=true;
   });
   document.addEventListener('click',(e)=>{if(!e.target.closest('#franchiseCombobox'))options.hidden=true;});
-  whatsapp.addEventListener('input',()=>whatsapp.value=whatsapp.value.replace(/\D/g,'').slice(0,13));
+  whatsapp.addEventListener('input',()=>{
+    whatsapp.value=whatsapp.value.replace(/[^\d+()\s-]/g,'').slice(0,24);
+  });
 
-  function validWhats(v){return /^55\d{10,11}$/.test(v);}
+  function normalizeWhats(v){
+    const digits=String(v||'').replace(/\D/g,'');
+    if(/^\d{10,11}$/.test(digits))return '55'+digits;
+    if(/^55\d{10,11}$/.test(digits))return digits;
+    return null;
+  }
+
+  function validWhats(v){return !!normalizeWhats(v);}
 
   form.addEventListener('submit',async(e)=>{
     e.preventDefault();
@@ -41,15 +50,16 @@
     const feedback=document.getElementById('requestFeedback');
     const submit=form.querySelector('button[type="submit"]');
 
+    const whatsappNormalizado=normalizeWhats(whatsapp.value);
     fErr.hidden=!!f;
-    wErr.hidden=validWhats(whatsapp.value);
-    if(!f||!validWhats(whatsapp.value))return;
+    wErr.hidden=!!whatsappNormalizado;
+    if(!f||!whatsappNormalizado)return;
     submit.disabled=true;
 
     try{
       const {data,error}=await window.MOP_SUPABASE
         .from('pedidos_mop')
-        .insert({user_id:user.id,franquia_codigo:f.codigo,franquia_nome:f.nome,whatsapp:whatsapp.value})
+        .insert({user_id:user.id,franquia_codigo:f.codigo,franquia_nome:f.nome,whatsapp:whatsappNormalizado})
         .select('id,status').single();
       if(error){
         feedback.className='inline-alert error';
