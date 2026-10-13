@@ -53,6 +53,7 @@
     if(error)throw error;
     if(!files?.length)return;
     const row=document.createElement('div');
+    row.className='detail-file-row';
     const label=document.createElement('dt');
     const values=document.createElement('dd');
     label.textContent='Arquivos';
