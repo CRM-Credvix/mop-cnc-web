@@ -18,11 +18,10 @@
       <nav class="sidebar-nav" aria-label="Navegação principal">
         <a class="nav-item active" href="app.html"><span>▣</span> Nova solicitação</a>
         <a class="nav-item" href="historico.html"><span>◷</span> Histórico</a>
-        <a class="nav-item" href="historico.html"><span>▤</span> Minhas solicitações</a>
         <a class="nav-item" href="#ajuda"><span>?</span> Ajuda</a>
       </nav>
       <div class="sidebar-bottom">
-        <div class="system-indicator"><i></i><span>Banco conectado</span></div>
+        <div class="system-indicator"><i></i><span>Sistema online</span></div>
       </div>
     </aside>
 
@@ -48,7 +47,7 @@
         <section class="request-card card">
           <div class="section-heading">
             <div class="icon-tile">▤</div>
-            <div><h2>Nova solicitação</h2><p>A solicitação será registrada no banco com o status inicial “Na fila”.</p></div>
+            <div><h2>Nova solicitação</h2><p>Após o envio, a solicitação entra na fila e aguarda o processamento automático.</p></div>
           </div>
           <form id="requestForm" class="request-form" novalidate>
             <div class="field combobox" id="franchiseCombobox">
@@ -96,7 +95,11 @@
         </section>
 
         <section id="ajuda" class="help-card card">
-          <div><p class="eyebrow eyebrow--dark">AJUDA</p><h2>Como funciona?</h2><p>Ao solicitar uma emissão, o pedido é salvo no Supabase. Você verá somente suas próprias solicitações. O processamento pelo robô será conectado na próxima etapa.</p></div>
+          <div>
+            <p class="eyebrow eyebrow--dark">AJUDA</p>
+            <h2>Como funciona?</h2>
+            <p>Selecione a franquia, informe o WhatsApp que receberá o arquivo e clique em <strong>Solicitar emissão</strong>. A solicitação entra na fila e é processada automaticamente. Você pode acompanhar o andamento pelo Histórico. Quando concluída, a planilha MOP - CNC é enviada ao WhatsApp informado por meio de um link temporário. Se ocorrer algum problema, o pedido será marcado como Erro e o motivo ficará disponível nos detalhes da solicitação.</p>
+          </div>
         </section>
       </main>
     </div>
