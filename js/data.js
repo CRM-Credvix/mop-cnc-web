@@ -1,6 +1,6 @@
 window.MOP_DATA = (() => {
   let franchises=[];
-  const PEDIDO_FIELDS='id,user_id,franquia_codigo,franquia_nome,whatsapp,status,criado_em,iniciado_em,finalizado_em,tentativas,erro_publico';
+  const PEDIDO_FIELDS='id,numero_usuario,user_id,franquia_codigo,franquia_nome,whatsapp,status,criado_em,iniciado_em,finalizado_em,tentativas,erro_publico';
   const STATUS = {
     na_fila:{label:'Na fila',className:'status-na_fila'},
     emitindo:{label:'Emitindo',className:'status-emitindo'},
@@ -10,6 +10,10 @@ window.MOP_DATA = (() => {
 
   function escapeHtml(v){
     return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function pedidoNumero(item){
+    return item?.numero_usuario ?? item?.id ?? '—';
   }
 
   function formatDate(v){
@@ -71,5 +75,5 @@ window.MOP_DATA = (() => {
     }catch(error){return await denyAccess('erro');}
   }
 
-  return {get FRANCHISES(){return franchises;},PEDIDO_FIELDS,STATUS,formatDate,statusBadge,escapeHtml,showPageError,requireUser};
+  return {get FRANCHISES(){return franchises;},PEDIDO_FIELDS,STATUS,pedidoNumero,formatDate,statusBadge,escapeHtml,showPageError,requireUser};
 })();
