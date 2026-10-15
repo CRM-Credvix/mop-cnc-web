@@ -60,7 +60,7 @@
       const {data,error}=await window.MOP_SUPABASE
         .from('pedidos_mop')
         .insert({user_id:user.id,franquia_codigo:f.codigo,franquia_nome:f.nome,whatsapp:whatsappNormalizado})
-        .select('id,status').single();
+        .select('id,numero_usuario,status').single();
       if(error){
         feedback.className='inline-alert error';
         feedback.textContent=error.code==='23505'
@@ -74,7 +74,7 @@
         return;
       }
       feedback.className='inline-alert success';
-      feedback.innerHTML=`Pedido <strong>#${D.escapeHtml(data.id)}</strong> criado com sucesso. Status inicial: <strong>Na fila</strong>.`;
+      feedback.innerHTML=`Pedido <strong>#${D.escapeHtml(data.numero_usuario)}</strong> criado com sucesso. Status inicial: <strong>Na fila</strong>.`;
       feedback.hidden=false;
       form.reset();
       code.value='';
@@ -102,7 +102,7 @@
     document.getElementById('recentEmpty').hidden=recent.length>0;
     document.getElementById('recentTableBody').innerHTML=recent.map(x=>`
       <tr>
-        <td><strong>#${D.escapeHtml(x.id)}</strong></td>
+        <td><strong>#${D.escapeHtml(D.pedidoNumero(x))}</strong></td>
         <td>${D.formatDate(x.criado_em)}</td>
         <td><strong>${D.escapeHtml(x.franquia_codigo)}</strong><br><small>${D.escapeHtml(x.franquia_nome)}</small></td>
         <td>${D.escapeHtml(x.whatsapp)}</td>
