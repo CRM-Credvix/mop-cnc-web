@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#171411">
+  <meta name="description" content="Central Credvix para solicitar a extração Reconquista.">
+  <title>Reconquista | Credvix</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./script.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" data-surface="inverse" aria-label="Identidade Credvix">
+      <a class="brand" href="./" aria-label="Credvix — Reconquista">Cred<span>vix</span></a>
+      <div class="sidebar-section"><span class="section-overline">AUTOMAÇÕES</span><div class="nav-active"><span class="nav-marker"></span>Reconquista</div></div>
+      <div class="sidebar-bottom"><span class="sidebar-chip"><span class="dot"></span> Central operacional</span><small>Credvix · Operação e dados</small></div>
+    </aside>
+    <main class="content">
+      <header class="topbar">
+        <div class="topbar-brand">Cred<span>vix</span></div>
+        <span class="topbar-tag">AUTOMAÇÕES / RECONQUISTA</span>
+      </header>
+      <div class="main-inner">
+        <div class="eyebrow"><span class="eyebrow-line"></span> EXTRAÇÃO DE DADOS</div>
+        <div class="page-heading">
+          <div>
+            <h1>Central de <em>Reconquista</em></h1>
+            <p>Solicite o processamento dos dados de reconquista com poucos cliques.</p>
+          </div>
+          <span class="heading-tag"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg> Processo automatizado</span>
+        </div>
+        <section class="request-card" aria-labelledby="form-title">
+          <div class="card-top">
+            <div class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v7c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12v7c0 1.7 3.6 3 8 3s8-1.3 8-3v-7"/></svg></div>
+            <div><h2 id="form-title">Solicitar extração de MOP</h2><p>Selecione a franquia para registrar sua solicitação.</p></div>
+          </div>
+          <form id="request-form" novalidate>
+            <div class="form-field">
+              <label for="franquia">Franquia/Loja <span class="required" aria-hidden="true">*</span></label>
+              <select id="franquia" name="franquia" aria-describedby="franquia-help franquia-error" required>
+                <option value="">Selecione uma franquia</option>
+                <option value="51545">51545 — HELP! ES — São Mateus — Centro</option>
+              </select>
+              <p class="field-help" id="franquia-help">O código selecionado será enviado ao webhook. Cadastre outras franquias neste arquivo.</p>
+              <p class="field-error" id="franquia-error" hidden>Selecione uma franquia para continuar.</p>
+            </div>
+            <button class="primary-button" type="submit" id="submit-button">
+              <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5 11 7-11 7z"/></svg>
+              <svg class="spinner" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>
+              <span id="button-label">Solicitar extração de MOP</span>
+            </button>
+          </form>
+          <div class="status-panel" id="status-panel" role="status" aria-live="polite" aria-atomic="true" data-state="idle">
+            <span class="status-icon" id="status-icon">i</span>
+            <div><strong id="status-title">Aguardando solicitação</strong><p id="status-message">Selecione uma franquia e clique no botão para iniciar.</p></div>
+          </div>
+        </section>
+        <section class="help-card" aria-labelledby="help-title">
+          <div class="help-symbol">i</div>
+          <div><h2 id="help-title">Como funciona?</h2><p>O site encaminha a solicitação ao webhook configurado. O retorno de sucesso confirma o <strong>recebimento da solicitação</strong>, não a conclusão da execução do robô.</p></div>
+        </section>
+        <footer>© Credvix · Central de automações</footer>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
