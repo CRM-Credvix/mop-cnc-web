@@ -30,11 +30,11 @@
     const st=status.value;
     const rows=all.filter(x=>
       (!st||x.status===st)&&
-      (!q||String(x.id).includes(q)||x.franquia_codigo.includes(q)||x.franquia_nome.toLowerCase().includes(q)||x.whatsapp.includes(q))
+      (!q||String(D.pedidoNumero(x)).includes(q)||x.franquia_codigo.includes(q)||x.franquia_nome.toLowerCase().includes(q)||x.whatsapp.includes(q))
     );
     body.innerHTML=rows.map(x=>`
       <tr>
-        <td><strong>#${D.escapeHtml(x.id)}</strong></td>
+        <td><strong>#${D.escapeHtml(D.pedidoNumero(x))}</strong></td>
         <td>${D.formatDate(x.criado_em)}</td>
         <td><strong>${D.escapeHtml(x.franquia_codigo)}</strong><br><small>${D.escapeHtml(x.franquia_nome)}</small></td>
         <td>${D.escapeHtml(x.whatsapp)}</td>

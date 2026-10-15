@@ -13,8 +13,8 @@
     item=data;
   }catch(error){D.showPageError('Não foi possível carregar o pedido.');return;}
 
-  document.getElementById('detailId').textContent='#'+item.id;
-  document.getElementById('detailIdEyebrow').textContent='#'+item.id;
+  document.getElementById('detailId').textContent='#'+D.pedidoNumero(item);
+  document.getElementById('detailIdEyebrow').textContent='#'+D.pedidoNumero(item);
   document.getElementById('detailFranchise').textContent=`${item.franquia_codigo} — ${item.franquia_nome}`;
   document.getElementById('detailWhatsapp').textContent=item.whatsapp;
   document.getElementById('detailCreated').textContent=D.formatDate(item.criado_em);
