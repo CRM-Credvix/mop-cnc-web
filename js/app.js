@@ -6,35 +6,34 @@
   const search=document.getElementById('franchiseSearch');
   const code=document.getElementById('franchiseCode');
   const options=document.getElementById('franchiseOptions');
-  const whatsapp=document.getElementById('whatsapp');
   const form=document.getElementById('requestForm');
   const service=document.getElementById('serviceKind');
-  const whatsappField=document.getElementById('whatsappField');
   const customProductField=document.getElementById('customProductField');
   const customProduct=document.getElementById('customProduct');
-  let availableStores=D.FRANCHISES;
+  let availableStores=[];
   let storesLoading=false;
+  let storeRequest=0;
+
+  // O formulario deste site cria somente pedidos de extracao Power BI.
+  // A operacao CNC legada continua preservada, mas fora deste formulario.
   async function setService(){
     const selected=service.value;
-    const isCnc=selected==='CNC_ATUAL';
-    whatsappField.hidden=!isCnc;
-    whatsapp.required=isCnc;
+    const request=++storeRequest;
     customProductField.hidden=selected!=='OUTRO';
     customProduct.required=selected==='OUTRO';
-    document.getElementById('whatsappError').hidden=true;
     document.getElementById('customProductError').hidden=true;
     code.value='';
     search.value='';
     options.hidden=true;
-    availableStores=isCnc?D.FRANCHISES:[];
-    if(!isCnc){
-      storesLoading=true;
-      try{
-        const all=await D.loadExtractionFranchises();
-        if(service.value===selected)availableStores=all;
-      }catch(error){
-        D.showPageError('Não foi possível consultar as lojas de extração. Tente novamente.');
-      }finally{storesLoading=false;}
+    availableStores=[];
+    storesLoading=true;
+    try{
+      const all=await D.loadExtractionFranchises();
+      if(request===storeRequest)availableStores=all;
+    }catch(error){
+      if(request===storeRequest)D.showPageError('Nao foi possivel consultar as lojas de extracao. Tente novamente.');
+    }finally{
+      if(request===storeRequest)storesLoading=false;
     }
   }
   service.addEventListener('change',setService);
@@ -60,45 +59,25 @@
     options.hidden=true;
   });
   document.addEventListener('click',(e)=>{if(!e.target.closest('#franchiseCombobox'))options.hidden=true;});
-  whatsapp.addEventListener('input',()=>{
-    whatsapp.value=whatsapp.value.replace(/[^\d+()\s-]/g,'').slice(0,24);
-  });
-
-  function normalizeWhats(v){
-    const digits=String(v||'').replace(/\D/g,'');
-    if(/^\d{10,11}$/.test(digits))return '55'+digits;
-    if(/^55\d{10,11}$/.test(digits))return digits;
-    return null;
-  }
-
-  function validWhats(v){return !!normalizeWhats(v);}
-
   form.addEventListener('submit',async(e)=>{
     e.preventDefault();
     const f=availableStores.find(x=>x.codigo===code.value);
     const fErr=document.getElementById('franchiseError');
-    const wErr=document.getElementById('whatsappError');
     const feedback=document.getElementById('requestFeedback');
     const submit=form.querySelector('button[type="submit"]');
 
-    const isCnc=service.value==='CNC_ATUAL';
-    const whatsappNormalizado=isCnc?normalizeWhats(whatsapp.value):null;
     const product=service.value==='OUTRO'?customProduct.value.trim():service.value;
-    const productOK=isCnc||(/^[\p{L}\p{N}_][\p{L}\p{N}_ .()&+/-]{0,79}$/u.test(product)&&product.length<=80);
+    const productOK=/^[\\p{L}\\p{N}_][\\p{L}\\p{N}_ .()&+/-]{0,79}$/u.test(product)&&product.length<=80;
     document.getElementById('customProductError').hidden=productOK;
     fErr.hidden=!!f;
-    wErr.hidden=!isCnc||!!whatsappNormalizado;
-    if(!f||storesLoading||!productOK||(isCnc&&!whatsappNormalizado))return;
+    if(!f||storesLoading||!productOK)return;
     submit.disabled=true;
 
     try{
-      const payload=isCnc
-        ? {user_id:user.id,franquia_codigo:f.codigo,franquia_nome:f.nome,whatsapp:whatsappNormalizado}
-        : {user_id:user.id,franquia_codigo:f.codigo,franquia_nome:f.nome,produto:product};
-      const table=isCnc?'pedidos_mop':'pedidos_extracoes_mop';
       const {data,error}=await window.MOP_SUPABASE
-        .from(table).insert(payload)
-        .select(isCnc?'id,numero_usuario,status':'id,status').single();
+        .from('pedidos_extracoes_mop')
+        .insert({user_id:user.id,franquia_codigo:f.codigo,franquia_nome:f.nome,produto:product})
+        .select('id,status').single();
       if(error){
         feedback.className='inline-alert error';
         feedback.textContent=error.code==='23505'
@@ -112,7 +91,7 @@
         return;
       }
       feedback.className='inline-alert success';
-      feedback.innerHTML=`Pedido <strong>${isCnc?'#'+D.escapeHtml(data.numero_usuario):'EX-'+D.escapeHtml(data.id)}</strong> criado com sucesso. <strong>Na fila</strong>. ${isCnc?'':'Extração sem WhatsApp.'}`;
+      feedback.innerHTML=`Pedido <strong>EX-${D.escapeHtml(data.id)}</strong> criado com sucesso. <strong>Na fila</strong>. Extração sem WhatsApp.`;
       feedback.hidden=false;
       form.reset();
       code.value='';
