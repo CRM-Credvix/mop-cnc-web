@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nova solicitação | MOP - CNC</title>
+  <title>Nova solicitação | MOP Unificado</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
@@ -37,18 +37,17 @@
           <div>
             <p class="eyebrow eyebrow--dark">EMISSÃO DE DOCUMENTO</p>
             <h1>Solicitações <span class="brand-text">MOP</span></h1>
-            <p>Escolha o serviço e a franquia. Para CNC atual, informe também o WhatsApp.</p>
+            <p>Escolha o produto do Power BI e a franquia para solicitar a extração.</p>
           </div>
         </section>
 
         <section class="request-card card">
           <div class="section-heading">
             <div class="icon-tile">▤</div>
-            <div><h2>Nova solicitação</h2><p>O CNC atual mantém seu fluxo. Extrações Power BI ficam em homologação, sem envio de arquivos.</p></div>
+            <div><h2>Nova solicitação</h2><p>Solicitações de extração Power BI em homologação, sem envio de arquivos.</p></div>
           </div>
           <form id="requestForm" class="request-form" novalidate>
             <label class="field"><span>Serviço <b>*</b></span><select id="serviceKind" required>
-                <option value="CNC_ATUAL">CNC atual — emissão</option>
                 <option value="Antecipação de Benefício">Antecipação de Benefício — Power BI</option>
                 <option value="Bmg Card">Bmg Card — Power BI</option>
                 <option value="Cartao Beneficio">Cartao Beneficio — Power BI</option>
@@ -68,15 +67,8 @@
               <p class="field-error" id="franchiseError" hidden>Selecione uma franquia válida da lista.</p>
             </div>
 
-            <label class="field" id="whatsappField">
-              <span>WhatsApp <b>*</b></span>
-              <div class="search-input"><span>◉</span><input id="whatsapp" type="tel" inputmode="tel" maxlength="24" autocomplete="tel" placeholder="(27) 99999-9999 ou +55 27 99999-9999" /></div>
-              <small>Informe DDD + número. O prefixo do Brasil (+55 ou 55) é opcional.</small>
-              <p class="field-error" id="whatsappError" hidden>Informe um WhatsApp válido com DDD e número.</p>
-            </label>
-
             <div class="form-action">
-              <button class="button button--primary button--lg" type="submit"><span>➤</span> Solicitar emissão</button>
+              <button class="button button--primary button--lg" type="submit"><span>➤</span> Solicitar extração</button>
             </div>
           </form>
           <div id="requestFeedback" class="inline-alert" hidden></div>
@@ -107,7 +99,7 @@
           <div>
             <p class="eyebrow eyebrow--dark">AJUDA</p>
             <h2>Como funciona?</h2>
-            <p>Escolha o serviço e a franquia autorizada. O CNC atual mantém o processamento e o envio existentes. As extrações FGTS, CNC Power BI e CONSIGNADO são processadas por um worker separado e apenas validadas localmente nesta fase, sem envio nem download no site. Acompanhe o status pelo Histórico.</p>
+            <p>Selecione o produto e uma franquia autorizada. O worker MultiExtrações processará o pedido no Power BI e validará o Excel localmente. Nesta etapa, não há envio por WhatsApp nem download pelo site. Acompanhe o andamento no Histórico. Produtos sem perfil de validação homologado seguem para revisão manual.</p>
           </div>
         </section>
       </main>
