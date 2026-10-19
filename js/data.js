@@ -1,9 +1,13 @@
 window.MOP_DATA = (() => {
   let franchises=[];
   const PEDIDO_FIELDS='id,numero_usuario,user_id,franquia_codigo,franquia_nome,whatsapp,status,criado_em,iniciado_em,finalizado_em,tentativas,erro_publico';
+  const PEDIDO_FIELDS_EXTRACOES='id,user_id,franquia_codigo,franquia_nome,produto,status,criado_em,iniciado_em,finalizado_em,registros,erro_publico';
   const STATUS = {
     na_fila:{label:'Na fila',className:'status-na_fila'},
     emitindo:{label:'Emitindo',className:'status-emitindo'},
+    extraindo:{label:'Extraindo',className:'status-emitindo'},
+    validado:{label:'Validado (sem envio)',className:'status-enviado'},
+    revisao_manual:{label:'Revisão manual',className:'status-erro'},
     enviado:{label:'Enviado',className:'status-enviado'},
     erro:{label:'Erro',className:'status-erro'}
   };
@@ -75,5 +79,18 @@ window.MOP_DATA = (() => {
     }catch(error){return await denyAccess('erro');}
   }
 
-  return {get FRANCHISES(){return franchises;},PEDIDO_FIELDS,STATUS,pedidoNumero,formatDate,statusBadge,escapeHtml,showPageError,requireUser};
+  async function loadUnifiedOrders(limit=100){
+    const [cnc,ext]=await Promise.all([
+      window.MOP_SUPABASE.from('pedidos_mop').select(PEDIDO_FIELDS).order('criado_em',{ascending:false}).limit(limit),
+      window.MOP_SUPABASE.from('pedidos_extracoes_mop').select(PEDIDO_FIELDS_EXTRACOES).order('criado_em',{ascending:false}).limit(limit)
+    ]);
+    if(cnc.error)throw cnc.error;
+    if(ext.error)throw ext.error;
+    return [
+      ...(cnc.data||[]).map(x=>({...x,origem:'cnc',produto:'CNC atual'})),
+      ...(ext.data||[]).map(x=>({...x,origem:'extracao',whatsapp:'—',numero_usuario:'EX-'+x.id}))
+    ].sort((a,b)=>new Date(b.criado_em)-new Date(a.criado_em));
+  }
+  function pedidoUrl(x){return 'pedido.html?id='+encodeURIComponent(x.id)+(x.origem==='extracao'?'&tipo=extracao':'');}
+  return {loadUnifiedOrders,pedidoUrl,PEDIDO_FIELDS_EXTRACOES,get FRANCHISES(){return franchises;},PEDIDO_FIELDS,STATUS,pedidoNumero,formatDate,statusBadge,escapeHtml,showPageError,requireUser};
 })();
