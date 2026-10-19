@@ -83,7 +83,7 @@
 
     const isCnc=service.value==='CNC_ATUAL';
     const whatsappNormalizado=isCnc?normalizeWhats(whatsapp.value):null;
-    const product=service.value==='OUTRO'?customProduct.value.trim().toUpperCase():service.value;
+    const product=service.value==='OUTRO'?customProduct.value.trim():service.value;
     const productOK=isCnc||(/^[\p{L}\p{N}_][\p{L}\p{N}_ .()&+/-]{0,79}$/u.test(product)&&product.length<=80);
     document.getElementById('customProductError').hidden=productOK;
     fErr.hidden=!!f;
