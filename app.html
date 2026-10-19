@@ -47,7 +47,8 @@
             <div><h2>Nova solicitação</h2><p>O CNC atual mantém seu fluxo. Extrações Power BI ficam em homologação, sem envio de arquivos.</p></div>
           </div>
           <form id="requestForm" class="request-form" novalidate>
-            <label class="field"><span>Serviço <b>*</b></span><select id="serviceKind" required><option value="CNC_ATUAL">CNC atual — emissão</option><option value="FGTS">FGTS — Power BI</option><option value="CNC">CNC — Power BI</option><option value="CONSIGNADO">CONSIGNADO — Power BI</option></select><small>Extrações Power BI são validadas localmente, sem envio por WhatsApp.</small></label>
+            <label class="field"><span>Serviço <b>*</b></span><select id="serviceKind" required><option value="CNC_ATUAL">CNC atual — emissão</option><option value="FGTS">FGTS — Power BI</option><option value="CNC">CNC — Power BI</option><option value="CONSIGNADO">CONSIGNADO — Power BI</option><option value="OUTRO">Outro produto do Power BI...</option></select><small>Extrações Power BI são validadas localmente, sem envio por WhatsApp.</small></label>
+            <label class="field" id="customProductField" hidden><span>Nome exato do produto no Power BI <b>*</b></span><input id="customProduct" type="text" maxlength="80" autocomplete="off" placeholder="Exatamente como aparece no filtro Produto"><small>Produtos novos poderão exigir homologação do layout do Excel antes da liberação.</small><p class="field-error" id="customProductError" hidden>Informe o nome exato do produto.</p></label>
             <div class="field combobox" id="franchiseCombobox">
               <label for="franchiseSearch">Franquia <b>*</b></label>
               <div class="search-input"><span>⌕</span><input id="franchiseSearch" type="text" autocomplete="off" placeholder="Busque pelo código ou nome da franquia..." aria-autocomplete="list" aria-controls="franchiseOptions" /></div>
