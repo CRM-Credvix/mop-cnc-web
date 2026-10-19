@@ -1,5 +1,6 @@
 window.MOP_DATA = (() => {
   let franchises=[];
+  let extractionFranchises=null;
   const PEDIDO_FIELDS='id,numero_usuario,user_id,franquia_codigo,franquia_nome,whatsapp,status,criado_em,iniciado_em,finalizado_em,tentativas,erro_publico';
   const PEDIDO_FIELDS_EXTRACOES='id,user_id,franquia_codigo,franquia_nome,produto,status,criado_em,iniciado_em,finalizado_em,registros,erro_publico';
   const STATUS = {
@@ -44,8 +45,17 @@ window.MOP_DATA = (() => {
     alert.textContent=message;
   }
 
+  async function loadExtractionFranchises(){
+    if(extractionFranchises!==null)return extractionFranchises;
+    const {data,error}=await window.MOP_SUPABASE.rpc('listar_lojas_extracoes_mop');
+    if(error)throw error;
+    extractionFranchises=(data||[]).map(x=>({codigo:String(x.codigo),nome:String(x.nome)}));
+    return extractionFranchises;
+  }
+
   async function denyAccess(reason){
     franchises=[];
+    extractionFranchises=null;
     try{await window.MOP_SUPABASE.auth.signOut({scope:'local'});}
     catch(error){}
     finally{location.replace('index.html?acesso='+reason);}
@@ -92,5 +102,5 @@ window.MOP_DATA = (() => {
     ].sort((a,b)=>new Date(b.criado_em)-new Date(a.criado_em));
   }
   function pedidoUrl(x){return 'pedido.html?id='+encodeURIComponent(x.id)+(x.origem==='extracao'?'&tipo=extracao':'');}
-  return {loadUnifiedOrders,pedidoUrl,PEDIDO_FIELDS_EXTRACOES,get FRANCHISES(){return franchises;},PEDIDO_FIELDS,STATUS,pedidoNumero,formatDate,statusBadge,escapeHtml,showPageError,requireUser};
+  return {loadUnifiedOrders,loadExtractionFranchises,pedidoUrl,PEDIDO_FIELDS_EXTRACOES,get FRANCHISES(){return franchises;},PEDIDO_FIELDS,STATUS,pedidoNumero,formatDate,statusBadge,escapeHtml,showPageError,requireUser};
 })();
