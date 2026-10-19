@@ -10,11 +10,32 @@
   const form=document.getElementById('requestForm');
   const service=document.getElementById('serviceKind');
   const whatsappField=document.getElementById('whatsappField');
-  function setService(){
-    const isCnc=service.value==='CNC_ATUAL';
+  const customProductField=document.getElementById('customProductField');
+  const customProduct=document.getElementById('customProduct');
+  let availableStores=D.FRANCHISES;
+  let storesLoading=false;
+  async function setService(){
+    const selected=service.value;
+    const isCnc=selected==='CNC_ATUAL';
     whatsappField.hidden=!isCnc;
     whatsapp.required=isCnc;
-    if(!isCnc)document.getElementById('whatsappError').hidden=true;
+    customProductField.hidden=selected!=='OUTRO';
+    customProduct.required=selected==='OUTRO';
+    document.getElementById('whatsappError').hidden=true;
+    document.getElementById('customProductError').hidden=true;
+    code.value='';
+    search.value='';
+    options.hidden=true;
+    availableStores=isCnc?D.FRANCHISES:[];
+    if(!isCnc){
+      storesLoading=true;
+      try{
+        const all=await D.loadExtractionFranchises();
+        if(service.value===selected)availableStores=all;
+      }catch(error){
+        D.showPageError('Não foi possível consultar as lojas de extração. Tente novamente.');
+      }finally{storesLoading=false;}
+    }
   }
   service.addEventListener('change',setService);
   setService();
@@ -22,7 +43,7 @@
   function normalize(v){return v.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();}
   function renderOptions(){
     const q=normalize(search.value.trim());
-    const list=D.FRANCHISES.filter(f=>!q||normalize(f.codigo+' '+f.nome).includes(q)).slice(0,10);
+    const list=availableStores.filter(f=>!q||normalize(f.codigo+' '+f.nome).includes(q)).slice(0,10);
     options.innerHTML=list.map(f=>`<button type="button" class="combo-option" role="option" data-code="${D.escapeHtml(f.codigo)}"><strong>${D.escapeHtml(f.codigo)}</strong><span>${D.escapeHtml(f.nome)}</span></button>`).join('')||'<div class="empty-state">Nenhuma franquia encontrada.</div>';
     options.hidden=false;
   }
@@ -32,7 +53,7 @@
   options.addEventListener('click',(e)=>{
     const btn=e.target.closest('[data-code]');
     if(!btn)return;
-    const f=D.FRANCHISES.find(x=>x.codigo===btn.dataset.code);
+    const f=availableStores.find(x=>x.codigo===btn.dataset.code);
     if(!f)return;
     code.value=f.codigo;
     search.value=`${f.codigo} — ${f.nome}`;
@@ -54,7 +75,7 @@
 
   form.addEventListener('submit',async(e)=>{
     e.preventDefault();
-    const f=D.FRANCHISES.find(x=>x.codigo===code.value);
+    const f=availableStores.find(x=>x.codigo===code.value);
     const fErr=document.getElementById('franchiseError');
     const wErr=document.getElementById('whatsappError');
     const feedback=document.getElementById('requestFeedback');
@@ -62,15 +83,18 @@
 
     const isCnc=service.value==='CNC_ATUAL';
     const whatsappNormalizado=isCnc?normalizeWhats(whatsapp.value):null;
+    const product=service.value==='OUTRO'?customProduct.value.trim().toUpperCase():service.value;
+    const productOK=isCnc||(/^[\p{L}\p{N}_][\p{L}\p{N}_ .()&+/-]{0,79}$/u.test(product)&&product.length<=80);
+    document.getElementById('customProductError').hidden=productOK;
     fErr.hidden=!!f;
     wErr.hidden=!isCnc||!!whatsappNormalizado;
-    if(!f||(isCnc&&!whatsappNormalizado))return;
+    if(!f||storesLoading||!productOK||(isCnc&&!whatsappNormalizado))return;
     submit.disabled=true;
 
     try{
       const payload=isCnc
         ? {user_id:user.id,franquia_codigo:f.codigo,franquia_nome:f.nome,whatsapp:whatsappNormalizado}
-        : {user_id:user.id,franquia_codigo:f.codigo,franquia_nome:f.nome,produto:service.value};
+        : {user_id:user.id,franquia_codigo:f.codigo,franquia_nome:f.nome,produto:product};
       const table=isCnc?'pedidos_mop':'pedidos_extracoes_mop';
       const {data,error}=await window.MOP_SUPABASE
         .from(table).insert(payload)
