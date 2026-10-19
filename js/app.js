@@ -8,8 +8,8 @@
   const options=document.getElementById('franchiseOptions');
   const form=document.getElementById('requestForm');
   const service=document.getElementById('serviceKind');
-  const customProductField=document.getElementById('customProductField');
-  const customProduct=document.getElementById('customProduct');
+  // Valores identicos aos filtros homologados ou previstos no Power BI.
+  const produtosPermitidos=new Set(['Antecipação de Benefício','Bmg Card','Cartao Beneficio','CNC','CONSIGNADO','Consignado Privado','FGTS']);
   let availableStores=[];
   let storesLoading=false;
   let storeRequest=0;
@@ -17,11 +17,7 @@
   // O formulario deste site cria somente pedidos de extracao Power BI.
   // A operacao CNC legada continua preservada, mas fora deste formulario.
   async function setService(){
-    const selected=service.value;
     const request=++storeRequest;
-    customProductField.hidden=selected!=='OUTRO';
-    customProduct.required=selected==='OUTRO';
-    document.getElementById('customProductError').hidden=true;
     code.value='';
     search.value='';
     options.hidden=true;
@@ -66,9 +62,14 @@
     const feedback=document.getElementById('requestFeedback');
     const submit=form.querySelector('button[type="submit"]');
 
-    const product=service.value==='OUTRO'?customProduct.value.trim():service.value;
-    const productOK=/^[\p{L}\p{N}_][\p{L}\p{N}_ .()&+/-]{0,79}$/u.test(product)&&product.length<=80;
-    document.getElementById('customProductError').hidden=productOK;
+    const product=service.value;
+    // Nao permitir pedidos de produtos que nao constam na lista oficial do site.
+    const productOK=produtosPermitidos.has(product);
+    if(!productOK){
+      feedback.className='inline-alert error';
+      feedback.textContent='Selecione um dos sete produtos disponiveis.';
+      feedback.hidden=false;
+    }
     fErr.hidden=!!f;
     if(!f||storesLoading||!productOK)return;
     submit.disabled=true;
