@@ -8,6 +8,16 @@
   const options=document.getElementById('franchiseOptions');
   const whatsapp=document.getElementById('whatsapp');
   const form=document.getElementById('requestForm');
+  const service=document.getElementById('serviceKind');
+  const whatsappField=document.getElementById('whatsappField');
+  function setService(){
+    const isCnc=service.value==='CNC_ATUAL';
+    whatsappField.hidden=!isCnc;
+    whatsapp.required=isCnc;
+    if(!isCnc)document.getElementById('whatsappError').hidden=true;
+  }
+  service.addEventListener('change',setService);
+  setService();
 
   function normalize(v){return v.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();}
   function renderOptions(){
@@ -50,21 +60,25 @@
     const feedback=document.getElementById('requestFeedback');
     const submit=form.querySelector('button[type="submit"]');
 
-    const whatsappNormalizado=normalizeWhats(whatsapp.value);
+    const isCnc=service.value==='CNC_ATUAL';
+    const whatsappNormalizado=isCnc?normalizeWhats(whatsapp.value):null;
     fErr.hidden=!!f;
-    wErr.hidden=!!whatsappNormalizado;
-    if(!f||!whatsappNormalizado)return;
+    wErr.hidden=!isCnc||!!whatsappNormalizado;
+    if(!f||(isCnc&&!whatsappNormalizado))return;
     submit.disabled=true;
 
     try{
+      const payload=isCnc
+        ? {user_id:user.id,franquia_codigo:f.codigo,franquia_nome:f.nome,whatsapp:whatsappNormalizado}
+        : {user_id:user.id,franquia_codigo:f.codigo,franquia_nome:f.nome,produto:service.value};
+      const table=isCnc?'pedidos_mop':'pedidos_extracoes_mop';
       const {data,error}=await window.MOP_SUPABASE
-        .from('pedidos_mop')
-        .insert({user_id:user.id,franquia_codigo:f.codigo,franquia_nome:f.nome,whatsapp:whatsappNormalizado})
-        .select('id,numero_usuario,status').single();
+        .from(table).insert(payload)
+        .select(isCnc?'id,numero_usuario,status':'id,status').single();
       if(error){
         feedback.className='inline-alert error';
         feedback.textContent=error.code==='23505'
-          ? 'Já existe uma emissão desta franquia em andamento. Aguarde a conclusão do pedido atual.'
+          ? 'Já existe uma solicitação ativa para esta franquia e serviço. Aguarde a conclusão.'
           : error.code==='42501'
           ? 'Acesso negado para esta loja. Atualize a página ou procure o administrador.'
           : error.message?.includes('RATE_LIMIT_MOP')
@@ -74,10 +88,11 @@
         return;
       }
       feedback.className='inline-alert success';
-      feedback.innerHTML=`Pedido <strong>#${D.escapeHtml(data.numero_usuario)}</strong> criado com sucesso. Status inicial: <strong>Na fila</strong>.`;
+      feedback.innerHTML=`Pedido <strong>${isCnc?'#'+D.escapeHtml(data.numero_usuario):'EX-'+D.escapeHtml(data.id)}</strong> criado com sucesso. <strong>Na fila</strong>. ${isCnc?'':'Extração sem WhatsApp.'}`;
       feedback.hidden=false;
       form.reset();
       code.value='';
+      setService();
       await render();
     }catch(error){
       feedback.className='inline-alert error';
@@ -87,27 +102,25 @@
   });
 
   async function render(){
-    const {data,error}=await window.MOP_SUPABASE
-      .from('pedidos_mop').select(D.PEDIDO_FIELDS)
-      .order('criado_em',{ascending:false}).limit(50);
-    const list=data||[];
-    if(error){D.showPageError('Não foi possível carregar os pedidos.');return;}
-    const counts={na_fila:0,emitindo:0,enviado:0,erro:0};
-    list.forEach(x=>counts[x.status]=(counts[x.status]||0)+1);
+    let list;
+    try{list=await D.loadUnifiedOrders(50);}
+    catch(error){D.showPageError('Não foi possível carregar as solicitações.');return;}
+    const counts={na_fila:0,emitindo:0,extraindo:0,enviado:0,validado:0,erro:0,revisao_manual:0};
+    list.forEach(x=>{counts[x.status]=(counts[x.status]||0)+1;});
     document.getElementById('metricQueue').textContent=counts.na_fila;
-    document.getElementById('metricProcessing').textContent=counts.emitindo;
-    document.getElementById('metricSent').textContent=counts.enviado;
-    document.getElementById('metricError').textContent=counts.erro;
+    document.getElementById('metricProcessing').textContent=counts.emitindo+counts.extraindo;
+    document.getElementById('metricSent').textContent=counts.enviado+counts.validado;
+    document.getElementById('metricError').textContent=counts.erro+counts.revisao_manual;
     const recent=list.slice(0,6);
     document.getElementById('recentEmpty').hidden=recent.length>0;
     document.getElementById('recentTableBody').innerHTML=recent.map(x=>`
       <tr>
-        <td><strong>#${D.escapeHtml(D.pedidoNumero(x))}</strong></td>
+        <td><strong>${D.escapeHtml(D.pedidoNumero(x))}</strong></td>
         <td>${D.formatDate(x.criado_em)}</td>
-        <td><strong>${D.escapeHtml(x.franquia_codigo)}</strong><br><small>${D.escapeHtml(x.franquia_nome)}</small></td>
+        <td><strong>${D.escapeHtml(x.franquia_codigo)}</strong><br><small>${D.escapeHtml(x.franquia_nome)} · ${D.escapeHtml(x.produto)}</small></td>
         <td>${D.escapeHtml(x.whatsapp)}</td>
         <td>${D.statusBadge(x.status)}</td>
-        <td><div class="table-actions"><a class="table-action" href="pedido.html?id=${encodeURIComponent(x.id)}" title="Ver detalhes">↗</a></div></td>
+        <td><div class="table-actions"><a class="table-action" href="${D.pedidoUrl(x)}" title="Ver detalhes">↗</a></div></td>
       </tr>`).join('');
   }
   try{await render();}catch(error){D.showPageError('Falha de conexão ao carregar os pedidos.');}
