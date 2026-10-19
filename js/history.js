@@ -11,11 +11,7 @@
 
   async function load(){
     try{
-      const {data,error}=await window.MOP_SUPABASE
-        .from('pedidos_mop').select(D.PEDIDO_FIELDS)
-        .order('criado_em',{ascending:false});
-      if(error)throw error;
-      all=data||[];
+      all=await D.loadUnifiedOrders(500);
       render();
     }catch(error){
       all=[];
@@ -30,16 +26,16 @@
     const st=status.value;
     const rows=all.filter(x=>
       (!st||x.status===st)&&
-      (!q||String(D.pedidoNumero(x)).includes(q)||x.franquia_codigo.includes(q)||x.franquia_nome.toLowerCase().includes(q)||x.whatsapp.includes(q))
+      (!q||String(D.pedidoNumero(x)).includes(q)||x.franquia_codigo.includes(q)||x.franquia_nome.toLowerCase().includes(q)||x.whatsapp.includes(q)||x.produto.toLowerCase().includes(q))
     );
     body.innerHTML=rows.map(x=>`
       <tr>
         <td><strong>#${D.escapeHtml(D.pedidoNumero(x))}</strong></td>
         <td>${D.formatDate(x.criado_em)}</td>
-        <td><strong>${D.escapeHtml(x.franquia_codigo)}</strong><br><small>${D.escapeHtml(x.franquia_nome)}</small></td>
+        <td><strong>${D.escapeHtml(x.franquia_codigo)}</strong><br><small>${D.escapeHtml(x.franquia_nome)} · ${D.escapeHtml(x.produto)}</small></td>
         <td>${D.escapeHtml(x.whatsapp)}</td>
         <td>${D.statusBadge(x.status)}</td>
-        <td><a class="table-action" href="pedido.html?id=${encodeURIComponent(x.id)}">↗</a></td>
+        <td><a class="table-action" href="${D.pedidoUrl(x)}">↗</a></td>
       </tr>`).join('');
     empty.hidden=rows.length>0;
   }

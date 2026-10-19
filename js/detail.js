@@ -5,28 +5,41 @@
   const id=new URLSearchParams(location.search).get('id');
   if(!id||!/^\d+$/.test(id)){location.replace('historico.html?acesso=negado');return;}
 
+  const isExtraction=new URLSearchParams(location.search).get('tipo')==='extracao';
   let item;
   try{
     const {data,error}=await window.MOP_SUPABASE
-      .from('pedidos_mop').select(D.PEDIDO_FIELDS).eq('id',id).maybeSingle();
+      .from(isExtraction?'pedidos_extracoes_mop':'pedidos_mop').select(isExtraction?D.PEDIDO_FIELDS_EXTRACOES:D.PEDIDO_FIELDS).eq('id',id).maybeSingle();
     if(error||!data){location.replace('historico.html?acesso=negado');return;}
     item=data;
   }catch(error){D.showPageError('Não foi possível carregar o pedido.');return;}
 
+  if(isExtraction){item.numero_usuario='EX-'+item.id;item.whatsapp='Não utilizado';}
   document.getElementById('detailId').textContent='#'+D.pedidoNumero(item);
   document.getElementById('detailIdEyebrow').textContent='#'+D.pedidoNumero(item);
   document.getElementById('detailFranchise').textContent=`${item.franquia_codigo} — ${item.franquia_nome}`;
   document.getElementById('detailWhatsapp').textContent=item.whatsapp;
   document.getElementById('detailCreated').textContent=D.formatDate(item.criado_em);
   document.getElementById('detailStatus').innerHTML=D.statusBadge(item.status);
+  if(isExtraction){
+    const dl=document.querySelector('.detail-list');
+    const extra=document.createElement('div');
+    extra.innerHTML='<dt>Produto</dt><dd></dd>';
+    extra.querySelector('dd').textContent=item.produto;
+    dl.append(extra);
+  }
 
-  const labels=[
+  const labels=isExtraction ? [
+    ['na_fila','Solicitação recebida','Aguardando worker Power BI.'],
+    ['extraindo','Extração iniciada','Processando e validando Excel.'],
+    ['validado','Excel validado','Arquivo salvo apenas no computador. Sem WhatsApp.']
+  ] : [
     ['na_fila','Pedido recebido','Solicitação registrada na fila.'],
     ['emitindo','Emissão iniciada','Sua solicitação está sendo processada.'],
     ['enviado','Arquivo enviado','Arquivo gerado e enviado para o WhatsApp informado.']
   ];
-  const order=['na_fila','emitindo','enviado'];
-  const isError=item.status==='erro';
+  const order=isExtraction?['na_fila','extraindo','validado']:['na_fila','emitindo','enviado'];
+  const isError=item.status==='erro'||item.status==='revisao_manual';
   const current=order.indexOf(item.status);
 
   document.getElementById('timeline').innerHTML=labels.map((x,i)=>{
@@ -47,6 +60,7 @@
     errorBox.hidden=false;
   }
 
+  if(isExtraction)return;
   try{
     const {data:files,error}=await window.MOP_SUPABASE.from('arquivos_mop')
       .select('id,nome,storage_path').eq('pedido_id',id).order('criado_em');

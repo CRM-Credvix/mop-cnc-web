@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Nova solicitação | MOP - CNC</title>
+  <title>Nova solicitação | MOP Unificado</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
   <div class="app-shell">
     <aside class="sidebar">
       <a class="brand-lockup" href="app.html" aria-label="Credvix"><span>CRED</span><strong>VIX</strong></a>
-      <div class="product-name"><strong>MOP - CNC</strong><span>Sistema de Emissões</span></div>
+      <div class="product-name"><strong>MOP</strong><span>Sistema unificado</span></div>
       <nav class="sidebar-nav" aria-label="Navegação principal">
         <a class="nav-item active" href="app.html"><span>▣</span> Nova solicitação</a>
         <a class="nav-item" href="historico.html"><span>◷</span> Histórico</a>
@@ -36,17 +36,26 @@
         <section class="page-header">
           <div>
             <p class="eyebrow eyebrow--dark">EMISSÃO DE DOCUMENTO</p>
-            <h1>Solicitação de Emissão <span class="brand-text">MOP - CNC</span></h1>
-            <p>Selecione a franquia, informe o WhatsApp e envie a solicitação para a fila.</p>
+            <h1>Solicitações <span class="brand-text">MOP</span></h1>
+            <p>Escolha o produto do Power BI e a franquia para solicitar a extração.</p>
           </div>
         </section>
 
         <section class="request-card card">
           <div class="section-heading">
             <div class="icon-tile">▤</div>
-            <div><h2>Nova solicitação</h2><p>Após o envio, a solicitação entra na fila e aguarda o processamento automático.</p></div>
+            <div><h2>Nova solicitação</h2><p>Solicitações de extração Power BI em homologação, sem envio de arquivos.</p></div>
           </div>
           <form id="requestForm" class="request-form" novalidate>
+            <label class="field"><span>Serviço <b>*</b></span><select id="serviceKind" required>
+                <option value="Antecipação de Benefício">Antecipação de Benefício</option>
+                <option value="Bmg Card">Bmg Card</option>
+                <option value="Cartao Beneficio">Cartao Beneficio</option>
+                <option value="CNC">CNC</option>
+                <option value="CONSIGNADO">Consignado</option>
+                <option value="Consignado Privado">Consignado Privado</option>
+                <option value="FGTS">FGTS</option>
+              </select><small>Extrações Power BI são validadas localmente, sem envio por WhatsApp.</small></label>
             <div class="field combobox" id="franchiseCombobox">
               <label for="franchiseSearch">Franquia <b>*</b></label>
               <div class="search-input"><span>⌕</span><input id="franchiseSearch" type="text" autocomplete="off" placeholder="Busque pelo código ou nome da franquia..." aria-autocomplete="list" aria-controls="franchiseOptions" /></div>
@@ -56,15 +65,8 @@
               <p class="field-error" id="franchiseError" hidden>Selecione uma franquia válida da lista.</p>
             </div>
 
-            <label class="field">
-              <span>WhatsApp <b>*</b></span>
-              <div class="search-input"><span>◉</span><input id="whatsapp" type="tel" inputmode="tel" maxlength="24" autocomplete="tel" placeholder="(27) 99999-9999 ou +55 27 99999-9999" /></div>
-              <small>Informe DDD + número. O prefixo do Brasil (+55 ou 55) é opcional.</small>
-              <p class="field-error" id="whatsappError" hidden>Informe um WhatsApp válido com DDD e número.</p>
-            </label>
-
             <div class="form-action">
-              <button class="button button--primary button--lg" type="submit"><span>➤</span> Solicitar emissão</button>
+              <button class="button button--primary button--lg" type="submit"><span>➤</span> Solicitar extração</button>
             </div>
           </form>
           <div id="requestFeedback" class="inline-alert" hidden></div>
@@ -73,13 +75,13 @@
         <section class="metric-grid" aria-label="Resumo de status">
           <article class="metric-card"><div class="metric-icon metric-icon--neutral">◷</div><div><span>Na fila</span><strong id="metricQueue">0</strong><small>Aguardando processamento</small></div></article>
           <article class="metric-card"><div class="metric-icon metric-icon--warning">⚙</div><div><span>Emitindo</span><strong id="metricProcessing">0</strong><small>Em processamento</small></div></article>
-          <article class="metric-card"><div class="metric-icon metric-icon--success">✓</div><div><span>Enviado</span><strong id="metricSent">0</strong><small>Concluído com sucesso</small></div></article>
+          <article class="metric-card"><div class="metric-icon metric-icon--success">✓</div><div><span>Concluído</span><strong id="metricSent">0</strong><small>Concluído com sucesso</small></div></article>
           <article class="metric-card"><div class="metric-icon metric-icon--danger">!</div><div><span>Erro</span><strong id="metricError">0</strong><small>Requer verificação</small></div></article>
         </section>
 
         <section class="card history-card">
           <div class="section-heading section-heading--between">
-            <div class="section-heading"><div class="icon-tile icon-tile--soft">◷</div><div><h2>Últimas emissões</h2><p>Suas solicitações mais recentes.</p></div></div>
+            <div class="section-heading"><div class="icon-tile icon-tile--soft">◷</div><div><h2>Últimas solicitações</h2><p>Suas solicitações mais recentes.</p></div></div>
             <a class="text-link" href="historico.html">Ver histórico completo →</a>
           </div>
           <div class="table-wrap">
@@ -95,7 +97,7 @@
           <div>
             <p class="eyebrow eyebrow--dark">AJUDA</p>
             <h2>Como funciona?</h2>
-            <p>Selecione a franquia, informe o WhatsApp que receberá o arquivo e clique em <strong>Solicitar emissão</strong>. A solicitação entra na fila e é processada automaticamente. Você pode acompanhar o andamento pelo Histórico. Quando concluída, a planilha MOP - CNC é enviada ao WhatsApp informado por meio de um link temporário. Se ocorrer algum problema, o pedido será marcado como Erro e o motivo ficará disponível nos detalhes da solicitação.</p>
+            <p>Selecione o produto e uma franquia autorizada. O worker MultiExtrações processará o pedido no Power BI e validará o Excel localmente. Nesta etapa, não há envio por WhatsApp nem download pelo site. Acompanhe o andamento no Histórico. Produtos sem perfil de validação homologado seguem para revisão manual.</p>
           </div>
         </section>
       </main>
