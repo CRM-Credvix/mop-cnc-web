@@ -1,0 +1,2 @@
+// Cosmetic navigation only: backend access MUST use Supabase RLS and independent worker checks.
+(async()=>{try{const {data,error}=await window.MOP_SUPABASE.auth.getUser();if(error||!data?.user)return;if((data.user.email||'').trim().toLowerCase()==='crm@credvix.com')document.querySelectorAll('.dna-only-nav').forEach(el=>el.style.display='flex')}catch(e){/* fail closed */}})();
