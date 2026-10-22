@@ -32,9 +32,9 @@
       </nav>
 
       <div class="dna-sidebar-footer">
-        <span class="dna-sidebar-dot"></span>
+        <span class="dna-sidebar-dot dna-sidebar-dot--pending"></span>
         <div>
-          <strong>Ambiente visual de demonstração</strong>
+          <strong>Gestão de Perfis DNA</strong>
           <span>~by: fraquinn.</span>
         </div>
       </div>
@@ -59,8 +59,8 @@
 
       <main class="content dna-page-content">
         <div class="dna-banner">
-          <strong>ⓘ VIEWMOCK DE HOMOLOGAÇÃO</strong>
-          <span>Interface demonstrativa com dados fictícios. Sem consultas ou alterações no DNA; dados fictícios. O login do MOP-CNC continua utilizando o Supabase.</span>
+          <strong>ⓘ MÓDULO DE GESTÃO DE PERFIS DNA</strong>
+          <span>Interface definitiva disponível. Consulta de cadastros, execução do robô e auditoria estarão habilitadas após a integração segura com o banco e o DNA. Nenhuma alteração é realizada nesta etapa.</span>
         </div>
 
         <section class="dna-stage active" data-stage="gestao">
@@ -72,7 +72,7 @@
             </div>
             <div class="dna-head-actions">
               <span class="dna-pill">🔒 Acesso exclusivo</span>
-              <span class="dna-pill dna-pill--soft-orange">🛡 Alterações controladas</span>
+              <span class="dna-pill dna-pill--soft-orange">🛡 Execução ainda indisponível</span>
             </div>
           </div>
 
@@ -88,19 +88,11 @@
 
               <div class="dna-field-head">
                 <label for="dnaNames">Usuários existentes no DNA</label>
-                <span id="dnaCountInline">10 nomes informados</span>
+                <span id="dnaCountInline">0 nomes informados</span>
               </div>
-              <textarea id="dnaNames" rows="10">Ana Martins
-Bruno Rocha
-Carla Oliveira
-Diego Souza
-Elisa Lima
-Fábio Nunes
-Gabriela Costa
-Hugo Pereira
-Íris Duarte
-João Mendes</textarea>
-              <div class="dna-helper-line">ⓘ Um nome por linha · mínimo 1, máximo 50 · o robô nunca criará usuários</div>
+              <textarea id="dnaNames" rows="10" placeholder="Cole os nomes completos, um por linha. Ex.: Ana Martins" autocomplete="off" aria-describedby="dnaNamesHelp dnaInputError"></textarea>
+              <p id="dnaInputError" class="dna-input-error" role="alert" hidden></p>
+              <div class="dna-helper-line" id="dnaNamesHelp">ⓘ Um nome completo por linha · mínimo 1, máximo 50 · nenhum usuário será criado</div>
 
               <div class="dna-field-split">
                 <label>Perfil que será aplicado</label>
@@ -146,7 +138,7 @@ João Mendes</textarea>
                 <div class="dna-reference-card">
                   <div class="dna-reference-head">
                     <strong id="summaryProfileCaps">CONSULTOR</strong>
-                    <span class="dna-status-chip dna-status-chip--green">● Modelo disponível</span>
+                    <span class="dna-status-chip dna-status-chip--blue">● Referência capturada</span>
                   </div>
                   <div class="dna-reference-grid">
                     <span>Perfil</span><strong id="summaryProfile">Consultor</strong>
@@ -161,7 +153,7 @@ João Mendes</textarea>
               </section>
 
               <section class="dna-card">
-                <h3>Proteções obrigatórias</h3>
+                <h3>Proteções previstas para o robô</h3>
                 <ul class="dna-check-list">
                   <li>Não criar, excluir ou recriar contas</li>
                   <li>Bloquear nomes duplicados ou ambíguos</li>
@@ -173,17 +165,17 @@ João Mendes</textarea>
           </div>
 
           <div class="dna-stat-grid">
-            <div class="dna-stat-card"><div class="dna-stat-icon">◔</div><div><strong>02</strong><span>Na fila</span><small>Solicitações pendentes</small></div></div>
-            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--blue">⌁</div><div><strong>01</strong><span>Em análise</span><small>Conferência de cadastro</small></div></div>
-            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--green">✓</div><div><strong>18</strong><span>Concluídos</span><small>Últimos 30 dias</small></div></div>
-            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--purple">△</div><div><strong>02</strong><span>Em revisão</span><small>Aguardam identificação</small></div></div>
+            <div class="dna-stat-card"><div class="dna-stat-icon">◔</div><div><strong>—</strong><span>Na fila</span><small>Aguardando integração</small></div></div>
+            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--blue">⌁</div><div><strong>—</strong><span>Em análise</span><small>Aguardando integração</small></div></div>
+            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--green">✓</div><div><strong>—</strong><span>Concluídos</span><small>Aguardando integração</small></div></div>
+            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--purple">△</div><div><strong>—</strong><span>Em revisão</span><small>Aguardando integração</small></div></div>
           </div>
 
           <section class="dna-card">
             <div class="dna-table-head">
               <div>
                 <h2>Últimas solicitações DNA</h2>
-                <p>Referências demonstrativas para avaliar o layout.</p>
+                <p>Solicitações registradas após a integração com o robô.</p>
               </div>
               <button class="dna-button dna-button--ghost" type="button" data-target="auditoria">Ver histórico completo <span>→</span></button>
             </div>
@@ -192,11 +184,7 @@ João Mendes</textarea>
                 <thead>
                   <tr><th>Lote</th><th>Solicitado em</th><th>Perfil</th><th>Usuários</th><th>Resultado</th><th></th></tr>
                 </thead>
-                <tbody>
-                  <tr><td>#DNA-024</td><td>22/10/2026 · 09:32</td><td>Consultor 2</td><td>12 usuários</td><td><span class="dna-tag dna-tag--green">● Concluído e verificado</span></td><td><button class="dna-link-action" type="button" data-target="auditoria">Ver detalhes</button></td></tr>
-                  <tr><td>#DNA-023</td><td>21/10/2026 · 16:09</td><td>Supervisor 1</td><td>8 usuários</td><td><span class="dna-tag dna-tag--purple">● Revisão necessária</span></td><td><button class="dna-link-action" type="button" data-target="auditoria">Ver detalhes</button></td></tr>
-                  <tr><td>#DNA-022</td><td>21/10/2026 · 14:18</td><td>Consultor 2</td><td>15 usuários</td><td><span class="dna-tag dna-tag--green">● Concluído e verificado</span></td><td><button class="dna-link-action" type="button" data-target="auditoria">Ver detalhes</button></td></tr>
-                </tbody>
+                <tbody><tr><td colspan="6" class="dna-empty-row">O histórico de solicitações estará disponível após a integração do banco e do robô DNA.</td></tr></tbody>
               </table>
             </div>
           </section>
@@ -225,21 +213,21 @@ João Mendes</textarea>
             <section class="dna-card">
               <div class="dna-card-topline">
                 <div>
-                  <h2>Prévia do lote #DNA-025</h2>
-                  <p><span id="previewCountText">10 usuários informados</span> · conferência demonstrativa</p>
+                  <h2>Conferência da lista informada</h2>
+                  <p><span id="previewCountText">0 usuários informados</span> · prévia local, sem consulta ao DNA</p>
                 </div>
-                <span class="dna-status-chip dna-status-chip--blue">● Diagnóstico</span>
+                <span class="dna-status-chip dna-status-chip--blue">● Prévia local</span>
               </div>
 
               <div class="dna-chip-row">
-                <span id="dnaFoundChip" class="dna-status-chip dna-status-chip--green">● 7 localizados</span>
-                <span id="dnaAmbiguousChip" class="dna-status-chip dna-status-chip--purple">● 2 nomes ambíguos</span>
-                <span id="dnaMissingChip" class="dna-status-chip dna-status-chip--red">● 1 não localizado</span>
+                <span id="dnaFoundChip" class="dna-status-chip dna-status-chip--green">● 0 nomes na lista</span>
+                <span id="dnaAmbiguousChip" class="dna-status-chip dna-status-chip--purple">● Identidades não verificadas</span>
+                <span id="dnaMissingChip" class="dna-status-chip dna-status-chip--red">● Consulta indisponível</span>
               </div>
 
               <div class="dna-warning-box" id="dnaWarningBox">
-                <strong>⚠ 3 cadastros exigem atenção</strong>
-                <p>O processamento deve bloquear nomes repetidos e cadastros não encontrados. Nenhum usuário será escolhido automaticamente.</p>
+                <strong>ⓘ Consulta ao DNA ainda não habilitada</strong>
+                <p>Os nomes listados são apenas uma prévia local. Nenhuma identidade foi conferida e nenhuma alteração foi solicitada.</p>
               </div>
 
               <div class="dna-table-shell">
@@ -255,7 +243,7 @@ João Mendes</textarea>
                 <span>ⓘ Somente usuários identificados sem ambiguidade poderão seguir para o piloto.</span>
                 <div class="dna-inline-actions">
                   <button class="dna-button dna-button--secondary" type="button" data-target="gestao">Voltar</button>
-                  <button class="dna-button dna-button--primary" type="button" data-target="acompanhamento">Ver exemplo de execução <span>→</span></button>
+                  <button class="dna-button dna-button--primary" type="button" disabled title="Aguardando integração do worker e autorização no banco">Iniciar configuração (indisponível)</button>
                 </div>
               </div>
             </section>
@@ -270,8 +258,8 @@ João Mendes</textarea>
                   </div>
                 </div>
                 <div class="dna-soft-box">
-                  <strong id="verificationPatternText">Padrão aplicado: Consultor → Consultor 2</strong>
-                  <p>As 224 permissões individuais são conferidas, incluindo opções desmarcadas. Acesso SSO é verificado separadamente.</p>
+                  <strong id="verificationPatternText">Padrão de referência: Consultor → Consultor 2</strong>
+                  <p>Na execução, as 224 permissões individuais deverão ser comparadas, inclusive as desmarcadas. O acesso SSO será conferido separadamente.</p>
                 </div>
                 <ul class="dna-check-list dna-check-list--compact">
                   <li>Identidade única por cadastro antes de aplicar alterações</li>
@@ -281,16 +269,16 @@ João Mendes</textarea>
               </section>
               <section class="dna-card">
                 <h3>6 diferenças entre modelos</h3>
-                <p>Diferenças na captura de referência.</p>
+                <p>Diferenças entre Consultor e Supervisor nas capturas de referência.</p>
                 <ul class="dna-difference-list">
-                  <li><span>✕ Acompanhamento → Produção de Agentes</span><strong class="dna-neg">Desmarcar</strong></li>
-                  <li><span>✕ Manutenção → Boleto de Liquidação</span><strong class="dna-neg">Desmarcar</strong></li>
-                  <li><span>✓ Manutenção → Carta para Solicitação de Saldo</span><strong class="dna-pos">Marcar</strong></li>
-                  <li><span>✕ Proposta → Formalização de Contratos TAC</span><strong class="dna-neg">Desmarcar</strong></li>
-                  <li><span>✓ Compra Eletrônica Individual</span><strong class="dna-pos">Marcar</strong></li>
-                  <li><span>✓ Realizar vínculo de documentos</span><strong class="dna-pos">Marcar</strong></li>
+                  <li><span>• Acompanhamento → Produção de Agentes</span><strong class="dna-diff-action" data-consultor="desmarcar">Desmarcar</strong></li>
+                  <li><span>• Manutenção → Boleto de Liquidação</span><strong class="dna-diff-action" data-consultor="desmarcar">Desmarcar</strong></li>
+                  <li><span>• Manutenção → Carta para Solicitação de Saldo</span><strong class="dna-diff-action" data-consultor="marcar">Marcar</strong></li>
+                  <li><span>• Proposta → Formalização de Contratos TAC</span><strong class="dna-diff-action" data-consultor="desmarcar">Desmarcar</strong></li>
+                  <li><span>• Compra Eletrônica Individual</span><strong class="dna-diff-action" data-consultor="marcar">Marcar</strong></li>
+                  <li><span>• Realizar vínculo de documentos</span><strong class="dna-diff-action" data-consultor="marcar">Marcar</strong></li>
                 </ul>
-                <button class="dna-inline-link" type="button">Ver comparação detalhada</button>
+                <p class="dna-reference-note">Ações indicadas variam conforme o perfil selecionado. Nomes iguais ou identificações ambíguas exigem confirmação da identidade antes da execução.</p>
               </section>
             </aside>
           </div>
@@ -304,8 +292,8 @@ João Mendes</textarea>
               <p>Visibilidade por usuário, com confirmação de persistência e tratamento individual de falhas.</p>
             </div>
             <div class="dna-head-actions">
-              <span class="dna-pill">◔ Lote #DNA-025</span>
-              <span class="dna-pill dna-pill--soft-orange">◌ Simulação visual</span>
+              <span class="dna-pill">◔ Nenhum lote iniciado</span>
+              <span class="dna-pill dna-pill--soft-orange">◌ Integração pendente</span>
             </div>
           </div>
 
@@ -322,40 +310,29 @@ João Mendes</textarea>
                   <h2>Progresso da configuração</h2>
                   <p>Padrão selecionado: <strong id="progressPatternText">Consultor · Consultor 2</strong></p>
                 </div>
-                <span class="dna-status-chip dna-status-chip--blue">● Em processamento</span>
+                <span class="dna-status-chip dna-status-chip--blue">● Aguardando integração</span>
               </div>
-              <div class="dna-progress-head"><strong>7 de 10</strong><span>70%</span></div>
-              <p class="dna-subcopy">Cadastros avaliados nesta demonstração</p>
-              <div class="dna-progress-bar"><span style="width:70%"></span></div>
+              <div class="dna-progress-head"><strong>— de —</strong><span>—</span></div>
+              <p class="dna-subcopy">Nenhuma configuração iniciada</p>
+              <div class="dna-progress-bar" role="progressbar" aria-label="Execução não iniciada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span style="width:0%"></span></div>
               <div class="dna-mini-stats">
-                <div><strong>4</strong><span>Verificados</span></div>
-                <div><strong>1</strong><span>Já corretos</span></div>
-                <div><strong>2</strong><span>Em revisão</span></div>
-                <div><strong>3</strong><span>Pendentes</span></div>
+                <div><strong>—</strong><span>Verificados</span></div>
+                <div><strong>—</strong><span>Já corretos</span></div>
+                <div><strong>—</strong><span>Em revisão</span></div>
+                <div><strong>—</strong><span>Pendentes</span></div>
               </div>
 
               <div class="dna-table-head dna-table-head--compact">
                 <div>
                   <h3>Resultado por usuário</h3>
-                  <p>Nenhuma ação real é disparada por esta prévia.</p>
+                  <p>Os resultados individuais serão apresentados após a integração do worker.</p>
                 </div>
-                <button class="dna-button dna-button--ghost" type="button">⟳ Atualizar</button>
+                <button class="dna-button dna-button--ghost" type="button" disabled>⟳ Atualizar (indisponível)</button>
               </div>
               <div class="dna-table-shell">
                 <table class="dna-table">
                   <thead><tr><th>Usuário</th><th>Etapa atual</th><th>Resultado</th><th>Conferência</th></tr></thead>
-                  <tbody>
-                    <tr><td>Ana Martins</td><td>Concluída</td><td><span class="dna-tag dna-tag--green">● Configurado</span></td><td>227 controles verificados</td></tr>
-                    <tr><td>Bruno Rocha</td><td>Concluída</td><td><span class="dna-tag dna-tag--green">● Configurado</span></td><td>227 controles verificados</td></tr>
-                    <tr><td>Carla Oliveira</td><td>Concluída</td><td><span class="dna-tag dna-tag--neutral">● Já configurado</span></td><td>Nenhuma alteração</td></tr>
-                    <tr><td>Diego Souza</td><td>Concluída</td><td><span class="dna-tag dna-tag--green">● Configurado</span></td><td>227 controles verificados</td></tr>
-                    <tr><td>Elisa Lima</td><td>Concluída</td><td><span class="dna-tag dna-tag--green">● Configurado</span></td><td>227 controles verificados</td></tr>
-                    <tr><td>Fábio Nunes</td><td>Bloqueado</td><td><span class="dna-tag dna-tag--purple">● Identidade ambígua</span></td><td>Exige identificador adicional</td></tr>
-                    <tr><td>Gabriela Costa</td><td>Bloqueado</td><td><span class="dna-tag dna-tag--purple">● Identidade ambígua</span></td><td>Exige identificador adicional</td></tr>
-                    <tr><td>Hugo Pereira</td><td>Aguardando</td><td><span class="dna-tag dna-tag--neutral">● Na fila</span></td><td>—</td></tr>
-                    <tr><td>Íris Duarte</td><td>Aguardando</td><td><span class="dna-tag dna-tag--neutral">● Na fila</span></td><td>—</td></tr>
-                    <tr><td>João Mendes</td><td>Aguardando</td><td><span class="dna-tag dna-tag--neutral">● Na fila</span></td><td>—</td></tr>
-                  </tbody>
+                  <tbody><tr><td colspan="4" class="dna-empty-row">Nenhum processamento iniciado. Os registros serão exibidos após a conexão do worker.</td></tr></tbody>
                 </table>
               </div>
             </section>
@@ -370,10 +347,7 @@ João Mendes</textarea>
                   </div>
                 </div>
                 <ol class="dna-timeline">
-                  <li class="done"><strong>Solicitação recebida</strong><span>11:07 · Lote registrado na fila</span></li>
-                  <li class="done"><strong>Conferência iniciada</strong><span>11:08 · Identidade e padrão validados</span></li>
-                  <li class="doing"><strong>Processando cadastros</strong><span>11:09 · Verificação individual em andamento</span></li>
-                  <li><strong>Auditoria final do lote</strong><span>Aguarda a conclusão das verificações</span></li>
+                  <li><strong>Aguardando integração</strong><span>Nenhuma solicitação registrada.</span></li>
                 </ol>
                 <div class="dna-soft-box">
                   <strong>Quando ocorre uma dúvida no salvamento</strong>
@@ -403,15 +377,15 @@ João Mendes</textarea>
             </div>
             <div class="dna-head-actions">
               <span class="dna-pill">🔒 Visualização restrita</span>
-              <button class="dna-button dna-button--ghost" type="button">↓ Exportar exemplo</button>
+              <button class="dna-button dna-button--ghost" type="button" disabled title="Exportação disponível após integração da auditoria">↓ Exportar CSV (indisponível)</button>
             </div>
           </div>
 
           <div class="dna-stat-grid dna-stat-grid--audit">
-            <div class="dna-stat-card"><div class="dna-stat-icon">☷</div><div><span>Lotes registrados</span><strong>24</strong><small>Referência demonstrativa</small></div></div>
-            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--green">✓</div><div><span>Verificados</span><strong>146</strong><small>Cadastros revisados</small></div></div>
-            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--purple">△</div><div><span>Em revisão</span><strong>05</strong><small>Precisam de intervenção</small></div></div>
-            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--blue">◔</div><div><span>Última atualização</span><strong>11:12</strong><small>22/10/2026</small></div></div>
+            <div class="dna-stat-card"><div class="dna-stat-icon">☷</div><div><span>Lotes registrados</span><strong>—</strong><small>Aguardando integração</small></div></div>
+            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--green">✓</div><div><span>Verificados</span><strong>—</strong><small>Aguardando integração</small></div></div>
+            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--purple">△</div><div><span>Em revisão</span><strong>—</strong><small>Aguardando integração</small></div></div>
+            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--blue">◔</div><div><span>Última atualização</span><strong>—</strong><small>Sem registros</small></div></div>
           </div>
 
           <section class="dna-card">
@@ -425,17 +399,17 @@ João Mendes</textarea>
             <div class="dna-filter-grid">
               <div>
                 <label for="dnaSearchRecord">Buscar registro</label>
-                <input id="dnaSearchRecord" type="text" placeholder="Lote, perfil ou usuário">
+                <input id="dnaSearchRecord" type="text" placeholder="Lote, perfil ou usuário" disabled>
               </div>
               <div>
                 <label for="dnaFilterProfile">Perfil</label>
-                <select id="dnaFilterProfile"><option>Todos</option><option>Consultor 2</option><option>Supervisor 1</option></select>
+                <select id="dnaFilterProfile" disabled><option>Todos</option><option>Consultor 2</option><option>Supervisor 1</option></select>
               </div>
               <div>
                 <label for="dnaFilterStatus">Status</label>
-                <select id="dnaFilterStatus"><option>Todos</option><option>Concluído e verificado</option><option>Em processamento</option><option>Revisão necessária</option></select>
+                <select id="dnaFilterStatus" disabled><option>Todos</option><option>Concluído e verificado</option><option>Em processamento</option><option>Revisão necessária</option></select>
               </div>
-              <div class="dna-filter-action"><button class="dna-button dna-button--ghost dna-button--full" type="button">✕ Limpar filtros</button></div>
+              <div class="dna-filter-action"><button class="dna-button dna-button--ghost dna-button--full" type="button" disabled>✕ Limpar filtros</button></div>
             </div>
           </section>
 
@@ -443,26 +417,19 @@ João Mendes</textarea>
             <div class="dna-table-head">
               <div>
                 <h2>Registro das solicitações</h2>
-                <p>6 registros encontrados na demonstração.</p>
+                <p>Histórico ainda não conectado ao banco.</p>
               </div>
-              <small>Horários ilustrativos · pt-BR</small>
+              <small>Horários em pt-BR após a integração</small>
             </div>
             <div class="dna-table-shell">
               <table class="dna-table">
                 <thead><tr><th>Lote</th><th>Data e hora</th><th>Perfil aplicado</th><th>Solicitante</th><th>Usuários</th><th>Status final</th><th>Ação</th></tr></thead>
-                <tbody>
-                  <tr><td>#DNA-025</td><td>22/10/2026 · 11:07</td><td>Consultor 2</td><td>crm@credvix.com</td><td>10</td><td><span class="dna-tag dna-tag--blue">● Em processamento</span></td><td><button class="dna-link-action" type="button">Ver detalhes</button></td></tr>
-                  <tr><td>#DNA-024</td><td>22/10/2026 · 09:32</td><td>Consultor 2</td><td>crm@credvix.com</td><td>12</td><td><span class="dna-tag dna-tag--green">● Concluído e verificado</span></td><td><button class="dna-link-action" type="button">Ver detalhes</button></td></tr>
-                  <tr><td>#DNA-023</td><td>21/10/2026 · 16:09</td><td>Supervisor 1</td><td>crm@credvix.com</td><td>8</td><td><span class="dna-tag dna-tag--purple">● Revisão necessária</span></td><td><button class="dna-link-action" type="button">Ver detalhes</button></td></tr>
-                  <tr><td>#DNA-022</td><td>21/10/2026 · 14:18</td><td>Consultor 2</td><td>crm@credvix.com</td><td>15</td><td><span class="dna-tag dna-tag--green">● Concluído e verificado</span></td><td><button class="dna-link-action" type="button">Ver detalhes</button></td></tr>
-                  <tr><td>#DNA-021</td><td>20/10/2026 · 10:41</td><td>Supervisor 1</td><td>crm@credvix.com</td><td>7</td><td><span class="dna-tag dna-tag--green">● Concluído e verificado</span></td><td><button class="dna-link-action" type="button">Ver detalhes</button></td></tr>
-                  <tr><td>#DNA-020</td><td>20/10/2026 · 09:11</td><td>Consultor 2</td><td>crm@credvix.com</td><td>9</td><td><span class="dna-tag dna-tag--green">● Concluído e verificado</span></td><td><button class="dna-link-action" type="button">Ver detalhes</button></td></tr>
-                </tbody>
+                <tbody><tr><td colspan="7" class="dna-empty-row">Aguardando integração com o banco de auditoria DNA. Nenhum registro fictício é apresentado.</td></tr></tbody>
               </table>
             </div>
             <div class="dna-audit-foot">
-              <div><strong>24</strong><span>Lotes no histórico fictício</span></div>
-              <div><strong>0</strong><span>Cadastros criados ou excluídos</span></div>
+              <div><strong>—</strong><span>Lotes registrados</span></div>
+              <div><strong>—</strong><span>Cadastros criados ou excluídos</span></div>
             </div>
           </section>
         </section>

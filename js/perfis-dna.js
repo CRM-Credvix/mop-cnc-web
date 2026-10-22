@@ -1,213 +1,102 @@
 (()=>{
   'use strict';
-
-  const $ = (id) => document.getElementById(id);
-  const root = $('dnaShell');
-  const denied = $('dnaDenied');
-  const stages = [...document.querySelectorAll('.dna-stage')];
-  const sideLinks = [...document.querySelectorAll('.dna-side-link')];
-  const profileInputs = [...document.querySelectorAll('input[name="dnaProfile"]')];
-  const defaultNames = `Ana Martins\nBruno Rocha\nCarla Oliveira\nDiego Souza\nElisa Lima\nFábio Nunes\nGabriela Costa\nHugo Pereira\nÍris Duarte\nJoão Mendes`;
-
-  const state = {
-    stage: 'gestao',
-    profile: 'CONSULTOR',
-    profiles: {
-      CONSULTOR: {
-        label: 'Consultor',
-        sub: 'Consultor 2',
-        caps: 'CONSULTOR',
-        pill: 'Padrão Consultor 2'
-      },
-      SUPERVISOR: {
-        label: 'Supervisor',
-        sub: 'Supervisor 1',
-        caps: 'SUPERVISOR',
-        pill: 'Padrão Supervisor 1'
-      }
-    }
+  const $=id=>document.getElementById(id);
+  const root=$('dnaShell'), denied=$('dnaDenied');
+  const allowedStages=['gestao','conferencia','acompanhamento','auditoria'];
+  const state={profile:'CONSULTOR'};
+  const templates={
+    CONSULTOR:{profile:'Consultor',sub:'Consultor 2'},
+    SUPERVISOR:{profile:'Supervisor',sub:'Supervisor 1'}
   };
-
-  function normalize(text){
-    return (text || '')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .trim();
-  }
-
-  function getNames(){
-    return $('dnaNames').value
-      .split(/\r?\n/)
-      .map(v => v.trim().replace(/\s+/g, ' '))
-      .filter(Boolean)
-      .slice(0, 50);
-  }
-
-  function profileData(){
-    return state.profiles[state.profile];
-  }
-
-  function updateProfileCards(){
-    document.querySelectorAll('[data-profile-card]').forEach(el => {
-      el.classList.toggle('active', el.dataset.profileCard === state.profile);
+  const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').trim();
+  const names=()=>$('dnaNames').value.split(/\r?\n/).map(s=>s.trim().replace(/\s+/g,' ')).filter(Boolean);
+  const showError=(message)=>{const el=$('dnaInputError');el.textContent=message;el.hidden=!message; $('dnaNames').setAttribute('aria-invalid',String(Boolean(message)));};
+  function getCurrentTemplate(){return templates[state.profile];}
+  function updateProfile(){
+    const checked=document.querySelector('input[name="dnaProfile"]:checked');
+    state.profile=checked?checked.value:'CONSULTOR';
+    document.querySelectorAll('[data-profile-card]').forEach(el=>el.classList.toggle('active',el.dataset.profileCard===state.profile));
+    const t=getCurrentTemplate();
+    $('summaryProfileCaps').textContent=state.profile;
+    $('summaryProfile').textContent=t.profile;
+    $('summarySubprofile').textContent=t.sub;
+    $('conferencePatternPill').textContent='Padrão '+t.sub;
+    $('verificationPatternText').textContent='Padrão de referência: '+t.profile+' → '+t.sub;
+    $('progressPatternText').textContent=t.profile+' · '+t.sub;
+    document.querySelectorAll('.dna-diff-action').forEach(el=>{
+      const consultor=el.dataset.consultor;
+      const action=state.profile==='CONSULTOR'?consultor:(consultor==='marcar'?'desmarcar':'marcar');
+      el.textContent=action==='marcar'?'Marcar':'Desmarcar';
+      el.classList.toggle('dna-pos',action==='marcar');
+      el.classList.toggle('dna-neg',action==='desmarcar');
     });
   }
-
-  function updateReferenceBlocks(){
-    const data = profileData();
-    $('summaryProfileCaps').textContent = data.caps;
-    $('summaryProfile').textContent = data.label;
-    $('summarySubprofile').textContent = data.sub;
-    $('conferencePatternPill').textContent = `🛡 ${data.pill}`;
-    $('verificationPatternText').textContent = `Padrão aplicado: ${data.label} → ${data.sub}`;
-    $('progressPatternText').textContent = `${data.label} · ${data.sub}`;
-  }
-
   function updateCounts(){
-    const count = getNames().length;
-    $('dnaCountInline').textContent = `${count} ${count === 1 ? 'nome informado' : 'nomes informados'}`;
-    $('previewCountText').textContent = `${count} ${count === 1 ? 'usuário informado' : 'usuários informados'}`;
+    const count=names().length;
+    $('dnaCountInline').textContent=count+(count===1?' nome informado':' nomes informados');
+    $('previewCountText').textContent=count+(count===1?' usuário informado':' usuários informados');
+    $('dnaFoundChip').textContent='● '+count+(count===1?' nome na lista':' nomes na lista');
+    $('dnaAmbiguousChip').textContent='● Identidades não verificadas';
+    $('dnaMissingChip').textContent='● Consulta indisponível';
   }
-
-  function escapeHtml(value){
-    return String(value).replace(/[&<>"']/g, (char) => ({
-      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    })[char]);
-  }
-
-  function renderConferenceTable(){
-    const tbody = $('conferenceRows');
-    const names = getNames();
-    const examples = defaultNames.split(/\n/);
-    const rows = names.length ? names : examples;
-    const sample = rows.length === examples.length && rows.every((value, idx) => normalize(value) === normalize(examples[idx]));
-    $('dnaFoundChip').textContent = sample ? '● 7 localizados' : '● Ainda não consultados';
-    $('dnaAmbiguousChip').textContent = sample ? '● 2 nomes ambíguos' : '● Diagnóstico pendente';
-    $('dnaMissingChip').textContent = sample ? '● 1 não localizado' : '● Sem consulta ao DNA';
-    $('dnaWarningBox').hidden = !sample;
-    tbody.innerHTML = '';
-
-    rows.forEach((name, index) => {
-      const tr = document.createElement('tr');
-      let record = 'Cadastro único';
-      let currentProfile = state.profile === 'CONSULTOR' ? 'Consultor' : (index % 2 === 0 ? 'Supervisor' : 'Consultor');
-      let validation = '<span class="dna-tag dna-tag--green">● Identidade única</span>';
-      let action = '<button class="dna-link-action" type="button">Conferir</button>';
-
-      if(sample && (index === 5 || index === 6)){
-        record = '2 cadastros';
-        currentProfile = '—';
-        validation = '<span class="dna-tag dna-tag--purple">● 2 resultados</span>';
-        action = '<button class="dna-link-action" type="button">Revisar</button>';
-      }
-      if(sample && index === 9){
-        record = 'Nenhum registro';
-        currentProfile = '—';
-        validation = '<span class="dna-tag dna-tag--red">● Não encontrado</span>';
-        action = '<button class="dna-link-action" type="button">Revisar</button>';
-      }
-
-      if(!sample){
-        record = 'Não consultado';
-        currentProfile = '—';
-        validation = '<span class="dna-tag dna-tag--blue">● Aguardando integração</span>';
-        action = 'Prévia local';
-      }
-
-      tr.innerHTML = `
-        <td>${escapeHtml(name)}</td>
-        <td>${record}</td>
-        <td>${currentProfile}</td>
-        <td>${validation}</td>
-        <td>${action}</td>
-      `;
-      tbody.appendChild(tr);
+  function fillConference(){
+    const tbody=$('conferenceRows');tbody.replaceChildren();
+    const list=names();
+    if(!list.length){const tr=tbody.insertRow();const td=tr.insertCell();td.colSpan=5;td.className='dna-empty-row';td.textContent='Nenhum nome informado. Volte à Gestão de Perfis DNA para preparar uma lista.';return;}
+    list.forEach(name=>{
+      const row=tbody.insertRow();
+      [name,'Não consultado','—'].forEach(value=>{row.insertCell().textContent=value;});
+      const td=row.insertCell();const badge=document.createElement('span');badge.className='dna-tag dna-tag--blue';badge.textContent='● Aguardando integração';td.appendChild(badge);
+      row.insertCell().textContent='Prévia local';
     });
   }
-
-  function stageMeta(stage){
-    const map = {
-      gestao: 'Início › Gestão de Perfis DNA',
-      conferencia: 'Início › Conferência de usuários',
-      acompanhamento: 'Início › Acompanhamento do lote',
-      auditoria: 'Início › Auditoria DNA'
-    };
-    return map[stage] || map.gestao;
-  }
-
+  const stageTitle={
+    gestao:'Gestão de Perfis DNA',conferencia:'Conferência de usuários',
+    acompanhamento:'Acompanhamento do lote',auditoria:'Auditoria DNA'
+  };
   function showStage(stage){
-    stage = state.profiles[stage] ? 'gestao' : (['gestao','conferencia','acompanhamento','auditoria'].includes(stage) ? stage : 'gestao');
-    state.stage = stage;
-    stages.forEach(section => section.classList.toggle('active', section.dataset.stage === stage));
-    sideLinks.forEach(link => link.classList.toggle('active', link.dataset.target === stage));
-    $('dnaBreadcrumb').innerHTML = stageMeta(stage).replace('›', '<span>›</span>');
-    window.location.hash = stage;
-  }
-
-  function applyProfileFromInputs(){
-    const checked = document.querySelector('input[name="dnaProfile"]:checked');
-    state.profile = checked ? checked.value : 'CONSULTOR';
-    updateProfileCards();
-    updateReferenceBlocks();
-  }
-
-  function bindEvents(){
-    sideLinks.forEach(link => link.addEventListener('click', () => showStage(link.dataset.target)));
-    document.querySelectorAll('[data-target]:not(.dna-side-link)').forEach(btn => btn.addEventListener('click', () => showStage(btn.dataset.target)));
-    profileInputs.forEach(input => input.addEventListener('change', () => {
-      applyProfileFromInputs();
-      renderConferenceTable();
-    }));
-    $('dnaNames').addEventListener('input', () => {
-      $('dnaNames').setCustomValidity('');
-      updateCounts();
-      renderConferenceTable();
+    if(!allowedStages.includes(stage))stage='gestao';
+    document.querySelectorAll('.dna-stage').forEach(el=>el.classList.toggle('active',el.dataset.stage===stage));
+    document.querySelectorAll('.dna-side-link').forEach(el=>{
+      const active=el.dataset.target===stage;el.classList.toggle('active',active);
+      if(active)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');
     });
-    document.querySelectorAll('.dna-link-action').forEach(el => el.addEventListener('click', (ev) => {
-      ev.preventDefault();
-      alert('Prévia demonstrativa: ainda não existe consulta ou execução real no DNA.');
-    }));
-    $('goConference').addEventListener('click', () => {
-      const count = $('dnaNames').value.split(/\r?\n/).map(x => x.trim()).filter(Boolean).length;
-      if(count < 1 || count > 50){
-        $('dnaNames').setCustomValidity('Informe de 1 a 50 nomes, um por linha.');
-        $('dnaNames').reportValidity();
-        return;
-      }
-      $('dnaNames').setCustomValidity('');
-      showStage('conferencia');
-    });
+    $('dnaBreadcrumb').textContent='Início › '+stageTitle[stage];
+    if(stage==='conferencia')fillConference();
+    if(location.hash!=='#'+stage)history.replaceState(null,'','#'+stage);
   }
-
+  function validateNames(){
+    const list=names();let error='';
+    if(!list.length||list.length>50)error='Informe entre 1 e 50 nomes completos, um por linha.';
+    else if(list.some(s=>s.length<5||s.length>140||!s.includes(' ')))error='Informe nome e sobrenome de cada usuário (até 140 caracteres por linha).';
+    else{
+      const seen=new Set();
+      for(const s of list){const key=normalize(s);if(seen.has(key)){error='A lista contém nomes repetidos. Corrija a duplicidade para continuar.';break;}seen.add(key);}
+    }
+    showError(error);
+    if(error){$('dnaNames').focus();return false;}
+    return true;
+  }
+  function bind(){
+    document.querySelectorAll('[data-target]').forEach(el=>el.addEventListener('click',()=>showStage(el.dataset.target)));
+    document.querySelectorAll('input[name="dnaProfile"]').forEach(el=>el.addEventListener('change',updateProfile));
+    $('dnaNames').addEventListener('input',()=>{showError('');updateCounts();});
+    $('goConference').addEventListener('click',()=>{if(validateNames())showStage('conferencia');});
+    window.addEventListener('hashchange',()=>showStage(location.hash.slice(1)));
+  }
   async function gate(){
     try{
-      const client = window.MOP_SUPABASE;
-      if(!client){
-        throw new Error('Cliente Supabase ausente');
-      }
-      const { data, error } = await client.auth.getUser();
-      if(error || !data?.user){
-        location.replace('index.html');
-        return;
-      }
-      const email = data.user.email || '';
-      if(normalize(email) !== 'crm@credvix.com'){
-        denied.hidden = false;
-        return;
-      }
-      $('userName').textContent = email;
-      root.hidden = false;
-      $('dnaNames').value = $('dnaNames').value || defaultNames;
-      applyProfileFromInputs();
-      updateCounts();
-      renderConferenceTable();
-      bindEvents();
-      showStage(location.hash.replace('#', '') || 'gestao');
-    }catch(_err){
-      denied.hidden = false;
-    }
+      const client=window.MOP_SUPABASE;
+      if(!client)throw new Error('Falha ao inicializar autenticação');
+      const {data,error}=await client.auth.getUser();
+      if(error||!data?.user){location.replace('index.html');return;}
+      const email=data.user.email||'';
+      // Somente visibilidade na interface. Autorização real exige backend, RLS e worker.
+      if(normalize(email)!=='crm@credvix.com'){denied.hidden=false;return;}
+      $('userName').textContent=email;
+      root.hidden=false;
+      updateProfile();updateCounts();fillConference();bind();showStage(location.hash.slice(1));
+    }catch(e){denied.hidden=false;}
   }
-
   gate();
 })();

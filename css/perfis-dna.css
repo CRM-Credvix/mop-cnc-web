@@ -223,3 +223,15 @@ body.dna-body .app-shell{min-height:100vh;background:var(--dna-bg);}
   .dna-head-actions,.dna-inline-actions{width:100%;justify-content:flex-start;}
   .dna-audit-foot{flex-direction:column;gap:12px;}
 }
+
+/* Estados operacionais aguardando backend: manter a UI definitiva sem dados fictícios. */
+.dna-empty-row{text-align:center!important;padding:32px 22px!important;color:var(--dna-muted)!important;line-height:1.5!important;}
+.dna-input-error{color:#a23c26!important;font-size:13px!important;font-weight:700;margin:6px 0 0!important;}
+.dna-reference-note{margin-top:12px!important;font-size:12px!important;}
+.dna-diff-action{font-weight:800;font-size:13px;white-space:nowrap;}
+.dna-diff-action.dna-pos{color:var(--dna-green);}
+.dna-diff-action.dna-neg{color:var(--dna-red);}
+.dna-sidebar-dot--pending{background:#dba446!important;}
+.dna-body button:disabled,.dna-body input:disabled,.dna-body select:disabled{opacity:.64;cursor:not-allowed;}
+.dna-profile-option:focus-within{outline:3px solid var(--dna-orange);outline-offset:2px;}
+@media(prefers-reduced-motion:reduce){.dna-body *{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
