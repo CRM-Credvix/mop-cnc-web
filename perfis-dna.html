@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gestão de Perfis DNA | MOP-CNC</title>
+  <script src="js/theme.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css"><link rel="stylesheet" href="css/app.css"><link rel="stylesheet" href="css/perfis-dna.css">
+</head>
+<body>
+ <div class="app-shell" id="dnaShell" hidden>
+  <aside class="sidebar">
+   <a class="brand-lockup" href="app.html"><span>CRED</span><strong>VIX</strong></a>
+   <div class="product-name"><strong>MOP - CNC</strong><span>Operação Credvix</span></div>
+   <nav class="sidebar-nav" aria-label="Navegação principal">
+    <a class="nav-item" href="app.html"><span>▣</span> Nova solicitação</a>
+    <a class="nav-item" href="historico.html"><span>◷</span> Histórico</a>
+    <a class="nav-item active" href="perfis-dna.html" aria-current="page"><span>▤</span> Gestão de Perfis DNA</a>
+    <a class="nav-item" href="app.html#ajuda"><span>?</span> Ajuda</a>
+   </nav>
+   <div class="easter-egg easter-egg--sidebar">~by: fraquinn.</div>
+  </aside>
+  <div class="app-main">
+   <header class="topbar"><p class="breadcrumb">Administração / Gestão de Perfis DNA</p><div class="topbar-actions"><div class="user-chip"><span class="avatar">CV</span><div><strong id="userName">Usuário</strong><small>Acesso restrito</small></div></div><button class="button button--ghost button--sm" id="logoutButton">Sair</button></div></header>
+   <main class="content dna-content">
+    <header class="page-header"><div><p class="eyebrow eyebrow--dark">GESTÃO DE ACESSOS</p><h1>Gestão de <span class="brand-text">Perfis DNA</span></h1><p>Prepare lotes de usuários existentes, confira o padrão de acesso e acompanhe a evolução da integração.</p></div><span class="dna-chip">🔒 Módulo administrativo</span></header>
+    <section class="dna-notice" role="status"><strong>Pré-implantação segura</strong><span>A interface está disponível para conferência. O envio de solicitações e a alteração de permissões no DNA permanecerão indisponíveis até a ativação do backend, RLS e worker.</span></section>
+    <nav class="dna-tabs" aria-label="Etapas" id="dnaTabs"><button type="button" data-tab="nova" aria-current="page">1 · Nova configuração</button><button type="button" data-tab="conferencia">2 · Conferência</button><button type="button" data-tab="acompanhamento">3 · Acompanhamento</button><button type="button" data-tab="historico">4 · Histórico e auditoria</button></nav>
+    <section class="dna-panel" id="dnaNova" data-panel="nova">
+     <div class="dna-grid"><section class="card dna-card"><div class="dna-heading"><div class="icon-tile">▤</div><div><h2>Preparar configuração em lote</h2><p>Insira um nome por linha. Nenhum cadastro será alterado nesta etapa.</p></div></div>
+      <label class="dna-label" for="dnaNames">Usuários existentes no DNA <span>*</span></label><textarea id="dnaNames" rows="11" placeholder="Digite um nome completo por linha\nEx.: Ana Martins"></textarea><div class="dna-field-meta"><span id="dnaCounter">0 de 50 nomes</span><span>Somente nomes · Sem CPF ou senha</span></div><p class="dna-error" id="dnaInputError" role="alert" hidden></p>
+      <div class="dna-actions"><button class="button button--secondary" type="button" id="dnaClear">Limpar lista</button><button class="button button--primary" type="button" id="dnaReview">Conferir lista →</button></div>
+     </section><section class="card dna-card"><div class="dna-heading"><div class="icon-tile">♙</div><div><h2>Padrão de referência</h2><p>Escolha o perfil e subperfil desejados.</p></div></div>
+      <fieldset class="dna-profile-fieldset"><legend>Perfil a aplicar</legend><label class="dna-profile"><input type="radio" name="dnaProfile" value="CONSULTOR" checked><span><strong>Consultor</strong><small>Perfil Consultor · Sub Perfil Consultor 2</small></span></label><label class="dna-profile"><input type="radio" name="dnaProfile" value="SUPERVISOR"><span><strong>Supervisor</strong><small>Perfil Supervisor · Sub Perfil Supervisor 1</small></span></label></fieldset>
+      <div class="dna-summary"><div><span>Perfil selecionado</span><strong id="dnaSelected">Consultor</strong></div><div><span>Sub Perfil</span><strong id="dnaSubSelected">Consultor 2</strong></div><div><span>Controles na captura de referência</span><strong>227</strong></div></div><p class="dna-help">As referências fornecidas exigem validação adicional de opções duplicadas antes de uma futura execução.</p>
+     </section></div>
+    </section>
+    <section class="dna-panel" data-panel="conferencia" hidden><div class="card dna-card"><div class="dna-heading"><div class="icon-tile">✓</div><div><h2>Conferência antes da execução</h2><p>Prévia local da lista informada. Os cadastros ainda não foram consultados no DNA.</p></div></div><div class="dna-summary dna-summary-wide"><div><span>Perfil</span><strong id="dnaReviewProfile">Consultor</strong></div><div><span>Sub Perfil</span><strong id="dnaReviewSub">Consultor 2</strong></div><div><span>Usuários informados</span><strong id="dnaReviewCount">0</strong></div></div><div class="dna-table-wrap"><table class="dna-table"><thead><tr><th>#</th><th>Nome informado</th><th>Identificação no DNA</th><th>Situação</th></tr></thead><tbody id="dnaReviewRows"><tr><td colspan="4">Nenhum usuário informado.</td></tr></tbody></table></div><div class="dna-actions"><button class="button button--secondary" type="button" data-goto="nova">Voltar</button><button class="button button--primary" disabled title="Aguardando integração segura">Enviar para diagnóstico (indisponível)</button></div></div></section>
+    <section class="dna-panel" data-panel="acompanhamento" hidden><div class="card dna-card dna-empty"><div class="icon-tile">◷</div><h2>Nenhuma execução registrada</h2><p>Quando o backend e o worker DNA forem homologados, esta tela exibirá progresso, verificações e resultados individuais dos lotes reais.</p><button class="button button--secondary" type="button" data-goto="nova">Preparar novo lote</button></div></section>
+    <section class="dna-panel" data-panel="historico" hidden><div class="card dna-card dna-empty"><div class="icon-tile">▤</div><h2>Histórico ainda indisponível</h2><p>Nenhum histórico fictício é apresentado. Auditoria, filtros, status e exportação serão conectados a registros reais e protegidos por políticas no servidor.</p><button class="button button--secondary" type="button" data-goto="nova">Nova configuração</button></div></section>
+   </main>
+  </div>
+ </div>
+ <main id="dnaDenied" class="dna-access" hidden><div class="card dna-card"><h1>Acesso não autorizado</h1><p>Este módulo não está disponível para sua conta.</p><a class="button button--secondary" href="app.html">Voltar ao MOP-CNC</a></div></main>
+ <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="js/config.js"></script><script src="js/perfis-dna.js"></script>
+</body>
+</html>
