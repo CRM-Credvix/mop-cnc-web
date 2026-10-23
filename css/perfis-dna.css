@@ -55,6 +55,7 @@ html, body{background:var(--dna-bg)!important;color:var(--dna-text)!important;fo
 .dna-layout--primary{grid-template-columns:minmax(0,1.65fr) minmax(280px,.95fr);align-items:start;}
 .dna-layout--secondary{grid-template-columns:minmax(0,1.55fr) minmax(290px,.78fr);align-items:start;}
 .dna-layout--secondary-acomp{grid-template-columns:minmax(0,1.42fr) minmax(300px,.85fr);align-items:start;}
+.dna-sidebar-stack{display:grid;gap:16px;}
 
 .dna-card{background:var(--dna-card);border:1px solid var(--dna-border);border-radius:22px;box-shadow:var(--dna-shadow);padding:20px 20px 18px;}
 .dna-card--main{padding-bottom:14px;}
