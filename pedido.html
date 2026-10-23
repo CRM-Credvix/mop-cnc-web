@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="mop-shell-loading">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,19 +10,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/tokens.css" />
   <link rel="stylesheet" href="css/app.css" />
-  <link rel="stylesheet" href="css/dna-sidebar-shared.css?v=2026-10-22-01" />
+
+  <link rel="stylesheet" href="css/mop-shell.css?v=20261023-01">
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="sidebar">
-      <a class="brand-lockup" href="app.html"><span>CRED</span><strong>VIX</strong></a>
-      <div class="product-name"><strong>MOP - CNC</strong><span>Sistema de Emissões</span></div>
-      <nav class="sidebar-nav">
-        <a class="nav-item dna-only-nav" href="perfis-dna.html" style="display:none"><span>▤</span> Gestão de Perfis DNA</a><a class="nav-item" href="app.html"><span>▣</span> Nova solicitação</a><a class="nav-item" href="historico.html"><span>◷</span> Histórico</a><a class="nav-item active" href="#"><span>▤</span> Detalhes</a></nav>
-      <div class="easter-egg easter-egg--sidebar" aria-hidden="true">~by: fraquinn.</div>
-    </aside>
+  <div class="app-shell mop-shell-enabled">
+    <aside class="sidebar mop-shared-sidebar" data-mop-shell-sidebar aria-label="Menu de navegação"></aside>
     <div class="app-main">
-      <header class="topbar"><p class="breadcrumb">Histórico / Detalhes do pedido</p><div class="topbar-actions"><div class="user-chip"><span class="avatar">US</span><div><strong id="userName">Usuário</strong><small>Usuário autenticado</small></div></div><button class="button button--ghost button--sm" id="logoutButton">Sair</button></div></header>
+      <header class="topbar mop-shared-topbar" data-mop-shell-topbar></header>
       <main class="content">
         <div class="detail-top"><a class="button button--secondary" href="historico.html">← Voltar</a><span id="detailStatus"></span></div>
         <section class="page-header"><div><p class="eyebrow eyebrow--dark">PEDIDO <span id="detailIdEyebrow"></span></p><h1>Detalhes da <span class="brand-text">Solicitação</span></h1><p>Acompanhe o estado e os dados enviados no pedido.</p></div></section>
@@ -43,7 +38,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
   <script src="js/data.js"></script>
-  <script src="js/perfis-dna-nav.js?v=2026-10-22-01"></script>
-  <script src="js/detail.js"></script>
+  <script src="js/mop-shell.js?v=20261023-01"></script>
+  <script src="js/app.js?v=20261023-01"></script>
+  <script src="js/history.js?v=20261023-01"></script>
+  <script src="js/detail.js?v=20261023-01"></script>
+  <script src="js/emissoes-router.js?v=20261023-01"></script>
+
 </body>
 </html>

@@ -1,7 +1,8 @@
-(async function(){
+window.MOP_EMISSOES = window.MOP_EMISSOES || {};
+window.MOP_EMISSOES.mountDetail = async function(user){
   const D=window.MOP_DATA;
-  const user=await D.requireUser();
   if(!user)return;
+  const routeRoot=document.querySelector('.app-main main.content');
   const id=new URLSearchParams(location.search).get('id');
   if(!id||!/^\d+$/.test(id)){location.replace('historico.html?acesso=negado');return;}
 
@@ -9,6 +10,7 @@
   try{
     const {data,error}=await window.MOP_SUPABASE
       .from('pedidos_mop').select(D.PEDIDO_FIELDS).eq('id',id).maybeSingle();
+    if(!routeRoot.isConnected)return;
     if(error||!data){location.replace('historico.html?acesso=negado');return;}
     item=data;
   }catch(error){D.showPageError('Não foi possível carregar o pedido.');return;}
@@ -50,6 +52,7 @@
   try{
     const {data:files,error}=await window.MOP_SUPABASE.from('arquivos_mop')
       .select('id,nome,storage_path').eq('pedido_id',id).order('criado_em');
+    if(!routeRoot.isConnected)return;
     if(error)throw error;
     if(!files?.length)return;
     const row=document.createElement('div');
@@ -84,4 +87,4 @@
       values.append(button);
     });
   }catch(error){D.showPageError('Não foi possível consultar os arquivos deste pedido.');}
-})();
+};

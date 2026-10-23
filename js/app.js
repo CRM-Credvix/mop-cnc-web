@@ -1,7 +1,8 @@
-(async function(){
+window.MOP_EMISSOES = window.MOP_EMISSOES || {};
+window.MOP_EMISSOES.mountApp = async function(user){
   const D=window.MOP_DATA;
-  const user=await D.requireUser();
-  if(!user) return;
+  if(!user)return;
+  const routeRoot=document.querySelector('.app-main main.content');
 
   const search=document.getElementById('franchiseSearch');
   const code=document.getElementById('franchiseCode');
@@ -28,7 +29,7 @@
     search.value=`${f.codigo} — ${f.nome}`;
     options.hidden=true;
   });
-  document.addEventListener('click',(e)=>{if(!e.target.closest('#franchiseCombobox'))options.hidden=true;});
+  routeRoot.addEventListener('click',(e)=>{if(!e.target.closest('#franchiseCombobox'))options.hidden=true;});
   whatsapp.addEventListener('input',()=>{
     whatsapp.value=whatsapp.value.replace(/[^\d+()\s-]/g,'').slice(0,24);
   });
@@ -90,6 +91,7 @@
     const {data,error}=await window.MOP_SUPABASE
       .from('pedidos_mop').select(D.PEDIDO_FIELDS)
       .order('criado_em',{ascending:false}).limit(50);
+    if(!routeRoot.isConnected)return;
     const list=data||[];
     if(error){D.showPageError('Não foi possível carregar os pedidos.');return;}
     const counts={na_fila:0,emitindo:0,enviado:0,erro:0};
@@ -111,4 +113,4 @@
       </tr>`).join('');
   }
   try{await render();}catch(error){D.showPageError('Falha de conexão ao carregar os pedidos.');}
-})();
+};

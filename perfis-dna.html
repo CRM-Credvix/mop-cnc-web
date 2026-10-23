@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="mop-shell-loading">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,53 +10,14 @@
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/app.css">
   <link rel="stylesheet" href="css/perfis-dna.css?v=2026-10-22-01">
+  <link rel="stylesheet" href="css/mop-shell.css?v=20261023-01">
 </head>
 <body class="dna-body">
-  <div class="app-shell dna-app-shell" id="dnaShell" hidden>
-    <aside class="sidebar dna-sidebar">
-      <a class="brand-lockup" href="app.html"><span>CRED</span><strong>VIX</strong></a>
-      <div class="product-name"><strong>MOP - CNC</strong><span>Sistema de Emissões</span></div>
-
-      <nav class="sidebar-nav" aria-label="Navegação principal">
-        <a class="nav-item" href="app.html"><span>⌂</span> Nova solicitação</a>
-        <a class="nav-item" href="historico.html"><span>◷</span> Histórico de emissões</a>
-        <a class="nav-item" href="app.html#ajuda"><span>?</span> Ajuda</a>
-      </nav>
-
-      <div class="dna-nav-group-label">ADMINISTRAÇÃO</div>
-      <nav class="sidebar-nav dna-sidebar-nav" aria-label="Módulo Gestão de Perfis DNA">
-        <button class="nav-item dna-side-link active" type="button" data-target="gestao"><span>🛡</span> Gestão de Perfis DNA <small>🔒</small></button>
-        <button class="nav-item dna-side-link" type="button" data-target="conferencia"><span>↗</span> Conferência</button>
-        <button class="nav-item dna-side-link" type="button" data-target="acompanhamento"><span>⌁</span> Acompanhamento</button>
-        <button class="nav-item dna-side-link" type="button" data-target="auditoria"><span>☰</span> Auditoria DNA</button>
-      </nav>
-
-      <div class="dna-sidebar-footer">
-        <span class="dna-sidebar-dot dna-sidebar-dot--pending"></span>
-        <div>
-          <strong>Gestão de Perfis DNA</strong>
-          <span>~by: fraquinn.</span>
-          <span class="dna-version-stamp">v2026-10-22-01</span>
-        </div>
-      </div>
-    </aside>
+  <div class="app-shell dna-app-shell mop-shell-enabled" id="dnaShell" hidden>
+    <aside class="sidebar mop-shared-sidebar dna-sidebar" data-mop-shell-sidebar aria-label="Menu de navegação"></aside>
 
     <div class="app-main dna-main">
-      <header class="topbar dna-topbar">
-        <div class="dna-topbar-left">
-          <p class="breadcrumb" id="dnaBreadcrumb">Início <span>›</span> Gestão de Perfis DNA</p>
-        </div>
-        <div class="topbar-actions dna-topbar-actions">
-          <button class="dna-bell" type="button" aria-label="Notificações">◌</button>
-          <div class="user-chip dna-user-chip">
-            <span class="avatar">CV</span>
-            <div>
-              <strong id="userName">crm@credvix.com</strong>
-              <small>Administrador • acesso exclusivo</small>
-            </div>
-          </div>
-        </div>
-      </header>
+      <header class="topbar mop-shared-topbar dna-topbar" data-mop-shell-topbar></header>
 
       <main class="content dna-page-content">
         <div class="dna-banner">
@@ -448,6 +409,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
-  <script src="js/perfis-dna.js?v=2026-10-22-01"></script>
+  <script src="js/mop-shell.js?v=20261023-01"></script>
+  <script src="js/perfis-dna.js?v=20261023-01"></script>
 </body>
 </html>
