@@ -39,6 +39,7 @@ def env():
         "cnc": Path(os.getenv("RUN_MOP_PATH", "RUNTIME_NAO_CONFIGURADO")).expanduser(),
         "multi": Path(os.getenv("RUN_MULTI_PATH", "RUNTIME_NAO_CONFIGURADO")).expanduser(),
         "python": Path(os.getenv("PYTHON_EXE", sys.executable)).expanduser(),
+        "python_multi": Path(os.getenv("PYTHON_MULTI_EXE", os.getenv("PYTHON_EXE", sys.executable))).expanduser(),
         "poll": int(os.getenv("POLL_SECONDS", "10")),
         "timeout": int(os.getenv("JOB_TIMEOUT_SECONDS", "3600")),
         "worker_id": os.getenv("WORKER_ID", socket.gethostname() + "-mop-unificado"),
@@ -51,7 +52,7 @@ def preflight(config):
         errors.append("SUPABASE_URL nao configurada")
     if not config["secret"] or "COLE_AQUI" in config["secret"]:
         errors.append("SUPABASE_SECRET_KEY nao configurada")
-    for field in ("cnc", "multi", "python"):
+    for field in ("cnc", "multi", "python", "python_multi"):
         if not config[field].is_file():
             errors.append(field.upper() + " nao encontrado: " + str(config[field]))
     if config["poll"] < 1 or config["timeout"] < 30:
@@ -165,7 +166,7 @@ def process_multi(db, config, job):
         output = Path(temp).resolve()
         result_path = output / "resultado.json"
         result = execute_process([
-            str(config["python"]), str(config["multi"]),
+            str(config["python_multi"]), str(config["multi"]),
             "--pedido-id", str(job_id),
             "--franquia", str(job["franquia_codigo"]),
             "--produto", str(job["produto"]),
