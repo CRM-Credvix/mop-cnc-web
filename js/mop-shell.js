@@ -10,6 +10,7 @@
   const menu = Object.freeze([
     {id:'app',label:'Nova solicitação',icon:'⌂',href:'app.html'},
     {id:'history',label:'Histórico de emissões',icon:'◷',href:'historico.html'},
+    {id:'multi',label:'MOP MultiExtrações',icon:'▤',href:'multiextracoes.html'},
     {id:'help',label:'Ajuda',icon:'?',href:'app.html#ajuda'},
     {id:'gestao',label:'Gestão de Perfis DNA',icon:'◇',href:'perfis-dna.html#gestao',admin:true},
     {id:'conferencia',label:'Conferência',icon:'↗',href:'perfis-dna.html#conferencia',admin:true},
@@ -37,6 +38,7 @@
     }
     const path=location.pathname.toLowerCase();
     if (path.endsWith('/historico.html')||path.endsWith('/pedido.html')) return 'history';
+    if (path.endsWith('/multiextracoes.html')) return 'multi';
     return location.hash==='#ajuda'?'help':'app';
   }
 
