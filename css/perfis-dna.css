@@ -25,25 +25,7 @@
 }
 
 html, body{background:var(--dna-bg)!important;color:var(--dna-text)!important;font-family:Inter,Arial,sans-serif;}
-body.dna-body .app-shell{min-height:100vh;background:var(--dna-bg);}
 #dnaShell[hidden], #dnaDenied[hidden], .dna-stage:not(.active){display:none !important;}
-
-.dna-sidebar{background:linear-gradient(180deg,#171210 0%, #18110d 45%, #110f0d 100%)!important;border-right:1px solid rgba(255,255,255,.06)!important;position:sticky;top:0;height:100vh;}
-.dna-sidebar .brand-lockup{font-family:Montserrat,Inter,sans-serif;font-size:22px;letter-spacing:-.5px;padding-top:26px;}
-.dna-sidebar .product-name{padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.08);}
-.dna-sidebar .product-name strong{font-size:19px;color:#fff;}
-.dna-sidebar .product-name span{color:rgba(255,255,255,.72);}
-.dna-sidebar .nav-item{display:flex;align-items:center;gap:12px;width:100%;border:0;background:transparent;text-align:left;color:rgba(255,255,255,.84);padding:14px 16px;border-radius:16px;font-weight:500;cursor:pointer;box-shadow:none;}
-.dna-sidebar .nav-item span{width:16px;text-align:center;opacity:.95;}
-.dna-sidebar .nav-item small{margin-left:auto;opacity:.9;font-size:11px;}
-.dna-sidebar .nav-item:hover{background:rgba(255,255,255,.05);}
-.dna-sidebar .nav-item.active{background:linear-gradient(90deg,rgba(201,91,18,.38),rgba(201,91,18,.12));color:#fff;box-shadow:inset 0 0 0 1px rgba(201,91,18,.28);}
-.dna-nav-group-label{margin:18px 16px 8px;color:rgba(255,255,255,.38);font-size:12px;font-weight:700;letter-spacing:.08em;}
-.dna-sidebar-nav{gap:6px;}
-.dna-sidebar-footer{position:absolute;left:20px;right:20px;bottom:22px;display:flex;align-items:flex-start;gap:10px;color:rgba(255,255,255,.72);font-size:12px;line-height:1.45;}
-.dna-sidebar-dot{width:8px;height:8px;border-radius:50%;background:#2fb36e;display:inline-block;margin-top:5px;flex:none;}
-.dna-sidebar-footer strong{display:block;color:rgba(255,255,255,.86);font-weight:500;}
-.dna-sidebar-footer span{display:block;color:rgba(255,255,255,.56);margin-top:6px;}
 
 .dna-main{background:var(--dna-bg)!important;}
 .dna-topbar{background:#f7f5f2!important;border-bottom:1px solid var(--dna-border)!important;min-height:74px;padding:0 28px;}
@@ -73,7 +55,6 @@ body.dna-body .app-shell{min-height:100vh;background:var(--dna-bg);}
 .dna-layout--primary{grid-template-columns:minmax(0,1.65fr) minmax(280px,.95fr);align-items:start;}
 .dna-layout--secondary{grid-template-columns:minmax(0,1.55fr) minmax(290px,.78fr);align-items:start;}
 .dna-layout--secondary-acomp{grid-template-columns:minmax(0,1.42fr) minmax(300px,.85fr);align-items:start;}
-.dna-sidebar-stack{display:grid;gap:16px;}
 
 .dna-card{background:var(--dna-card);border:1px solid var(--dna-border);border-radius:22px;box-shadow:var(--dna-shadow);padding:20px 20px 18px;}
 .dna-card--main{padding-bottom:14px;}
@@ -231,188 +212,13 @@ body.dna-body .app-shell{min-height:100vh;background:var(--dna-bg);}
 .dna-diff-action{font-weight:800;font-size:13px;white-space:nowrap;}
 .dna-diff-action.dna-pos{color:var(--dna-green);}
 .dna-diff-action.dna-neg{color:var(--dna-red);}
-.dna-sidebar-dot--pending{background:#dba446!important;}
 .dna-body button:disabled,.dna-body input:disabled,.dna-body select:disabled{opacity:.64;cursor:not-allowed;}
 .dna-profile-option:focus-within{outline:3px solid var(--dna-orange);outline-offset:2px;}
 @media(prefers-reduced-motion:reduce){.dna-body *{animation-duration:.01ms!important;transition-duration:.01ms!important;}}
 
-/* DNA: sidebar visual estabilizada conforme o layout aprovado.
-   Estilos escopados: nenhuma outra tela do MOP-CNC e alterada. */
-body.dna-body .dna-sidebar {
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  padding: 28px 16px 22px;
-  background: linear-gradient(180deg, #1b1511 0%, #130e0b 100%) !important;
-  border-right: 1px solid rgba(255,255,255,.08) !important;
-  color: #f8f5f2;
-}
-body.dna-body .dna-sidebar .brand-lockup {
-  display: inline-flex;
-  align-items: baseline;
-  width: fit-content;
-  margin: 0 0 18px;
-  padding: 0 6px;
-  color: #fff;
-  font-family: Montserrat, Inter, sans-serif;
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 1.3;
-  letter-spacing: -.035em;
-  text-decoration: none;
-}
-body.dna-body .dna-sidebar .brand-lockup span { color: #fff; }
-body.dna-body .dna-sidebar .brand-lockup strong { color: #f27010; }
-body.dna-body .dna-sidebar .product-name {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin: 0 0 20px;
-  padding: 0 6px 20px;
-  border-bottom: 1px solid rgba(255,255,255,.10);
-}
-body.dna-body .dna-sidebar .product-name strong {
-  color: #fff;
-  font-size: 17px;
-  font-weight: 800;
-  line-height: 1.35;
-}
-body.dna-body .dna-sidebar .product-name span {
-  margin: 0;
-  color: rgba(255,255,255,.76);
-  font-size: 12px;
-  line-height: 1.4;
-}
-body.dna-body .dna-sidebar .sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-body.dna-body .dna-sidebar .nav-item,
-body.dna-body .dna-sidebar .dna-side-link {
-  box-sizing: border-box;
-  display: flex;
-  align-items: center;
-  flex: none;
-  gap: 12px;
-  width: 100%;
-  height: auto;
-  min-height: 44px;
-  margin: 0;
-  padding: 7px 12px;
-  border: 1px solid transparent;
-  border-radius: 14px;
-  background: transparent;
-  box-shadow: none;
-  color: rgba(255,255,255,.88);
-  font-family: Inter, Arial, sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.25;
-  text-align: left;
-  text-decoration: none;
-  white-space: normal;
-  cursor: pointer;
-}
-body.dna-body .dna-sidebar .nav-item > span,
-body.dna-body .dna-sidebar .dna-side-link > span {
-  display: inline-flex;
-  flex: 0 0 17px;
-  align-items: center;
-  justify-content: center;
-  width: 17px;
-  color: rgba(255,255,255,.88);
-  font-size: 15px;
-  text-align: center;
-}
-body.dna-body .dna-sidebar .nav-item:hover,
-body.dna-body .dna-sidebar .dna-side-link:hover {
-  background: rgba(255,255,255,.06);
-  color: #fff;
-}
-body.dna-body .dna-sidebar .nav-item:focus-visible,
-body.dna-body .dna-sidebar .dna-side-link:focus-visible {
-  outline: 2px solid #ff9b49;
-  outline-offset: 2px;
-}
-body.dna-body .dna-sidebar .dna-nav-group-label {
-  margin: 22px 12px 8px;
-  color: rgba(255,255,255,.43);
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: .06em;
-  line-height: 1.3;
-}
-body.dna-body .dna-sidebar .dna-sidebar-nav { gap: 6px; }
-body.dna-body .dna-sidebar .dna-side-link.active {
-  background: linear-gradient(90deg, rgba(151,70,20,.74), rgba(93,44,17,.74));
-  border-color: rgba(242,112,16,.52);
-  border-radius: 14px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
-  color: #fff;
-}
-body.dna-body .dna-sidebar .dna-side-link.active:hover {
-  background: linear-gradient(90deg, rgba(171,75,18,.80), rgba(110,50,17,.80));
-}
-body.dna-body .dna-sidebar .dna-side-link small {
-  flex: none;
-  margin-left: auto;
-  color: #ffbb4d;
-  font-size: 12px;
-  line-height: 1;
-}
-body.dna-body .dna-sidebar .dna-sidebar-footer {
-  position: static;
-  flex: none;
-  margin-top: auto;
-  padding: 22px 8px 0;
-  color: rgba(255,255,255,.72);
-}
-
 @media (min-width: 1024px) {
-  body.dna-body #dnaShell.dna-app-shell {
-    display: grid;
-    grid-template-columns: 240px minmax(0, 1fr);
-    min-height: 100vh;
-  }
-  body.dna-body #dnaShell.dna-app-shell > .dna-sidebar {
-    position: sticky;
-    top: 0;
-    width: 240px;
-    min-width: 240px;
-    max-width: 240px;
-    height: 100vh;
-    height: 100dvh;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    transform: none;
-    visibility: visible;
-  }
-  body.dna-body #dnaShell.dna-app-shell > .dna-main {
-    min-width: 0;
-  }
 }
 @media (max-width: 1023px) {
-  body.dna-body #dnaShell.dna-app-shell {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    width: 100%;
-    min-height: 100vh;
-  }
-  body.dna-body #dnaShell.dna-app-shell > .dna-sidebar {
-    position: relative;
-    top: auto;
-    width: 100%;
-    min-width: 0;
-    max-width: none;
-    height: auto;
-    overflow: visible;
-    padding: 24px 18px;
-  }
-  body.dna-body .dna-sidebar .dna-sidebar-footer { margin-top: 18px; }
-  body.dna-body #dnaShell.dna-app-shell > .dna-main { min-width: 0; }
 }
 @media (max-width: 860px) {
   /* O aviso global de mobile era especifico do modulo antigo, nao deste. */
