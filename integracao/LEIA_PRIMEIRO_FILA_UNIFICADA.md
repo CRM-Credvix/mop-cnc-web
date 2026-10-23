@@ -65,9 +65,16 @@ O worker validará correspondência do pedido, produto, franquia, arquivo
 XLSX legível, tamanho máximo e contagem positiva, fará upload privado,
 gravará metadados, então finalizará o pedido em `validado`.
 
+**Adaptador preparado:** `worker/run_multiextracoes_adapter.py` chama o
+`diagnostico_local.py` já existente (`--tipo/--loja`), exige o marcador
+`DIAGNOSTICO_VALIDADO`, valida o XLSX local recém-criado em `runtime/samples`,
+copia-o para a pasta do pedido e escreve o JSON do contrato. Configurar
+`DIAGNOSTICO_LOCAL_PATH`, `PYTHON_MULTI_EXE` e, se necessário,
+`DIAGNOSTICO_SAMPLES_DIR`. Isso ainda precisa ser ensaiado no Windows com
+a configuração dos sete produtos e permissão real no Power BI.
+
 **A v0.1.46 entregue é EXCLUSIVAMENTE OFFLINE.** Seus sete arquivos
-sintéticos não constituem implementação desse extrator real. Sem este
-adaptador operacional, o preflight do novo worker deve falhar.
+sintéticos não constituem implementação desse extrator real. Sem a configuração do caminho para o diagnóstico operacional, o preflight do novo worker não garante capacidade real e nenhum processamento deve ser habilitado.
 
 ## Cutover controlado (ainda NÃO executar)
 
