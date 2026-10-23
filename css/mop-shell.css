@@ -140,3 +140,22 @@ html[data-theme='dark'] body .mop-shared-topbar .mop-identity small { color:#b8a
   body:has(.mop-shell-enabled)::before { display:none!important; }
   body .mop-shared-topbar .mop-user-chip > div { display:flex!important; }
 }
+
+/* Cold-load placeholder: no old sidebar/US label is painted before auth. */
+html.mop-shell-loading body:not(.dna-body)::after {
+  content: "Verificando acesso…";
+  position: fixed;
+  z-index: 30;
+  top: 94px;
+  left: 268px;
+  padding: 14px 20px;
+  border: 1px solid #ded5cf;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(46,34,27,.08);
+  color: #5b514b;
+  font: 600 14px/1.4 Inter,Arial,sans-serif;
+}
+@media (max-width: 1023px) {
+  html.mop-shell-loading body:not(.dna-body)::after { top: 18px; left: 18px; }
+}
