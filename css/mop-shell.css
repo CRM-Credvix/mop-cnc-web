@@ -227,3 +227,22 @@ html[data-theme='dark'] .mop-shared-topbar .mop-identity small { color: #b8ada7;
 @media (prefers-reduced-motion:reduce) {
   .mop-nav__item, .mop-nav__panel, .mop-nav__backdrop { transition:none; }
 }
+/* High-zoom mobile: reserve the hamburger and constrain user identity safely. */
+@media (max-width:639px) {
+  body .mop-shell .mop-shared-topbar {
+    display: grid;
+    grid-template-columns: 42px minmax(0,1fr);
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+  .mop-topbar__leading { width:42px; min-width:42px; }
+  .mop-topbar__leading .breadcrumb { display:none; }
+  body .mop-shell .mop-topbar-actions { display:flex; min-width:0; width:100%; justify-content:flex-end; }
+  body .mop-shell .mop-user-chip { display:flex; flex:1 1 auto; min-width:0; width:0; justify-content:flex-end; }
+  body .mop-shell .mop-user-chip .avatar { display:none; }
+  body .mop-shell .mop-identity { min-width:0; max-width:100%; width:100%; }
+  body .mop-shell .mop-identity strong { display:block; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  body .mop-shell .mop-identity small { display:none; }
+  body .mop-shell #logoutButton { flex:0 0 auto; }
+}
