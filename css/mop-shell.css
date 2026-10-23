@@ -1,0 +1,161 @@
+/* MOP-CNC shell v2026-10-23-01 — single sidebar/topbar for Emissões and DNA */
+html.mop-shell-loading .mop-shell-enabled { visibility: hidden; }
+body .app-shell.mop-shell-enabled {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  min-height: 100vh;
+}
+body .app-shell.mop-shell-enabled > .mop-shared-sidebar {
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 240px;
+  min-width: 240px;
+  max-width: 240px;
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  padding: 28px 16px 22px;
+  color: #f8f5f2;
+  background: linear-gradient(180deg, #1b1511 0%, #130e0b 100%) !important;
+  border-right: 1px solid rgba(255,255,255,.08);
+  scrollbar-width: thin;
+}
+body .app-shell.mop-shell-enabled > .mop-shared-sidebar .brand-lockup {
+  display: inline-flex;
+  align-items: baseline;
+  width: fit-content;
+  margin: 0 0 18px;
+  padding: 0 6px;
+  color: white;
+  font-family: Montserrat,Inter,sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -.035em;
+  line-height: 1.3;
+  text-decoration: none;
+}
+body .mop-shared-sidebar .brand-lockup span { color: white; }
+body .mop-shared-sidebar .brand-lockup strong { color: #f27010; }
+body .app-shell.mop-shell-enabled > .mop-shared-sidebar .product-name {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0 0 20px;
+  padding: 0 6px 20px;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+body .mop-shared-sidebar .product-name strong { color: #fff; font: 800 17px/1.35 Inter,Arial,sans-serif; }
+body .mop-shared-sidebar .product-name span { color: rgba(255,255,255,.76); font-size: 12px; line-height: 1.4; }
+body .mop-shared-sidebar .sidebar-nav { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+body .mop-shared-sidebar .nav-item {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 12px;
+  width: 100%;
+  height: auto;
+  min-height: 44px;
+  margin: 0;
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  box-shadow: none;
+  color: rgba(255,255,255,.88);
+  text-align: left;
+  text-decoration: none;
+  white-space: normal;
+  font: 600 14px/1.25 Inter,Arial,sans-serif;
+  cursor: pointer;
+}
+body .mop-shared-sidebar .nav-item > span:first-child { display: inline-flex;flex:0 0 17px;width:17px;justify-content:center;align-items:center; }
+body .mop-shared-sidebar .mop-nav-label { flex:1 1 auto; min-width:0; }
+body .mop-shared-sidebar .nav-item:hover { background:rgba(255,255,255,.06);color:#fff; }
+body .mop-shared-sidebar .nav-item.active {
+  background:linear-gradient(90deg,rgba(151,70,20,.74),rgba(93,44,17,.74));
+  border-color:rgba(242,112,16,.52);
+  color:#fff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+}
+body .mop-shared-sidebar .nav-item:focus-visible { outline:2px solid #ff9b49;outline-offset:2px; }
+body .mop-shared-sidebar .mop-admin-group[hidden] { display: none !important; }
+body .mop-shared-sidebar .dna-nav-group-label {
+  margin:22px 12px 8px;
+  color:rgba(255,255,255,.43);
+  font-size:12px;
+  font-weight:800;
+  letter-spacing:.06em;
+  line-height:1.3;
+}
+body .mop-shared-sidebar .nav-item small { margin-left:auto;color:#ffbb4d;line-height:1;flex:none; }
+body .mop-shared-sidebar .mop-sidebar-footer {
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  margin-top:auto;
+  padding:22px 8px 0;
+  color:rgba(255,255,255,.64);
+  font-size:12px;
+  line-height:1.6;
+}
+body .mop-sidebar-footer .mop-version-dot { width:7px;height:7px;flex:none;margin-top:5px;background:#cd9a3b;border-radius:50%; }
+body .mop-sidebar-footer small { color:rgba(255,255,255,.55);font-size:11px; }
+body .mop-shared-topbar .mop-topbar-actions { display:flex;align-items:center;gap:12px; }
+body .mop-shared-topbar .mop-identity { display:flex;flex-direction:column;gap:2px;min-width:185px;min-height:30px;justify-content:center; }
+body .mop-shared-topbar .mop-identity strong { color:inherit;font-size:12px;line-height:1.3;min-height:16px; }
+body .mop-shared-topbar .mop-identity small { font-size:11px;color:var(--cvx-neutral-500);min-height:14px; }
+body .app-shell.mop-shell-enabled > .app-main { min-width:0; }
+body .mop-shared-topbar { min-height:70px; }
+body .app-shell.mop-shell-enabled main[aria-busy='true'] { opacity:.8;pointer-events:none; }
+html[data-theme='dark'] body .mop-shared-topbar .mop-identity small { color:#b8ada7; }
+@media (max-width:1023px) {
+  body .app-shell.mop-shell-enabled { grid-template-columns:minmax(0,1fr); }
+  body .app-shell.mop-shell-enabled > .mop-shared-sidebar {
+    position:relative;top:auto;align-self:stretch;
+    width:100%;min-width:0;max-width:none;height:auto;overflow:visible;padding:18px;
+  }
+  body .mop-shared-sidebar .mop-sidebar-footer { margin-top:12px; }
+  body .mop-shared-topbar .mop-identity { min-width:125px; }
+}
+@media (max-width:620px) {
+  body .mop-shared-topbar .topbar-actions { gap:3px; }
+  body .mop-shared-topbar .user-chip { padding:4px; }
+  body .mop-shared-topbar .mop-identity { min-width:0;max-width:190px; }
+  body .mop-shared-topbar .mop-identity strong { overflow-wrap:anywhere; }
+  body .mop-shared-topbar .button--sm { padding:8px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation:auto; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration:.12s; }
+}
+@media (prefers-reduced-motion: reduce) { .mop-shell-enabled * { scroll-behavior:auto!important;transition-duration:0.01ms!important; } }
+
+@media (max-width:860px) {
+  body:has(.mop-shell-enabled)::before { display:none!important; }
+  body .mop-shared-topbar .mop-user-chip > div { display:flex!important; }
+}
+
+/* Cold-load placeholder: no old sidebar/US label is painted before auth. */
+html.mop-shell-loading body:not(.dna-body)::after {
+  content: "Verificando acesso…";
+  position: fixed;
+  z-index: 30;
+  top: 94px;
+  left: 268px;
+  padding: 14px 20px;
+  border: 1px solid #ded5cf;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 28px rgba(46,34,27,.08);
+  color: #5b514b;
+  font: 600 14px/1.4 Inter,Arial,sans-serif;
+}
+@media (max-width: 1023px) {
+  html.mop-shell-loading body:not(.dna-body)::after { top: 18px; left: 18px; }
+}

@@ -1,7 +1,8 @@
-(async function(){
+window.MOP_EMISSOES = window.MOP_EMISSOES || {};
+window.MOP_EMISSOES.mountHistory = async function(user){
   const D=window.MOP_DATA;
-  const user=await D.requireUser();
   if(!user)return;
+  const routeRoot=document.querySelector('.app-main main.content');
 
   const search=document.getElementById('historySearch');
   const status=document.getElementById('statusFilter');
@@ -14,10 +15,12 @@
       const {data,error}=await window.MOP_SUPABASE
         .from('pedidos_mop').select(D.PEDIDO_FIELDS)
         .order('criado_em',{ascending:false});
+      if(!routeRoot.isConnected)return;
       if(error)throw error;
       all=data||[];
       render();
     }catch(error){
+      if(!routeRoot.isConnected)return;
       all=[];
       body.innerHTML='';
       empty.hidden=false;
@@ -51,4 +54,4 @@
     D.showPageError('Pedido indisponível ou acesso não autorizado.');
   }
   await load();
-})();
+};

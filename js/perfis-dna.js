@@ -93,6 +93,7 @@
       const email=data.user.email||'';
       // Somente visibilidade na interface. Autorização real exige backend, RLS e worker.
       if(normalize(email)!=='crm@credvix.com'){denied.hidden=false;return;}
+      window.MOP_SHELL?.setUser(data.user);
       $('userName').textContent=email;
       root.hidden=false;
       updateProfile();updateCounts();fillConference();bind();showStage(location.hash.slice(1));
