@@ -24,6 +24,21 @@
     }
     enableForm();
   }
+  async function downloadFile(path, button) {
+    button.disabled = true;
+    try {
+      const { data, error } = await db().storage.from('mop-arquivos').createSignedUrl(path, 60);
+      if (error || !data?.signedUrl) throw new Error('SIGNED_URL_NEGADA');
+      // O Storage autoriza com o JWT; o link temporario nao e publico permanente.
+      const link = document.createElement('a');
+      link.href = data.signedUrl;
+      link.rel = 'noopener noreferrer';
+      document.body.append(link);
+      link.click();
+      link.remove();
+    } catch (_) { feedback('Seu acesso ao arquivo não foi autorizado ou expirou. Atualize e tente novamente.', true); }
+    finally { button.disabled = false; }
+  }
   async function refresh() {
     const node = $('multiHistorico');
     const { data, error } = await db().from('pedidos_extracoes_mop')
@@ -33,13 +48,32 @@
     node.replaceChildren();
     const entries = data || [];
     if (!entries.length) {
-      const row = node.insertRow(); const cell = row.insertCell(); cell.colSpan=6; cell.textContent = 'Nenhuma extração encontrada.'; return;
+      const row = node.insertRow(); const cell = row.insertCell(); cell.colSpan=7; cell.textContent = 'Nenhuma extração encontrada.'; return;
+    }
+    const validatedIds = entries.filter(x=>x.status==='validado').map(x=>x.id);
+    const fileMap = new Map();
+    if (validatedIds.length) {
+      const {data:files, error:fileError}=await db().from('arquivos_extracoes_mop')
+        .select('pedido_id,nome,storage_path').in('pedido_id',validatedIds);
+      if (fileError) feedback('Histórico disponível, mas o acesso aos arquivos ainda não foi habilitado.', true);
+      else for (const file of files || []) fileMap.set(String(file.pedido_id),file);
     }
     for (const item of entries) {
       const row = node.insertRow();
-      const values = [item.id, item.produto, item.franquia_codigo, statuses[item.status] || 'Em análise', item.registros ?? '—',
+      const values = [item.id, item.produto, item.franquia_codigo,
+        statuses[item.status] || 'Em análise', item.registros ?? '—',
         item.criado_em ? new Date(item.criado_em).toLocaleString('pt-BR') : '—'];
       for (const value of values) row.insertCell().textContent = String(value);
+      const cell = row.insertCell();
+      const file = fileMap.get(String(item.id));
+      if (file && item.status === 'validado') {
+        const button = document.createElement('button');
+        button.type='button'; button.className='button button--secondary';
+        button.textContent='Baixar XLSX';
+        button.title=file.nome;
+        button.addEventListener('click',()=>void downloadFile(file.storage_path,button));
+        cell.append(button);
+      } else cell.textContent='—';
     }
   }
   async function submit(event) {
@@ -65,9 +99,17 @@
   }
   async function boot() {
     try {
-      user = await window.MOP_DATA.requireUser();
-      if (!user) return;
+      const session = await db().auth.getUser();
+      if (session.error || !session.data?.user) {
+        location.replace('index.html');
+        return;
+      }
+      user = session.data.user;
       window.MOP_SHELL?.setUser(user);
+      $('logoutButton')?.addEventListener('click', async () => {
+        try { await db().auth.signOut({scope:'local'}); }
+        finally { location.replace('index.html'); }
+      });
       $('multiForm').addEventListener('submit', submit);
       $('multiAtualizar').addEventListener('click', () => void refresh());
       await loadFranchises();
