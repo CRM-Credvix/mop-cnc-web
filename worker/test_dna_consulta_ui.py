@@ -2,7 +2,7 @@ from pathlib import Path
 import unittest
 from playwright.sync_api import sync_playwright
 
-JS=(Path(__file__).parent/'dna-consulta-fila.js').read_text()
+JS=(Path(__file__).resolve().parent.parent/'js'/'dna-consulta-fila.js').read_text() if (Path(__file__).resolve().parent.parent/'js'/'dna-consulta-fila.js').exists() else (Path(__file__).parent/'dna-consulta-fila.js').read_text()
 
 HTML='''<!doctype html><html><body>
 <div id="dnaShell">

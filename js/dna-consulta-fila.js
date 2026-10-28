@@ -20,7 +20,7 @@
 
   function cpfValid(raw) {
     const cpf = String(raw || '').replace(/\D/g,'');
-    if (!/^\d{11}$/.test(cpf) || /^(\d)\1{10}$/.test(cpf)) return false;
+    if (!/^[0-9.\s-]+$/.test(String(raw || '')) || !/^\d{11}$/.test(cpf) || /^(\d)\1{10}$/.test(cpf)) return false;
     for (let n = 9; n < 11; n++) {
       const sum = [...cpf.slice(0,n)].reduce((a,d,i) => a + Number(d)*(n+1-i),0);
       if (Number(cpf[n]) !== ((sum*10)%11)%10) return false;
@@ -133,6 +133,7 @@
       });
       if(error)throw error;
       selectedBatch=String(data||'');
+      lastDigest=''; lastKey=''; // forget CPF from the idempotency signature after success
       names.value='';
       names.dispatchEvent(new Event('input',{bubbles:true}));
       text(`Lote ${short(selectedBatch)} registrado com ${items.length} colaborador(es). Aguardando conexão do robô local.`);

@@ -45,7 +45,7 @@
     if(!list.length){const tr=tbody.insertRow();const td=tr.insertCell();td.colSpan=5;td.className='dna-empty-row';td.textContent='Nenhum nome informado. Volte à Gestão de Perfis DNA para preparar uma lista.';return;}
     list.forEach(line=>{
       const [cpfRaw,nomeRaw,loginRaw='']=line.split(';').map(v=>v.trim());
-      const tail=(cpfRaw||'').replace(/\\D/g,'').slice(-4);
+      const tail=(cpfRaw||'').replace(/\D/g,'').slice(-4);
       const row=tbody.insertRow();
       [nomeRaw,'CPF final •••.'+tail, 'Não consultado'].forEach(value=>{row.insertCell().textContent=value;});
       const td=row.insertCell();const badge=document.createElement('span');badge.className='dna-tag dna-tag--blue';badge.textContent='● Pronto para solicitar';td.appendChild(badge);
