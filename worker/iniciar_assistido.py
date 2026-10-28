@@ -18,6 +18,7 @@ from typing import Callable
 
 from dna_diagnostico import UnsafePage, inspect_live, validate_live_capture
 from dna_consulta import pesquisar_e_abrir
+from dna_login import login_auto, session_confirmed
 from evidencia_dna import build_report, read_manifest
 from validar_referencias import SnapshotInvalid, make_snapshot, normalized_counts
 
@@ -124,7 +125,7 @@ def save_report(report: dict, profile: str) -> Path:
 
 def run() -> int:
     print("CREDVIX | Robo DNA - assistente de diagnostico (SOMENTE LEITURA)")
-    print("O programa nao edita permissoes, nao salva usuarios e nao usa senhas do DNA.")
+    print("O programa nao edita permissoes; credenciais ficam no cofre seguro do Windows.")
     selected = choose_profile()
     if not selected:
         return 0
@@ -136,12 +137,21 @@ def run() -> int:
     proc = start_edge(find_edge(), port)
     wait_cdp(port, proc)
     print("\nO Microsoft Edge foi aberto.")
-    print("FAÇA LOGIN NO DNA PELO EDGE. DEPOIS ESCOLHA O MODO A SEGUIR:")
+    cdp = f"http://127.0.0.1:{port}"
+    print("Verificando sessao e realizando login automatico quando necessario...")
+    resultado_login = login_auto(cdp)
+    if resultado_login == 'manual':
+        print("O DNA exige login manual ou verificacao adicional nesta execucao.")
+        print("Conclua pelo Edge, sem informar sua senha aqui na conversa.")
+        input("Depois de entrar no DNA, pressione ENTER aqui: ")
+        if not session_confirmed(cdp):
+            print("Sessao nao confirmada. Abra Consulta de Usuarios e repita a inicializacao.")
+            return 2
+    print("ACESSO DNA CONFIRMADO. DEPOIS ESCOLHA O MODO A SEGUIR:")
     print("  Para busca automatica: abra Consulta de Usuarios.")
     print("  Para conferencia manual: abra Manutencao de Usuario.")
     print("  Nao precisa rolar a pagina; a leitura compara os controles carregados.")
     print("\nNao altere caixas de selecao nem clique em Gravar.")
-    cdp = f"http://127.0.0.1:{port}"
     print("\nCOMO DESEJA TRABALHAR?")
     print("  [1] Buscar CPF e nome automaticamente, selecionar conta segura, abrir Editar e conferir")
     print("  [2] Conferir manutencao que voce abriu no DNA (modo anterior)")

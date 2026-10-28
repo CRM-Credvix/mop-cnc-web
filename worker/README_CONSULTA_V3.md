@@ -30,3 +30,9 @@ vezes, compara com a consulta e somente entao le as 227 permissoes.
 Testar busca CPF, multiplos resultados, pagina com mais resultados, botoes Editar,
 manutencao em cada perfil, logs de acesso, e depois homologar seletores de
 permissoes duplicadas e confirmacao persistente apos gravacao.
+
+## Login automatico (v3.2)
+
+O assistente inicializa o Edge, valida a sessao; se a senha for necessaria, busca no cofre de credenciais Windows WinVault. A primeira configuracao pede as credenciais no CMD local; a senha e oculta e so fica gravada **apos um login bem-sucedido**.
+
+A automacao nao faz CAPTCHA/MFA/SSO externo. Tenta novamente somente falhas transitórias, ate **duas tentativas no total**; credenciais recusadas abortam o retry e a senha antiga e removida do cofre. Se o login for manual, a sessao e checada antes da consulta. Não salva senhas em relatorios, log ou argumentos de comando.
