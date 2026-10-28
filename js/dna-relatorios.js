@@ -38,7 +38,7 @@
     refresh.disabled = true;
     try {
       const {data, error} = await client.from('dna_inspecoes')
-        .select('id,perfil,resultado,divergencias_total,identidade_status,importado_em')
+        .select('id,perfil,resultado,divergencias_total,identidade_status,identidade_evidencia,importado_em')
         .order('importado_em', {ascending:false}).limit(25);
       if (error) throw error;
       tbody.replaceChildren();
@@ -48,7 +48,12 @@
         cell(row, formatDate(item.importado_em));
         cell(row, item.perfil === 'CONSULTOR' ? 'Consultor 2' : 'Supervisor 1');
         cell(row, item.divergencias_total);
-        cell(row, item.identidade_status === 'nao_verificada' ? 'Identidade não confirmada' : 'Em revisão');
+        const parecer = item.identidade_evidencia?.parecer;
+        const comCandidato = ['candidato_estavel_na_tela', 'codigo_ou_matricula_candidato'].includes(parecer);
+        const ident = item.identidade_status === 'nao_verificada'
+          ? (comCandidato ? 'Candidato técnico detectado · não confirmado' : 'Identidade não confirmada')
+          : 'Em revisão';
+        cell(row, ident);
         cell(row, item.resultado === 'conforme_visual' ? 'Conforme na tela' : 'Divergências visuais');
       }
       if (!data?.length) {
