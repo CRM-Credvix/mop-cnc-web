@@ -22,7 +22,7 @@
       <main class="content dna-page-content">
         <div class="dna-banner">
           <strong>ⓘ MÓDULO DE GESTÃO DE PERFIS DNA</strong>
-          <span>Interface definitiva disponível. Consulta de cadastros, execução do robô e auditoria estarão habilitadas após a integração segura com o banco e o DNA. Nenhuma alteração é realizada nesta etapa.</span>
+          <span>Auditoria e acompanhamento de diagnósticos estão disponíveis. A configuração automática de permissões continua bloqueada até homologação dos modelos e das identidades.</span>
         </div>
 
         <section class="dna-stage active" data-stage="gestao">
@@ -339,7 +339,7 @@
             </div>
             <div class="dna-head-actions">
               <span class="dna-pill">🔒 Visualização restrita</span>
-              <button class="dna-button dna-button--ghost" type="button" disabled title="Exportação disponível após integração da auditoria">↓ Exportar CSV (indisponível)</button>
+              <button id="dnaExportCsv" class="dna-button dna-button--ghost" type="button" disabled title="CSV de metadados, sem CPF e sem permissões">↓ Exportar CSV</button>
             </div>
           </div>
 
@@ -384,17 +384,17 @@
             <div class="dna-filter-grid">
               <div>
                 <label for="dnaSearchRecord">Buscar registro</label>
-                <input id="dnaSearchRecord" type="text" placeholder="Lote, perfil ou usuário" disabled>
+                <input id="dnaSearchRecord" type="text" placeholder="Leitura ou perfil">
               </div>
               <div>
                 <label for="dnaFilterProfile">Perfil</label>
-                <select id="dnaFilterProfile" disabled><option>Todos</option><option>Consultor 2</option><option>Supervisor 1</option></select>
+                <select id="dnaFilterProfile"><option value="">Todos</option><option value="CONSULTOR">Consultor 2</option><option value="SUPERVISOR">Supervisor 1</option></select>
               </div>
               <div>
                 <label for="dnaFilterStatus">Status</label>
-                <select id="dnaFilterStatus" disabled><option>Todos</option><option>Concluído e verificado</option><option>Em processamento</option><option>Revisão necessária</option></select>
+                <select id="dnaFilterStatus"><option value="">Todos</option><option value="conforme">Conforme na tela</option><option value="divergente">Divergências visuais</option><option value="revisao">Revisão necessária</option></select>
               </div>
-              <div class="dna-filter-action"><button class="dna-button dna-button--ghost dna-button--full" type="button" disabled>✕ Limpar filtros</button></div>
+              <div class="dna-filter-action"><button id="dnaClearFilters" class="dna-button dna-button--ghost dna-button--full" type="button">✕ Limpar filtros</button></div>
             </div>
           </section>
 
@@ -402,7 +402,7 @@
             <div class="dna-table-head">
               <div>
                 <h2>Registro das solicitações</h2>
-                <p>Histórico ainda não conectado ao banco.</p>
+                <p>Histórico de lotes de execução. Os diagnósticos visuais importados aparecem acima.</p>
               </div>
               <small>Horários em pt-BR após a integração</small>
             </div>
@@ -434,6 +434,7 @@
   <script src="js/config.js"></script>
   <script src="js/mop-shell.js?v=20261023-02"></script>
   <script src="js/perfis-dna.js?v=20261023-01"></script>
-  <script src="js/dna-relatorios.js?v=20261028-03"></script>
+  <script src="js/dna-relatorios.js?v=20261028-04"></script>
+  <script src="js/dna-dashboard.js?v=20261028-01"></script>
 </body>
 </html>
