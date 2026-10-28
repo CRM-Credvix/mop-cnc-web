@@ -8,6 +8,7 @@ import hashlib
 import hmac
 import os
 import secrets
+import re
 from pathlib import Path
 
 
@@ -56,8 +57,22 @@ def comparar_cpf_login(readings: object, chave: bytes | None = None) -> dict:
     vals = [_valores(x,kind) for x in (a,b) for kind in ('cpf','login')]
     if any(v is None for v in vals):base['resultado']='captura_invalida';return base
     ca,la,cb,lb = vals
-    if ca != cb or la != lb:base['resultado']='leituras_inconsistentes';return base
-    if len(ca)>1 or len(la)>1:base['resultado']='valores_ambiguos';return base
+    def dados_login(snapshot):
+        full=snapshot.get('login_completo',[])
+        if not isinstance(full,list) or len(full)>6:return None
+        parsed=[]
+        for v in full:
+            if not isinstance(v,str):return None
+            m=re.fullmatch(r'(\d{3}(?:\.?\d{3}){2}-?\d{2}|\d{11})(_[1-9]\d*)?',v)
+            if not m:return None
+            parsed.append((re.sub(r'\D','',m.group(1)),m.group(2) or '',v))
+        return set(parsed)
+    fa,fb=dados_login(a),dados_login(b)
+    if fa is None or fb is None:base['resultado']='captura_invalida';return base
+    if ca != cb or la != lb or fa != fb:base['resultado']='leituras_inconsistentes';return base
+    if not la and fa:
+        la={x[0] for x in fa};lb=la
+    if len(ca)>1 or len(la)>1 or len(fa)>1:base['resultado']='valores_ambiguos';return base
     if len(ca)==0 or len(la)==0:base['resultado']='cpf_ou_login_ausente';return base
     cpf,login=next(iter(ca)),next(iter(la))
     if not cpf_valido(cpf):base['resultado']='cpf_invalido';return base
@@ -67,5 +82,8 @@ def comparar_cpf_login(readings: object, chave: bytes | None = None) -> dict:
     secret=chave if chave is not None else obter_chave_local()
     if not isinstance(secret,bytes) or len(secret)!=32: raise ValueError('Chave local deve conter 32 bytes')
     base['cpf_hmac']=hmac.new(secret,b'DNA-CPF-v1\x00'+cpf.encode('ascii'),hashlib.sha256).hexdigest()
-    base['resultado']='cpf_login_coincidem_na_tela'
+    if fa:
+        full=next(iter(fa))[2]
+        base['login_hmac']=hmac.new(secret,b'DNA-LOGIN-v1\x00'+full.encode('ascii'),hashlib.sha256).hexdigest()
+    base['resultado']='cpf_login_base_coincidem_na_tela' if fa and next(iter(fa))[1] else 'cpf_login_coincidem_na_tela'
     return base

@@ -15,6 +15,11 @@
   const cpfLike = s => /^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(s) || /^\d{11}$/.test(s) || /^\d{9}-\d{2}$/.test(s);
   const digitize = s => String(s || '').replace(/\D/g, '');
   const entries = {cpf: [], login: []};
+  const completos = new Set();
+  const addComplete = value => {
+    const s=String(value||'').trim();
+    if (/^(?:\d{3}\.?\d{3}\.?\d{3}-?\d{2}|\d{11})(?:_[1-9]\d*)?$/.test(s)) completos.add(s);
+  };
   const add = (kind, value, source) => {
     if (!cpfLike(String(value || '').trim())) return;
     const v = digitize(value);
@@ -27,7 +32,7 @@
   for (const el of fields) {
     const hint = clean([el.getAttribute('ng-model'),el.getAttribute('data-ng-model'),el.name,el.id].filter(Boolean).join(' '));
     if (/(^|[.\s_\-])cpf($|[\s_\-])/.test(hint)) add('cpf',el.value,'campo:cpf');
-    if (/(^|[.\s_\-])login($|[\s_\-])/.test(hint)) add('login',el.value,'campo:login');
+    if (/(^|[.\s_\-])login($|[\s_\-])/.test(hint)) { add('login',el.value,'campo:login'); addComplete(el.value); }
   }
   // Ler somente labels cujo texto seja exatamente CPF/CPF:, ou Login/Login:.
   const labels = Array.from(document.querySelectorAll('label,span,strong,b,th,td,div,p'));
@@ -38,12 +43,12 @@
     if (text !== 'cpf' && text !== 'cpf:' && text !== 'login' && text !== 'login:') continue;
     const kind = text.startsWith('cpf') ? 'cpf' : 'login';
     const byFor = el.htmlFor && document.getElementById(el.htmlFor);
-    if (allowedField(byFor)) add(kind,byFor.value,'rotulo:for');
+    if (allowedField(byFor)) {add(kind,byFor.value,'rotulo:for'); if(kind==='login')addComplete(byFor.value);}
     // Estrutura Bootstrap comum: <div class="form-group"><label>CPF:</label><input ...></div>.
     for (const root of [el.parentElement, el.parentElement?.parentElement]) {
       if (!root || !visible(root)) continue;
       const near = Array.from(root.querySelectorAll('input,textarea')).filter(allowedField);
-      if (near.length === 1) add(kind,near[0].value,'rotulo:grupo');
+      if (near.length === 1) {add(kind,near[0].value,'rotulo:grupo');if(kind==='login')addComplete(near[0].value);}
     }
     // Fallback geométrico: campo mais próximo, alinhado abaixo do label.
     const a = el.getBoundingClientRect();
@@ -51,7 +56,7 @@
       const dy=x.r.top-a.bottom, dx=x.r.left-a.left;
       return dy >= -5 && dy <= 55 && dx >= -35 && dx <= 65 && x.r.width >= 65;
     });
-    if (nearby.length === 1) add(kind,nearby[0].f.value,'rotulo:geometria');
+    if (nearby.length === 1) {add(kind,nearby[0].f.value,'rotulo:geometria');if(kind==='login')addComplete(nearby[0].f.value);}
   }
   // Cabecalho como no DNA: "Login: 00000000000" ou "Login: 000.000.000-00".
   // Somente nos elementos curtos com texto direto e visivel, sem percorrer o HTML inteiro.
@@ -59,8 +64,8 @@
     if (!visible(el)) continue;
     const t = ownText(el).replace(/\s+/g,' ').trim();
     if (t.length > 65) continue;
-    const m = t.match(/^Login\s*:\s*(\d{3}\.\d{3}\.\d{3}-\d{2}|\d{9}-\d{2}|\d{11})$/i);
-    if (m) add('login',m[1],'cabecalho:login');
+    const m = t.match(/^Login\s*:\s*(\d{3}\.\d{3}\.\d{3}-\d{2}|\d{9}-\d{2}|\d{11})(?:_[1-9]\d*)?$/i);
+    if (m) { add('login',m[0].split(':').slice(1).join(':').trim(),'cabecalho:login');addComplete(m[0].split(':').slice(1).join(':').trim()); }
   }
   // Versao alternativa do cabecalho: <div>Login: <span>NUMERO</span></div>.
   // Exige grupo curto e exato para nao interpretar dados de outros formularios.
@@ -68,13 +73,14 @@
     if (!visible(el) || (el.children && el.children.length > 3)) continue;
     const text = String(el.textContent || '').replace(/\s+/g, ' ').trim();
     if (text.length > 65) continue;
-    const m = text.match(/^Login\s*:\s*(\d{3}\.\d{3}\.\d{3}-\d{2}|\d{9}-\d{2}|\d{11})$/i);
-    if (m) add('login',m[1],'cabecalho:agrupado');
+    const m = text.match(/^Login\s*:\s*(\d{3}\.\d{3}\.\d{3}-\d{2}|\d{9}-\d{2}|\d{11})(?:_[1-9]\d*)?$/i);
+    if (m) { add('login',m[0].split(':').slice(1).join(':').trim(),'cabecalho:agrupado');addComplete(m[0].split(':').slice(1).join(':').trim()); }
   }
   const unique = kind => [...new Set(entries[kind].map(x => x.valor))];
   return {
     formato:'dna-cpf-login-v1',
     cpf:{valores:unique('cpf'),fontes:[...new Set(entries.cpf.map(x => x.fonte))]},
-    login:{valores:unique('login'),fontes:[...new Set(entries.login.map(x => x.fonte))]}
+    login:{valores:unique('login'),fontes:[...new Set(entries.login.map(x => x.fonte))]},
+    login_completo:[...completos]
   };
 }
