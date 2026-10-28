@@ -35,19 +35,21 @@
     const count=names().length;
     $('dnaCountInline').textContent=count+(count===1?' nome informado':' nomes informados');
     $('previewCountText').textContent=count+(count===1?' usuário informado':' usuários informados');
-    $('dnaFoundChip').textContent='● '+count+(count===1?' nome na lista':' nomes na lista');
+    $('dnaFoundChip').textContent='● '+count+(count===1?' colaborador na lista':' colaboradores na lista');
     $('dnaAmbiguousChip').textContent='● Identidades não verificadas';
-    $('dnaMissingChip').textContent='● Consulta indisponível';
+    $('dnaMissingChip').textContent='● Consulta pelo robô pendente';
   }
   function fillConference(){
     const tbody=$('conferenceRows');tbody.replaceChildren();
     const list=names();
     if(!list.length){const tr=tbody.insertRow();const td=tr.insertCell();td.colSpan=5;td.className='dna-empty-row';td.textContent='Nenhum nome informado. Volte à Gestão de Perfis DNA para preparar uma lista.';return;}
-    list.forEach(name=>{
+    list.forEach(line=>{
+      const [cpfRaw,nomeRaw,loginRaw='']=line.split(';').map(v=>v.trim());
+      const tail=(cpfRaw||'').replace(/\\D/g,'').slice(-4);
       const row=tbody.insertRow();
-      [name,'Não consultado','—'].forEach(value=>{row.insertCell().textContent=value;});
-      const td=row.insertCell();const badge=document.createElement('span');badge.className='dna-tag dna-tag--blue';badge.textContent='● Aguardando integração';td.appendChild(badge);
-      row.insertCell().textContent='Prévia local';
+      [nomeRaw,'CPF final •••.'+tail, 'Não consultado'].forEach(value=>{row.insertCell().textContent=value;});
+      const td=row.insertCell();const badge=document.createElement('span');badge.className='dna-tag dna-tag--blue';badge.textContent='● Pronto para solicitar';td.appendChild(badge);
+      row.insertCell().textContent=loginRaw?'Login informado':'Seleção segura automática';
     });
   }
   const stageTitle={
@@ -66,16 +68,16 @@
     if(location.hash!=='#'+stage)history.replaceState(null,'','#'+stage);
   }
   function validateNames(){
-    const list=names();let error='';
-    if(!list.length||list.length>50)error='Informe entre 1 e 50 nomes completos, um por linha.';
-    else if(list.some(s=>s.length<5||s.length>140||!s.includes(' ')))error='Informe nome e sobrenome de cada usuário (até 140 caracteres por linha).';
-    else{
-      const seen=new Set();
-      for(const s of list){const key=normalize(s);if(seen.has(key)){error='A lista contém nomes repetidos. Corrija a duplicidade para continuar.';break;}seen.add(key);}
+    try {
+      if(!window.DNA_CONSULTA_FILA) throw new Error('O módulo de fila não está disponível; recarregue a página.');
+      window.DNA_CONSULTA_FILA.parseRows();
+      showError('');
+      return true;
+    } catch(e) {
+      showError(e?.message || 'Verifique CPF, Nome e Login das linhas.');
+      $('dnaNames').focus();
+      return false;
     }
-    showError(error);
-    if(error){$('dnaNames').focus();return false;}
-    return true;
   }
   function bind(){
     document.querySelectorAll('[data-target]').forEach(el=>el.addEventListener('click',()=>showStage(el.dataset.target)));
