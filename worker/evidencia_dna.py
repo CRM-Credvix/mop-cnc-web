@@ -13,6 +13,7 @@ from uuid import uuid4
 
 from validar_referencias import make_snapshot, compare_snapshots, SnapshotInvalid
 from identidade_dna import analyze_identity
+from cpf_dna import comparar_cpf_login
 
 _FIELDS = ('ordem_dom', 'secao', 'subsecao', 'rotulo', 'ocorrencia', 'ng_model', 'marcado')
 
@@ -42,6 +43,11 @@ def build_report(reference: dict, raw: dict, hash_modelo: str) -> dict:
     differences = compare_snapshots(reference, observed)
     controls = compact_controls(observed)
     identity_summary = analyze_identity(raw.get("identidade_observacoes"))
+    cpf_summary = comparar_cpf_login(raw.get("cpf_login_observacoes"))
+    identity_summary["validacao_cpf_login"] = cpf_summary
+    # Nenhum parecer local confirma identidade: preserva status inalterado.
+    if cpf_summary["resultado"] == "cpf_login_coincidem_na_tela":
+        identity_summary["parecer"] = "cpf_login_coincidem_na_tela"
     captured_at = raw.get('capturado_em') or datetime.now(timezone.utc).isoformat()
     # Data confiavel no sentido do relógio local, NAO uma prova de horario do servidor.
     captured_dt = datetime.fromisoformat(captured_at.replace('Z', '+00:00'))
