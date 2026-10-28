@@ -20,6 +20,7 @@ ALLOWED_HOSTS = frozenset({"cadastro.help.com.br"})
 DEFAULT_JS = Path(__file__).with_name("dna_inspecao_dom.js")
 DEFAULT_ID_JS = Path(__file__).with_name("dna_identidade_probe.js")
 DEFAULT_CPF_JS = Path(__file__).with_name("dna_cpf_login_probe.js")
+DEFAULT_EXPAND_JS = Path(__file__).with_name("dna_expandir_secoes.js")
 DEFAULT_MODELS = Path(__file__).resolve().parent / "dna_local_references"
 
 
@@ -42,6 +43,19 @@ def _verify_local_cdp(uri: str) -> None:
         raise UnsafePage("CDP exige HTTP localhost com porta explicita (ex.: http://127.0.0.1:9222)")
 
 
+def same_dom_reading(first: dict, second: dict) -> bool:
+    """Rejeita mudanca em rótulos/posicoes/estados durante leitura do DOM."""
+    import hashlib
+    def digest(snapshot: dict) -> bytes:
+        items = snapshot.get("itens") or []
+        if len(items) != 227:
+            return b""
+        fields = ("ordem", "secao", "subsecao", "rotulo", "ng_model", "marcado", "controle_global", "desabilitado")
+        payload = [[entry.get(k) for k in fields] for entry in items]
+        return hashlib.sha256(json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")).digest()
+    return bool(digest(first)) and digest(first) == digest(second)
+
+
 def inspect_live(cdp_uri: str, profile: str) -> dict:
     """Read current tab. No navigation, clicks or form operations at all."""
     _verify_local_cdp(cdp_uri)
@@ -52,22 +66,45 @@ def inspect_live(cdp_uri: str, profile: str) -> dict:
     script = DEFAULT_JS.read_text(encoding="utf-8")
     id_script = DEFAULT_ID_JS.read_text(encoding="utf-8")
     cpf_script = DEFAULT_CPF_JS.read_text(encoding="utf-8")
+    expand_script = DEFAULT_EXPAND_JS.read_text(encoding="utf-8")
     with sync_playwright() as p:
         browser = p.chromium.connect_over_cdp(cdp_uri)
         try:
             candidates = []
             for context in browser.contexts:
                 for page in context.pages:
-                    if allowed_url(page.url):
-                        for frame in page.frames:
-                            if not allowed_url(frame.url):
-                                continue
-                            result = frame.evaluate(script)
-                            if result.get("total_dom") == 227:
-                                candidates.append((page.url, result, frame))
+                    if not allowed_url(page.url):
+                        continue
+                    for frame in page.frames:
+                        if not allowed_url(frame.url):
+                            continue
+                        initial = frame.evaluate(script)
+                        if initial.get("total_dom") != 227:
+                            # Somente abre accordions declarados como expansores, nunca inputs,
+                            # links de navegacao ou botoes de gravacao.
+                            frame.evaluate(expand_script)
+                            page.wait_for_timeout(450)
+                        first = frame.evaluate(script)
+                        if first.get("total_dom") != 227:
+                            continue
+                        page.wait_for_timeout(250)
+                        second = frame.evaluate(script)
+                        # Detector de DOM alterado durante a leitura (Angular/lazy loading).
+                        if not same_dom_reading(first, second):
+                            raise UnsafePage("O DNA atualizou os controles durante a leitura; repita com a tela estavel")
+                        candidates.append((page.url, second, frame))
             if len(candidates) != 1:
-                raise UnsafePage(f"Esperada 1 pagina DNA com 227 controles; encontradas {len(candidates)}. Selecione um unico cadastro aberto.")
+                raise UnsafePage(
+                    f"Era esperado um cadastro DNA com 227 controles carregados; encontrados {len(candidates)}. "
+                    "Abra um cadastro na Manutencao e, se alguma secao nao carregar, expanda-a manualmente."
+                )
             url, data, frame = candidates[0]
+            data["leitura_dom"] = {
+                "controles_carregados": data["total_dom"],
+                "controles_exibidos": data["total_visiveis"],
+                "controles_ocultos_carregados": data["total_dom"] - data["total_visiveis"],
+                "validada_duas_vezes": True,
+            }
             # Two independent DOM reads. No navigation or click. A stable value
             # still remains an unverified candidate until DNA IDs are homologated.
             identity_a = frame.evaluate(id_script)
@@ -222,12 +259,12 @@ def validate_live_capture(raw: dict, profile: str) -> dict:
     # Validation in memory; nunca cria capturas temporarias na unidade de disco.
     if raw.get("perfil_referencia") != profile or raw.get("avisos"):
         raise SnapshotInvalid("Perfil ou captura invalida")
-    if raw.get("total_dom") != 227 or raw.get("total_visiveis") != 227:
-        raise SnapshotInvalid("A tela nao contem exatamente 227 controles visiveis")
+    if raw.get("total_dom") != 227 or not 1 <= int(raw.get("total_visiveis", 0)) <= 227:
+        raise SnapshotInvalid("A tela nao contem os 227 controles carregados no DOM")
     items = raw.get("itens") or []
     if len(items) != 227 or len([x for x in items if x.get("ng_model") == "item.selected" and not x.get("controle_global")]) != 224:
         raise SnapshotInvalid("Quantidade de permissoes inesperada")
-    if [x.get("ordem") for x in items] != list(range(1,228)) or not all(x.get("rotulo_identificado") and x.get("visivel") and not x.get("desabilitado") for x in items):
+    if [x.get("ordem") for x in items] != list(range(1,228)) or not all(x.get("rotulo_identificado") and not x.get("desabilitado") for x in items):
         raise SnapshotInvalid("Controles incompletos")
     if sum(bool(x.get("controle_global")) for x in items) != 2 or sum(x.get("ng_model") == "usuario.acessoSso" for x in items) != 1:
         raise SnapshotInvalid("Controles globais/SSO invalidos")

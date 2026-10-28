@@ -138,7 +138,7 @@ def run() -> int:
     print("FAÇA APENAS ISTO NA JANELA DO EDGE:")
     print("  1. Entre no DNA com seu login e sua senha habituais.")
     print("  2. Abra a manutencao de UM usuario autorizado para conferencia.")
-    print("  3. Expanda todas as secoes de permissoes (227 controles visiveis).")
+    print("  3. Nao precisa rolar a pagina; o robo tentara ler secoes fechadas carregadas.")
     print("  4. Volte para ESTA janela preta e pressione ENTER.")
     print("\nNao altere caixas de selecao nem clique em Gravar.")
     cdp = f"http://127.0.0.1:{port}"
@@ -154,7 +154,7 @@ def run() -> int:
             print("\nNAO FOI POSSIVEL CONFERIR ESSA TELA.")
             print("Motivo:", str(exc))
             print("Confirme que a janela aberta e a do Edge iniciada pelo robo,")
-            print("que existe somente UM cadastro em manutencao e que as secoes estao expandidas.")
+            print("que existe somente UM cadastro em manutencao. Se faltar uma secao, expanda-a manualmente.")
             print("Nao foi feita nenhuma alteracao no DNA.")
             continue
         output = save_report(report, profile)

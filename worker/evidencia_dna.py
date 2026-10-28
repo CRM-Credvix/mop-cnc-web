@@ -45,6 +45,7 @@ def build_report(reference: dict, raw: dict, hash_modelo: str) -> dict:
     identity_summary = analyze_identity(raw.get("identidade_observacoes"))
     cpf_summary = comparar_cpf_login(raw.get("cpf_login_observacoes"))
     identity_summary["validacao_cpf_login"] = cpf_summary
+    identity_summary["leitura_dom"] = raw.get('leitura_dom', {'controles_carregados': 227, 'validada_duas_vezes': False})
     # Nenhum parecer local confirma identidade: preserva status inalterado.
     if cpf_summary["resultado"] == "cpf_login_coincidem_na_tela":
         identity_summary["parecer"] = "cpf_login_coincidem_na_tela"
