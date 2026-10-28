@@ -33,6 +33,8 @@ class ConsultaTests(unittest.TestCase):
   self.assertEqual(decide_account([row(status='Cancelado')],cpf=CPF,total=1)['status'],'somente_inativas_ou_login_ausente')
  def test_paginacao(self):
   self.assertEqual(decide_account([row()],cpf=CPF,total=5)['status'],'resultado_incompleto')
+ def test_paginador_com_todos_resultados(self):
+  self.assertEqual(decide_account([row()],cpf=CPF,total=1,pagination=True)['status'],'conta_unica_ativa')
  def test_nome_diferente(self):
   self.assertEqual(decide_account([row()],cpf=CPF,nome='OUTRO NOME',total=1)['status'],'nao_encontrado')
  def test_sem_botao_editar(self):
