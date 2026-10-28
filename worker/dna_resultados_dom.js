@@ -20,9 +20,40 @@
      const row=rawRows[ri];if(!visible(row))continue;
      const cells=[...row.querySelectorAll(':scope > td')];
      if(cells.length<headers.length)continue;
-     const actions=[...cells[idx.acoes].querySelectorAll('button,a,[role="button"]')];
-     const edits=actions.map((x,i)=>({i,label:norm(x.getAttribute('aria-label')||x.getAttribute('title')||x.textContent)}))
-       .filter(x=>/^(editar|manutencao|manutencao de usuario)$/.test(x.label));
+     // Acoes legadas do DNA podem ser apenas icones sem title/aria-label.
+     // Nunca deduzimos Editar pela posicao (ex.: "ultimo botao da linha").
+     const actionSelector='button,a,[role="button"],input[type="button"],input[type="image"]';
+     const actions=[...cells[idx.acoes].querySelectorAll(actionSelector)];
+     const isEdit = el => {
+       const nested=[el,...el.querySelectorAll('i,svg,use,img,span,[data-lucide],[data-icon]')];
+       const labels=[];
+       for (const node of nested) {
+         for (const attr of ['title','aria-label','data-original-title','data-bs-original-title','data-tooltip','alt']) {
+           const val=node.getAttribute(attr);if(val)labels.push(norm(val));
+         }
+       }
+       labels.push(norm(el.textContent||''));
+       // Mesmo com icone de caneta, nao tocar em acao rotulada como outra operacao.
+       if(labels.some(label=>/^(excluir|deletar|bloquear|desbloquear|cancelar|alterar senha|redefinir senha|trocar senha|detalhar|visualizar|ver detalhes|consultar|reativar|renovar|atualizar|reprocessar)(?:$|\s)/.test(label)))return false;
+       const explicit=labels.some(label=>/^(editar|editar usuario|edicao de usuario|alterar usuario|manutencao|manutencao de usuario)$/.test(label));
+       if(explicit)return true;
+       const patterns=[/(?:^|[\s_-])(?:fa|glyphicon|mdi|bi|icon|lucide)[-_](?:edit|pencil(?:-square(?:-o)?)?|square-pen|pen-to-square|user-edit)(?:$|[\s_-])/,
+         /^(?:edit|pencil|pencil_square|square-pen|mode_edit)$/];
+       const hasEditIcon=nested.some(node=>{
+         const signatures=[node.getAttribute('class'),node.getAttribute('data-lucide'),node.getAttribute('data-icon'),
+           node.getAttribute('href'),node.getAttribute('xlink:href'),node.getAttribute('ng-click'),node.getAttribute('data-ng-click')];
+         return signatures.some(raw=>{
+           const value=String(raw||'').toLowerCase();
+           if(patterns.some(regex=>regex.test(value)))return true;
+           // Atributos de eventos so servem como evidencia se nomeiam a acao, nao por indices.
+           return /^(?:[\w$]+\.)*(?:editar|edit|abrirEdicao|manutencaoUsuario)\s*\(/i.test(value);
+         });
+       });
+       // O caractere da caneta e permitido apenas quando e o conteudo do proprio icone.
+       const pencilGlyph=nested.some(node=>['✎','✏','✐','🖉'].includes((node.textContent||'').trim()));
+       return hasEditIcon||pencilGlyph;
+     };
+     const edits=actions.map((x,i)=>({i,match:isEdit(x)})).filter(x=>x.match);
      parsed.push({
        row_index:ri, usuario:cells[idx.usuario].textContent.trim(),nome:cells[idx.nome].textContent.trim(),
        loja:cells[idx.loja].textContent.trim(),perfil:cells[idx.perfil].textContent.trim(),

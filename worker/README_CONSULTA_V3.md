@@ -6,8 +6,12 @@ robo preenche o CPF, tenta executar uma busca com rotulo semantico, verifica se
 a tabela e unica e se toda a paginacao foi lida, filtra apenas status **Ativo**, e
 preserva integralmente os sufixos de Login.
 
-Somente com candidato unico (ou Login exato informado) e botao **Editar**
-semanticamente identificado ele abre manutencao. Le CPF, nome e login duas
+Somente com candidato unico (ou Login exato informado), o robo tenta
+abrir o botao **Editar** semanticamente identificado (texto, acessibilidade
+ou icones de bibliotecas comuns). Se o icone nao for reconhecivel, nao
+clica por posicao. Nesse caso, o operador pode clicar manualmente em
+Editar **na mesma execucao**, e o robo confirma novamente CPF, Nome e
+Login na manutencao antes de qualquer diagnostico. Le CPF, nome e login duas
 vezes, compara com a consulta e somente entao le as 227 permissoes.
 
 ## Limites de seguranca
@@ -19,7 +23,7 @@ vezes, compara com a consulta e somente entao le as 227 permissoes.
 - Modelos ainda nao homologados no Supabase. Nenhum lote executavel.
 - Nao usa chave service_role nem credenciais do DNA em arquivos.
 - Se os seletores do DNA forem diferentes (botao sem aria-label/title, pagina
-  sem total, etc.), o fluxo automatico **recusa** escolher e permite leitura manual.
+  sem total, etc.), o fluxo automatico **recusa** escolher e permite clicar manualmente em Editar somente apos selecionar conta unica ativa; a identidade do formulario sera novamente validada.
 
 ## Homologacao pendente no DNA real
 
