@@ -28,6 +28,8 @@
   const identityLabel=i=>{
     const evidence=i.identidade_evidencia||{};
     const cpf=evidence.validacao_cpf_login?.resultado;
+    if (evidence.consulta_previa?.resultado==='trinca_consistente_na_tela')return 'CPF, Nome e Login conferidos · sem homologação externa';
+    if (cpf==='cpf_login_base_coincidem_na_tela')return 'CPF corresponde ao Login com sufixo · não homologado';
     if (cpf==='cpf_login_coincidem_na_tela')return 'CPF/Login coincidem · não confirmado';
     if (['cpf_invalido','cpf_login_diferentes','leituras_inconsistentes','valores_ambiguos'].includes(cpf))return 'CPF/Login divergentes · revisão';
     if (['candidato_estavel_na_tela','codigo_ou_matricula_candidato'].includes(evidence.parecer))return 'Candidato técnico · não confirmado';
