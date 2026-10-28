@@ -43,21 +43,21 @@
               <div class="dna-card-title-row">
                 <div class="dna-card-icon">⇉</div>
                 <div>
-                  <h2>Nova configuração em lote</h2>
+                  <h2>Nova conferência de usuários</h2>
                   <p>Informe os colaboradores que terão seus acessos conferidos.</p>
                 </div>
               </div>
 
               <div class="dna-field-head">
-                <label for="dnaNames">Usuários existentes no DNA</label>
+                <label for="dnaNames">Colaboradores para consulta no DNA</label>
                 <span id="dnaCountInline">0 nomes informados</span>
               </div>
-              <textarea id="dnaNames" rows="10" placeholder="Cole os nomes completos, um por linha. Ex.: Ana Martins" autocomplete="off" aria-describedby="dnaNamesHelp dnaInputError"></textarea>
+              <textarea id="dnaNames" rows="10" placeholder="CPF; Nome completo; Login opcional — um colaborador por linha" autocomplete="off" aria-describedby="dnaNamesHelp dnaInputError"></textarea>
               <p id="dnaInputError" class="dna-input-error" role="alert" hidden></p>
-              <div class="dna-helper-line" id="dnaNamesHelp">ⓘ Um nome completo por linha · mínimo 1, máximo 50 · nenhum usuário será criado</div>
+              <div class="dna-helper-line" id="dnaNamesHelp">ⓘ Uma linha por colaborador: CPF; Nome completo; Login opcional · até 50 · CPF criptografado no Supabase</div>
 
               <div class="dna-field-split">
-                <label>Perfil que será aplicado</label>
+                <label>Referência para conferência (não será aplicada)</label>
                 <span>Selecione um padrão</span>
               </div>
               <div class="dna-profile-grid">
@@ -176,7 +176,7 @@
               <div class="dna-card-topline">
                 <div>
                   <h2>Conferência da lista informada</h2>
-                  <p><span id="previewCountText">0 usuários informados</span> · prévia local, sem consulta ao DNA</p>
+                  <p><span id="previewCountText">0 usuários informados</span> · confira antes de enviar a solicitação</p>
                 </div>
                 <span class="dna-status-chip dna-status-chip--blue">● Prévia local</span>
               </div>
@@ -188,8 +188,8 @@
               </div>
 
               <div class="dna-warning-box" id="dnaWarningBox">
-                <strong>ⓘ Consulta ao DNA ainda não habilitada</strong>
-                <p>Os nomes listados são apenas uma prévia local. Nenhuma identidade foi conferida e nenhuma alteração foi solicitada.</p>
+                <strong>ⓘ A solicitação será enviada ao Supabase</strong>
+                <p>Após registrar, cada CPF ficará protegido no banco. A verificação no DNA começará quando o worker local estiver conectado. Nenhuma permissão será alterada.</p>
               </div>
 
               <div class="dna-table-shell">
@@ -201,10 +201,12 @@
                 </table>
               </div>
 
+              <p id="dnaQueueMessage" class="dna-subcopy" role="status" aria-live="polite">Nenhuma solicitação enviada. Ao registrar, o lote aguardará o worker local.</p>
               <div class="dna-conference-footer">
                 <span>ⓘ Somente usuários identificados sem ambiguidade poderão seguir para o piloto.</span>
                 <div class="dna-inline-actions">
                   <button class="dna-button dna-button--secondary" type="button" data-target="gestao">Voltar</button>
+                  <button class="dna-button dna-button--primary" id="dnaQueueCreate" type="button">Registrar conferência na fila</button>
                   <button class="dna-button dna-button--primary" type="button" disabled title="Aguardando integração do worker e autorização no banco">Iniciar configuração (indisponível)</button>
                 </div>
               </div>
@@ -433,8 +435,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
   <script src="js/mop-shell.js?v=20261023-02"></script>
-  <script src="js/perfis-dna.js?v=20261023-01"></script>
+  <script src="js/perfis-dna.js?v=20261028-queue01"></script>
   <script src="js/dna-relatorios.js?v=20261028-05"></script>
-  <script src="js/dna-dashboard.js?v=20261028-01"></script>
+  <script src="js/dna-dashboard.js?v=20261028-02"></script>
+  <script src="js/dna-consulta-fila.js?v=20261028-01"></script>
 </body>
 </html>
