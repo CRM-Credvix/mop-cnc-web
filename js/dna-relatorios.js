@@ -49,9 +49,12 @@
         cell(row, item.perfil === 'CONSULTOR' ? 'Consultor 2' : 'Supervisor 1');
         cell(row, item.divergencias_total);
         const parecer = item.identidade_evidencia?.parecer;
+        const cpfResultado = item.identidade_evidencia?.validacao_cpf_login?.resultado;
+        const cpfConferido = cpfResultado === 'cpf_login_coincidem_na_tela';
+        const cpfDivergente = ['cpf_invalido','cpf_login_diferentes','leituras_inconsistentes','valores_ambiguos'].includes(cpfResultado);
         const comCandidato = ['candidato_estavel_na_tela', 'codigo_ou_matricula_candidato'].includes(parecer);
         const ident = item.identidade_status === 'nao_verificada'
-          ? (comCandidato ? 'Candidato técnico detectado · não confirmado' : 'Identidade não confirmada')
+          ? (cpfConferido ? 'CPF/Login coincidem · não confirmado' : (cpfDivergente ? 'CPF/Login divergentes · revisão' : (comCandidato ? 'Candidato técnico · não confirmado' : 'Identidade não confirmada')))
           : 'Em revisão';
         cell(row, ident);
         cell(row, item.resultado === 'conforme_visual' ? 'Conforme na tela' : 'Divergências visuais');

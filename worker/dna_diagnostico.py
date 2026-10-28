@@ -19,6 +19,7 @@ from validar_referencias import SnapshotInvalid, compare_snapshots, make_snapsho
 ALLOWED_HOSTS = frozenset({"cadastro.help.com.br"})
 DEFAULT_JS = Path(__file__).with_name("dna_inspecao_dom.js")
 DEFAULT_ID_JS = Path(__file__).with_name("dna_identidade_probe.js")
+DEFAULT_CPF_JS = Path(__file__).with_name("dna_cpf_login_probe.js")
 DEFAULT_MODELS = Path(__file__).resolve().parent / "dna_local_references"
 
 
@@ -50,6 +51,7 @@ def inspect_live(cdp_uri: str, profile: str) -> dict:
         raise RuntimeError("Instale playwright e o navegador Edge localmente") from exc
     script = DEFAULT_JS.read_text(encoding="utf-8")
     id_script = DEFAULT_ID_JS.read_text(encoding="utf-8")
+    cpf_script = DEFAULT_CPF_JS.read_text(encoding="utf-8")
     with sync_playwright() as p:
         browser = p.chromium.connect_over_cdp(cdp_uri)
         try:
@@ -69,9 +71,12 @@ def inspect_live(cdp_uri: str, profile: str) -> dict:
             # Two independent DOM reads. No navigation or click. A stable value
             # still remains an unverified candidate until DNA IDs are homologated.
             identity_a = frame.evaluate(id_script)
+            cpf_a = frame.evaluate(cpf_script)
             page.wait_for_timeout(350)
             identity_b = frame.evaluate(id_script)
+            cpf_b = frame.evaluate(cpf_script)
             data["identidade_observacoes"] = [identity_a, identity_b]
+            data["cpf_login_observacoes"] = [cpf_a, cpf_b]
             data.update({"versao_formato": 1,
                          "capturado_em": datetime.now(timezone.utc).isoformat(),
                          "perfil_referencia": profile, "origem": urlsplit(url).hostname,
