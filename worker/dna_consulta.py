@@ -70,7 +70,7 @@ def decide_account(rows: list[dict], *, cpf: str, nome: str = '', login: str = '
         return {'status':'multiplas_contas_ativas','contas_mesmo_cpf':len(matches),'ativas':len(active)}
     row=active[0]
     if row.get('editar_index') is None or row.get('editar_ambiguo'):
-        return {'status':'editar_nao_identificado','contas_mesmo_cpf':len(matches)}
+        return {'status':'editar_nao_identificado','contas_mesmo_cpf':len(matches),'selecionado':row}
     return {'status':'conta_unica_ativa','contas_mesmo_cpf':len(matches),'selecionado':row}
 
 
@@ -107,7 +107,7 @@ def _one_frame(browser, script: str):
     return frames[0]
 
 
-def pesquisar_e_abrir(cdp_uri: str, cpf: str, nome: str = '', login: str = '') -> dict:
+def pesquisar_e_abrir(cdp_uri: str, cpf: str, nome: str = '', login: str = '', *, solicitar_edicao_manual=input) -> dict:
     """Operacao local; nao grava CPF/login no resultado retornado."""
     _verify_local_cdp(cdp_uri)
     if not cpf_valido(digits(cpf)):
@@ -131,14 +131,28 @@ def pesquisar_e_abrir(cdp_uri: str, cpf: str, nome: str = '', login: str = '') -
                 return {'status':'tabela_resultados_nao_identificada'}
             result=decide_account(rows['rows'],cpf=cpf,nome=nome,login=login,
                                   total=rows.get('total_resultados'),pagination=rows.get('paginacao_visivel'))
-            if result['status']!='conta_unica_ativa':return result
+            if result['status'] not in ('conta_unica_ativa','editar_nao_identificado'):return result
+            manual = result['status']=='editar_nao_identificado'
             expected=result.pop('selecionado')
             before=frame.evaluate(ROWS_JS.read_text(encoding='utf-8'))
             if before.get('rows')!=rows.get('rows'):
                 return {'status':'resultado_alterou_antes_de_editar'}
-            table=frame.locator('table').nth(rows['table_index'])
-            row=table.locator('tbody tr').nth(expected['row_index'])
-            row.locator('td').nth(rows['acoes_col_index']).locator('button,a,[role="button"]').nth(expected['editar_index']).click(timeout=10000)
+            if manual:
+                print('\nO DNA nao identificou o icone Editar de maneira confiavel.')
+                print('Na linha do usuario selecionado pelo CPF, nome e login,')
+                print('clique manualmente no botao EDITAR (icone de lapis).')
+                print('Nao use Excluir, Bloquear, Gravar ou qualquer outro botao.')
+                confirmacao=solicitar_edicao_manual(
+                    'Quando a MANUTENCAO DO USUARIO estiver aberta, pressione ENTER; S = sair: '
+                ).strip().lower()
+                if confirmacao not in ('',):
+                    return {'status':'edicao_manual_cancelada'}
+            else:
+                table=frame.locator('table').nth(rows['table_index'])
+                row=table.locator('tbody tr').nth(expected['row_index'])
+                row.locator('td').nth(rows['acoes_col_index']).locator(
+                    'button,a,[role="button"],input[type="button"],input[type="image"]'
+                ).nth(expected['editar_index']).click(timeout=10000)
             page.wait_for_timeout(600)
             if not allowed_url(page.url):raise UnsafePage('A manutencao saiu do dominio autorizado.')
             readings=[]
