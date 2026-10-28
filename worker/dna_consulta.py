@@ -51,7 +51,7 @@ def decide_account(rows: list[dict], *, cpf: str, nome: str = '', login: str = '
     cpf=digits(cpf)
     if not cpf_valido(cpf):
         return {'status':'cpf_invalido'}
-    if not isinstance(rows,list) or total is None or pagination or len(rows)!=total:
+    if not isinstance(rows,list) or total is None or len(rows)!=total:
         return {'status':'resultado_incompleto','encontrados_na_pagina':len(rows) if isinstance(rows,list) else 0}
     matches=[]
     for row in rows:
