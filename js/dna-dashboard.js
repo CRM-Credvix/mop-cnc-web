@@ -74,15 +74,15 @@
       const area=ensureArea(key,key==='gestao'?'Diagnósticos registrados':'Acompanhamento de diagnósticos');
       if (!area) continue;
       setText($('[data-dna-live-status]',area),
-        `${total} leitura(s) exibida(s) · ${conformes} conforme(s) visualmente · ${divergentes} com divergências · ${lotes.length} lote(s) criado(s). Identidades ainda não homologadas.`);
+        `${total} leitura(s) exibida(s) · ${conformes} conforme(s) visualmente · ${divergentes} com divergências · ${lotes.length} solicitação(ões) de conferência. Nenhuma alteração de permissões autorizada.`);
       drawRows(area,inspections);
     }
     // Painel Gestão: números de lotes reais, sem misturar com inspeções.
     const cards = stage('gestao')?.querySelectorAll('.dna-stat-grid .dna-stat-card')||[];
     if (cards.length>=4) {
-      const counts = ['na_fila','conferindo','concluido','revisao'].map(s=>lotes.filter(l=>l.status===s).length);
+      const counts = ['aguardando_worker','em_consulta','concluido','revisao'].map(s=>lotes.filter(l=>l.status===s).length);
       cards.forEach((el,i) => {if (i<4) setText(el.querySelector('strong'),counts[i]);});
-      const subs=['Lotes aguardando worker','Lotes em conferência','Lotes encerrados','Lotes em revisão'];
+      const subs=['Consultas aguardando worker','Consultas em andamento','Consultas encerradas','Consultas em revisão'];
       cards.forEach((el,i)=>{if(i<4)setText(el.querySelector('small'),subs[i]);});
     }
     // Auditoria: 'Verificados' seria incorreto sem identificação externa.
@@ -103,7 +103,7 @@
     try {
       const [a,b] = await Promise.all([
         client.from('dna_inspecoes').select('id,perfil,resultado,divergencias_total,importado_em').order('importado_em',{ascending:false}).limit(100),
-        client.from('dna_lotes').select('id,status,criado_em').order('criado_em',{ascending:false}).limit(100)
+        client.from('dna_consulta_lotes').select('id,status,criado_em').order('criado_em',{ascending:false}).limit(100)
       ]);
       if(a.error) throw a.error;
       if(b.error) throw b.error;
