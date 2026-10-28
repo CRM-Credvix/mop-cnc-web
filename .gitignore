@@ -7,3 +7,10 @@ Thumbs.db
 runtime/
 secrets/
 credentials/
+
+# DNA RPA local: nunca publicar credenciais, listas ou capturas
+worker/dna_local_references/
+worker/resultados/
+worker/*state*.json
+worker/*session*.json
+worker/nomes.txt
