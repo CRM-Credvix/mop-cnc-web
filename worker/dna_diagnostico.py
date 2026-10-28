@@ -18,6 +18,7 @@ from validar_referencias import SnapshotInvalid, compare_snapshots, make_snapsho
 
 ALLOWED_HOSTS = frozenset({"cadastro.help.com.br"})
 DEFAULT_JS = Path(__file__).with_name("dna_inspecao_dom.js")
+DEFAULT_ID_JS = Path(__file__).with_name("dna_identidade_probe.js")
 DEFAULT_MODELS = Path(__file__).resolve().parent / "dna_local_references"
 
 
@@ -48,6 +49,7 @@ def inspect_live(cdp_uri: str, profile: str) -> dict:
     except ImportError as exc:
         raise RuntimeError("Instale playwright e o navegador Edge localmente") from exc
     script = DEFAULT_JS.read_text(encoding="utf-8")
+    id_script = DEFAULT_ID_JS.read_text(encoding="utf-8")
     with sync_playwright() as p:
         browser = p.chromium.connect_over_cdp(cdp_uri)
         try:
@@ -60,10 +62,16 @@ def inspect_live(cdp_uri: str, profile: str) -> dict:
                                 continue
                             result = frame.evaluate(script)
                             if result.get("total_dom") == 227:
-                                candidates.append((page.url, result))
+                                candidates.append((page.url, result, frame))
             if len(candidates) != 1:
                 raise UnsafePage(f"Esperada 1 pagina DNA com 227 controles; encontradas {len(candidates)}. Selecione um unico cadastro aberto.")
-            url, data = candidates[0]
+            url, data, frame = candidates[0]
+            # Two independent DOM reads. No navigation or click. A stable value
+            # still remains an unverified candidate until DNA IDs are homologated.
+            identity_a = frame.evaluate(id_script)
+            page.wait_for_timeout(350)
+            identity_b = frame.evaluate(id_script)
+            data["identidade_observacoes"] = [identity_a, identity_b]
             data.update({"versao_formato": 1,
                          "capturado_em": datetime.now(timezone.utc).isoformat(),
                          "perfil_referencia": profile, "origem": urlsplit(url).hostname,

@@ -12,6 +12,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from validar_referencias import make_snapshot, compare_snapshots, SnapshotInvalid
+from identidade_dna import analyze_identity
 
 _FIELDS = ('ordem_dom', 'secao', 'subsecao', 'rotulo', 'ocorrencia', 'ng_model', 'marcado')
 
@@ -40,16 +41,7 @@ def build_report(reference: dict, raw: dict, hash_modelo: str) -> dict:
     observed = make_snapshot(raw, reference['perfil'])
     differences = compare_snapshots(reference, observed)
     controls = compact_controls(observed)
-    candidates = []
-    for v in raw.get('identidade_candidatos', []):
-        if not isinstance(v, dict):
-            continue
-        label, value = v.get('campo'), v.get('valor')
-        if (isinstance(label, str) and label in ('usuario.id','usuario.nome','usuario.login','usuario.codigo','usuario.matricula')
-                and isinstance(value, str) and 1 <= len(value) <= 140):
-            e = {'campo': label, 'valor': value}
-            if e not in candidates and len(candidates) < 5:
-                candidates.append(e)
+    identity_summary = analyze_identity(raw.get("identidade_observacoes"))
     captured_at = raw.get('capturado_em') or datetime.now(timezone.utc).isoformat()
     # Data confiavel no sentido do relógio local, NAO uma prova de horario do servidor.
     captured_dt = datetime.fromisoformat(captured_at.replace('Z', '+00:00'))
@@ -65,11 +57,7 @@ def build_report(reference: dict, raw: dict, hash_modelo: str) -> dict:
         'modelo_sha256': hash_modelo,
         'controles_verificados': 227,
         'controles_evidencia': controls,
-        'identidade_evidencia': {
-            'status': 'nao_verificada',
-            'candidatos_dom': candidates,
-            'observacao': 'Valores de formulario sao candidatos; um cadastro nao foi autenticado por ID persistente.'
-        },
+        'identidade_evidencia': identity_summary,
         'divergencias_total': len(differences),
         'divergencias': differences,
         'resultado': 'conforme_visual' if not differences else 'divergencias_visuais',
