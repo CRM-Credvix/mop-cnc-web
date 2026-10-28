@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Callable
 
 from dna_diagnostico import UnsafePage, inspect_live, validate_live_capture
+from dna_consulta import pesquisar_e_abrir
 from evidencia_dna import build_report, read_manifest
 from validar_referencias import SnapshotInvalid, make_snapshot, normalized_counts
 
@@ -135,13 +136,54 @@ def run() -> int:
     proc = start_edge(find_edge(), port)
     wait_cdp(port, proc)
     print("\nO Microsoft Edge foi aberto.")
-    print("FAÇA APENAS ISTO NA JANELA DO EDGE:")
-    print("  1. Entre no DNA com seu login e sua senha habituais.")
-    print("  2. Abra a manutencao de UM usuario autorizado para conferencia.")
-    print("  3. Nao precisa rolar a pagina; o robo tentara ler secoes fechadas carregadas.")
-    print("  4. Volte para ESTA janela preta e pressione ENTER.")
+    print("FAÇA LOGIN NO DNA PELO EDGE. DEPOIS ESCOLHA O MODO A SEGUIR:")
+    print("  Para busca automatica: abra Consulta de Usuarios.")
+    print("  Para conferencia manual: abra Manutencao de Usuario.")
+    print("  Nao precisa rolar a pagina; a leitura compara os controles carregados.")
     print("\nNao altere caixas de selecao nem clique em Gravar.")
     cdp = f"http://127.0.0.1:{port}"
+    print("\nCOMO DESEJA TRABALHAR?")
+    print("  [1] Buscar CPF e nome automaticamente, selecionar conta segura, abrir Editar e conferir")
+    print("  [2] Conferir manutencao que voce abriu no DNA (modo anterior)")
+    modo = input("Digite 1 ou 2 (padrao: 1): ").strip() or "1"
+    if modo == "1":
+        print("Abra a tela CONSULTA DE USUARIOS no Edge. Nao clique em Editar.")
+        cpf = input("CPF do colaborador (apenas neste computador): ").strip()
+        nome = input("Nome completo exatamente como no DNA: ").strip()
+        login = input("Login COMPLETO se houver duplicidade (senao pressione ENTER): ").strip()
+        if not nome or ' ' not in nome:
+            print("Informe nome e sobrenome para evitar associacao errada. Nada foi alterado.")
+            return 2
+        print("\nPesquisando e conferindo a conta em modo SOMENTE LEITURA...")
+        try:
+            resultado = pesquisar_e_abrir(cdp, cpf, nome, login)
+            print("Situacao da consulta:", resultado['status'].replace('_',' '))
+            if resultado['status'] == 'trinca_consistente_na_tela':
+                print("CPF, nome e Login na manutencao correspondem a conta selecionada.")
+                print("Lendo agora as 227 permissoes...")
+                report = make_report(reference, cdp)
+                report['identidade_evidencia']['consulta_previa'] = {
+                    'resultado': 'trinca_consistente_na_tela',
+                    'contas_mesmo_cpf': resultado.get('contas_mesmo_cpf'),
+                    'cpf_nome_login_conferidos_na_tela': True,
+                    'identidade_externa_homologada': False,
+                }
+                saida = save_report(report, profile)
+                print("DIAGNOSTICO CONCLUIDO - arquivo:", saida)
+                print("Divergencias:", report['divergencias_total'])
+                print("Importe este JSON em Auditoria DNA do MOP-CNC.")
+                print("Nenhuma permissao alterada. Identidade externa ainda nao homologada.")
+                return 0
+            print("Nao foi possivel escolher a conta automaticamente sem risco.")
+            print("Voce pode abrir a manutencao correta manualmente e usar o modo de conferencia.")
+        except (UnsafePage, SnapshotInvalid, OSError, RuntimeError, ValueError) as exc:
+            print("Consulta automatica interrompida:", str(exc))
+            print("A consulta nao foi executada ate o fim; nenhuma permissao foi alterada.")
+        if input("ENTER = conferir um cadastro aberto manualmente | S = sair: ").strip().lower() in ('s','0','sair'):
+            return 2
+    elif modo != '2':
+        print('Opcao invalida. Nenhuma operacao realizada.')
+        return 2
     while True:
         action = input("\nENTER = conferir a tela | S = sair: ").strip().lower()
         if action in ("s", "sair", "0"):

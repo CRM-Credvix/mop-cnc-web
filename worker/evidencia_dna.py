@@ -47,7 +47,7 @@ def build_report(reference: dict, raw: dict, hash_modelo: str) -> dict:
     identity_summary["validacao_cpf_login"] = cpf_summary
     identity_summary["leitura_dom"] = raw.get('leitura_dom', {'controles_carregados': 227, 'validada_duas_vezes': False})
     # Nenhum parecer local confirma identidade: preserva status inalterado.
-    if cpf_summary["resultado"] == "cpf_login_coincidem_na_tela":
+    if cpf_summary["resultado"] in ("cpf_login_coincidem_na_tela", "cpf_login_base_coincidem_na_tela"):
         identity_summary["parecer"] = "cpf_login_coincidem_na_tela"
     captured_at = raw.get('capturado_em') or datetime.now(timezone.utc).isoformat()
     # Data confiavel no sentido do relógio local, NAO uma prova de horario do servidor.
