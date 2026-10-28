@@ -7,4 +7,4 @@
 - CAPTCHA, MFA, SSO externo e formulario ambiguo requerem intervencao manual, sem tentar contornar protecoes.
 - Mantem todas as rotinas v3.1 de pesquisa CPF, verificacao do nome/login, duplicidade, leitura de 227 controles e gravacao bloqueada.
 - Keyring fixado em 25.6.0, instalada pelo BAT com ambiente isolado.
-- Testes: 85 de regressao aprovados localmente, incluindo 15 do login e simulacao de DOM Chromium. Login real no DNA depende de homologacao no computador do operador.
+- Testes: 86 de regressao aprovados localmente, incluindo 15 do login e simulacao de DOM Chromium. Login real no DNA depende de homologacao no computador do operador.

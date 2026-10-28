@@ -10,6 +10,12 @@
   const challenge = /(?:selecione todas as imagens|selecione todos os quadrados|verificacao em duas etapas|codigo de verificacao|autenticacao de dois fatores|digite o codigo de verificacao|mfa|codigo enviado)/.test(bodyText) ||
     [...document.querySelectorAll('iframe')].some(e => /(?:recaptcha|hcaptcha|captcha|challenge)/i.test([e.src,e.title].join(' ')) && visible(e));
   const invalid = /(?:usuario ou senha invalid|senha incorret|credenciais invalid|dados de acesso invalid|senha invalid|usuario bloqueado|conta bloqueada|muitas tentativas|excesso de tentativas)/.test(bodyText);
+  // Do not ever treat the password-change panel inside an authenticated module as login.
+  const maintenancePage=/(?:manutencao de usuario|consulta de usuarios|propostas digitadas|alteracao de senha|alterar senha)/.test(bodyText);
+  if (maintenancePage || pageAuth) {
+    return {login:false,authenticated:pageAuth || maintenancePage,challenge,invalid:false,
+      fields_ambiguous:false,username_index:null,password_index:null,submit_index:null};
+  }
   const fields=[...document.querySelectorAll('input')];
   const eligible=fields.map((el,i)=>({el,i})).filter(({el})=>visible(el) && !['hidden','checkbox','radio','submit','button','reset','file'].includes((el.getAttribute('type')||'text').toLowerCase()));
   const passwords=eligible.filter(({el})=>(el.type||'').toLowerCase()==='password');
