@@ -166,6 +166,12 @@ class DomTests(unittest.TestCase):
         x=self.page.evaluate(self.script)
         self.assertTrue(x['authenticated'])
         self.assertFalse(x['login'])
+    def test_session_expired_password_form_over_menu(self):
+        self.page.set_content('''<header>Principal - Cadastro de usuários</header><form>
+        <input name="username" autocomplete="username"><input type="password"><button>Entrar</button></form>''')
+        x=self.page.evaluate(self.script)
+        self.assertTrue(x['login'])
+        self.assertFalse(x['authenticated'])
     def test_maintenance_password_change_is_not_login(self):
         self.page.set_content('''<h1>Manutenção de Usuário</h1><form>
             <input name="username"><input type="password"><button type="submit">Entrar</button></form>''')
