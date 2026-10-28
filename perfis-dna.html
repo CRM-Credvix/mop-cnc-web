@@ -350,6 +350,29 @@
             <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--blue">◔</div><div><span>Última atualização</span><strong>—</strong><small>Sem registros</small></div></div>
           </div>
 
+          <section class="dna-card" aria-label="Importar diagnósticos visuais">
+            <div class="dna-card-title-row">
+              <div class="dna-card-icon dna-card-icon--muted">▧</div>
+              <div>
+                <h2>Importar diagnósticos visuais</h2>
+                <p>Registre relatórios v2 obtidos pelo robô somente leitura. A identidade do cadastro continua pendente de homologação.</p>
+              </div>
+            </div>
+            <div class="dna-inline-actions">
+              <label for="dnaReportFiles">Arquivos JSON (até 10 por vez)</label>
+              <input id="dnaReportFiles" type="file" accept=".json,application/json" multiple>
+              <button id="dnaReportUpload" class="dna-button dna-button--primary" type="button">Registrar diagnósticos</button>
+              <button id="dnaReportRefresh" class="dna-button dna-button--secondary" type="button">Atualizar registros</button>
+            </div>
+            <p id="dnaReportInfo" role="status">Relatórios antigos sem evidência completa não podem ser importados. Nenhuma permissão será modificada.</p>
+            <div class="dna-table-shell">
+              <table class="dna-table" aria-label="Últimos diagnósticos importados">
+                <thead><tr><th>Leitura</th><th>Importação</th><th>Referência</th><th>Divergências</th><th>Identidade</th><th>Resultado</th></tr></thead>
+                <tbody id="dnaReportRows"><tr><td colspan="6" class="dna-empty-row">Clique em Atualizar registros para consultar o Supabase.</td></tr></tbody>
+              </table>
+            </div>
+          </section>
+
           <section class="dna-card">
             <div class="dna-card-title-row">
               <div class="dna-card-icon dna-card-icon--muted">☰</div>
@@ -411,5 +434,6 @@
   <script src="js/config.js"></script>
   <script src="js/mop-shell.js?v=20261023-02"></script>
   <script src="js/perfis-dna.js?v=20261023-01"></script>
+  <script src="js/dna-relatorios.js?v=20261028-01"></script>
 </body>
 </html>

@@ -112,7 +112,23 @@
       aria_label: tecnico("aria-label")
     });
   }
+  // Candidatos de identidade: lista estrita de ng-models da manutencao.
+  // Nunca coleta senhas, cookies, tokens nem campos nao relacionados.
+  const CAMPOS_CADASTRO = new Set([
+    "usuario.id", "usuario.nome", "usuario.login", "usuario.codigo", "usuario.matricula"
+  ]);
+  const identidadeCandidatos = [];
+  for (const entrada of document.querySelectorAll('[ng-model], [data-ng-model]')) {
+    const campo = entrada.getAttribute('ng-model') || entrada.getAttribute('data-ng-model');
+    if (!CAMPOS_CADASTRO.has(campo)) continue;
+    const valor = String(entrada.value || entrada.getAttribute('value') || '').trim();
+    if (valor && valor.length <= 140 &&
+        !identidadeCandidatos.some(x => x.campo === campo && x.valor === valor)) {
+      identidadeCandidatos.push({campo, valor});
+    }
+  }
   return {
+    identidade_candidatos: identidadeCandidatos,
     itens: formularios,
     secoes_encontradas: [...new Set(titulosVistos)],
     total_dom: formularios.length,
