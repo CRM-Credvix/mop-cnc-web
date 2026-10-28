@@ -1,0 +1,17 @@
+{
+  "versao": 1,
+  "modelos": {
+    "CONSULTOR": {
+      "snapshot_sha256": "d6272616602e77e02026cfa11797f2350a20421f6063ee2d8e5e12259b915291",
+      "arquivo_sha256": "4e05a6cb87aeecd913cb32475f5f031ce64317ed2f7e404c33660cee7a3b90ca",
+      "versao": 1,
+      "homologado": false
+    },
+    "SUPERVISOR": {
+      "snapshot_sha256": "d0e8c27f086aeff53ea8b7ddd93983b775c2bc36cc924ebd906a1a2bd303221b",
+      "arquivo_sha256": "e9026455ce0e47ba2b9d223c1048c09d5fece714e8185a784c4a3585d80fc9b0",
+      "versao": 1,
+      "homologado": false
+    }
+  }
+}
