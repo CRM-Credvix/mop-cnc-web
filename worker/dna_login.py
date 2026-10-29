@@ -59,34 +59,38 @@ def credentials(vault, input_fn: Callable[[str], str] = input,
 
 
 def _login_frame(browser, script):
-    login_frames=[]
-    auth_seen=False
-    allowed_pages=0
+    """Read ONLY trusted DNA pages; unrelated Edge tabs and SSO never receive credentials."""
+    login_frames = []
+    auth_seen = False
+    outside_seen = False
     for ctx in browser.contexts:
         for page in ctx.pages:
-            if page.url=='about:blank':
+            if page.url == 'about:blank':
                 continue
             if not allowed_url(page.url):
-                raise LoginNeedsUser('Navegacao para outro dominio ou SSO externo; faca login manualmente.')
-            allowed_pages+=1
+                outside_seen = True
+                continue
             for frame in page.frames:
                 if not allowed_url(frame.url):
+                    outside_seen = True
                     continue
                 try:
-                    observed=frame.evaluate(script)
+                    observed = frame.evaluate(script)
                 except Exception:
-                    continue   # DOM ainda em navegacao
+                    continue
                 if observed.get('login'):
-                    login_frames.append((page,frame,observed))
+                    login_frames.append((page, frame, observed))
                 if observed.get('authenticated'):
-                    auth_seen=True
-    if len(login_frames)>1:
-        raise LoginNeedsUser('Mais de uma tela de login encontrada. Feche as abas duplicadas.')
-    if len(login_frames)==1:
-        return ('login',*login_frames[0])
+                    auth_seen = True
+    if len(login_frames) > 1:
+        raise LoginNeedsUser('Mais de uma tela de login do DNA encontrada. Feche as abas duplicadas.')
+    if len(login_frames) == 1:
+        return ('login', *login_frames[0])
     if auth_seen:
-        return ('authenticated',None,None,None)
-    return ('unknown',None,None,None)
+        return ('authenticated', None, None, None)
+    if outside_seen:
+        return ('external', None, None, None)
+    return ('unknown', None, None, None)
 
 
 def _await_state(browser, script, seconds: float, delay=0.35, accept_login=False):
@@ -117,19 +121,24 @@ def _send_login(frame, probe, username, password):
 def login_auto(cdp_uri: str, *, input_fn=input, password_fn=getpass,
                browser_factory=None, vault_factory=windows_vault,
                max_attempts=MAX_ATTEMPTS, time_limit=18):
-    """Retorna 'authenticated' ou 'manual'. Nunca tenta burlar MFA/CAPTCHA."""
+    """Return 'authenticated' or 'manual'; unrecognized layouts never crash the assistant."""
     _verify_local_cdp(cdp_uri)
     script=PROBE.read_text(encoding='utf-8')
+    def safe_perform(browser):
+        try:
+            return _perform(browser,script,input_fn,password_fn,vault_factory,max_attempts,time_limit)
+        except LoginNeedsUser as exc:
+            print('A autenticacao precisa de intervencao: '+str(exc))
+            return 'manual'
     if browser_factory is None:
         from playwright.sync_api import sync_playwright
         with sync_playwright() as playwright:
             browser=playwright.chromium.connect_over_cdp(cdp_uri)
             try:
-                return _perform(browser,script,input_fn,password_fn,vault_factory,max_attempts,time_limit)
+                return safe_perform(browser)
             finally:
                 browser.close()
-    else:
-        return _perform(browser_factory(),script,input_fn,password_fn,vault_factory,max_attempts,time_limit)
+    return safe_perform(browser_factory())
 
 
 def _perform(browser,script,input_fn,password_fn,vault_factory,max_attempts,time_limit):
@@ -137,8 +146,13 @@ def _perform(browser,script,input_fn,password_fn,vault_factory,max_attempts,time
     if state[0]=='authenticated':
         print('Sessao do DNA ja esta ativa. Login desnecessario.')
         return 'authenticated'
-    if state[0]!='login':
-        print('Nao reconheci com seguranca a tela do DNA. Login manual necessario.')
+    if state[0] != 'login':
+        if state[0] == 'external':
+            print('O Edge abriu outra aba ou uma pagina externa de autenticacao.')
+            print('Por seguranca, nunca envio credenciais automaticamente a dominios desconhecidos.')
+        else:
+            print('A tela de login ainda nao foi reconhecida com seguranca.')
+        print('Conclua o login no Edge; o assistente continuara apos a confirmacao.')
         return 'manual'
     if state[3].get('challenge'):
         print('O DNA exige CAPTCHA/verificacao adicional. Conclua manualmente.')
