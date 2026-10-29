@@ -18,7 +18,7 @@ from typing import Callable
 
 from dna_diagnostico import UnsafePage, inspect_live, validate_live_capture
 from dna_consulta import pesquisar_e_abrir
-from dna_login import login_auto, session_confirmed
+from dna_acesso import preparar_acesso, LoginBloqueado
 from evidencia_dna import build_report, read_manifest
 from validar_referencias import SnapshotInvalid, make_snapshot, normalized_counts
 
@@ -138,26 +138,35 @@ def run() -> int:
     wait_cdp(port, proc)
     print("\nO Microsoft Edge foi aberto.")
     cdp = f"http://127.0.0.1:{port}"
-    print("Verificando sessao e realizando login automatico quando necessario...")
-    resultado_login = login_auto(cdp)
-    if resultado_login == 'manual':
-        print("O DNA exige login manual ou verificacao adicional nesta execucao.")
-        print("Conclua pelo Edge, sem informar sua senha aqui na conversa.")
-        input("Depois de entrar no DNA, pressione ENTER aqui: ")
-        if not session_confirmed(cdp):
-            print("Sessao nao confirmada. Abra Consulta de Usuarios e repita a inicializacao.")
-            return 2
+    print("Login CAS e navegacao automatica para Consulta de Usuarios...")
+    try:
+        preparar_acesso(cdp)
+    except LoginBloqueado as exc:
+        print("Nao foi possivel concluir o acesso:", str(exc))
+        print("Nao houve alteracao de permissoes.")
+        return 2
     print("ACESSO DNA CONFIRMADO. DEPOIS ESCOLHA O MODO A SEGUIR:")
-    print("  Para busca automatica: abra Consulta de Usuarios.")
+    print("  A Consulta de Usuarios ja foi aberta automaticamente.")
     print("  Para conferencia manual: abra Manutencao de Usuario.")
     print("  Nao precisa rolar a pagina; a leitura compara os controles carregados.")
     print("\nNao altere caixas de selecao nem clique em Gravar.")
     print("\nCOMO DESEJA TRABALHAR?")
     print("  [1] Buscar CPF e nome automaticamente, selecionar conta segura, abrir Editar e conferir")
     print("  [2] Conferir manutencao que voce abriu no DNA (modo anterior)")
-    modo = input("Digite 1 ou 2 (padrao: 1): ").strip() or "1"
+    print("  [3] Processar fila MOP-CNC (SOMENTE LEITURA; requer chave worker local)")
+    modo = input("Digite 1, 2 ou 3 (padrao: 1): ").strip() or "1"
+    if modo == "3":
+        from dna_fila_worker import executar_fila
+        try:
+            limite = input("Maximo de itens nesta execucao (padrao: 10): ").strip()
+            total = executar_fila(cdp, limite=int(limite) if limite else 10)
+            print(f"Fila encerrada. {total} item(ns) conferidos sem gravacao no DNA.")
+            return 0
+        except (RuntimeError, ValueError, OSError) as exc:
+            print("Fila interrompida:", str(exc))
+            return 2
     if modo == "1":
-        print("Abra a tela CONSULTA DE USUARIOS no Edge. Nao clique em Editar.")
+        print("Consulta de Usuarios aberta pelo robo. Nao clique em Editar.")
         cpf = input("CPF do colaborador (apenas neste computador): ").strip()
         nome = input("Nome completo exatamente como no DNA: ").strip()
         login = input("Login COMPLETO se houver duplicidade (senao pressione ENTER): ").strip()
