@@ -1,4 +1,4 @@
-# CREDVIX DNA — piloto integrado v4.0
+# CREDVIX DNA — piloto integrado v4.0.1
 
 ## Abrangência
 
@@ -53,3 +53,6 @@ rollback e releitura após gravação.
 
 Nenhum código desta entrega clica em **Gravar**, **Confirmar** ou modifica
 permissões. Testes não acessam o DNA real ou dados de produção.
+
+## Ajuste v4.0.1: login CAS e diagnostico de sessao
+Presenca de texto CAPTCHA/token ou widget recaptcha passivo na pagina nao cancela automaticamente o login. O robo so exige conclusao manual quando observa um desafio interativo real. Se nao confirmar a sessao, mostra apenas a etapa (CAS, portal ou Cadastro), sem URL ou dados pessoais. Leia CHANGELOG_v4_0_1.md para detalhes. Nao habilita alteracoes de permissoes.
