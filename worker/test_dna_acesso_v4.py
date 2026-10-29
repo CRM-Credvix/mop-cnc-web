@@ -74,15 +74,15 @@ class ChromiumLoginSelectors(unittest.TestCase):
         cls.browser.close();cls.session.__exit__(None,None,None)
     def test_recorded_cas_form_matches(self):
         self.page.set_content(self.form_html)
-        form=a._cas_form(SimpleNamespace(url=a.CAS_URL, locator=self.page.locator))
+        form=a._cas_form(SimpleNamespace(url=a.CAS_URL, locator=self.page.locator, get_by_role=self.page.get_by_role))
         self.assertEqual(len(form),3)
         self.assertTrue(form[0].is_visible())
     def test_cas_never_uses_other_domain(self):
         self.page.set_content(self.form_html)
-        self.assertIsNone(a._cas_form(SimpleNamespace(url='https://example.invalid/cas/login',locator=self.page.locator)))
+        self.assertIsNone(a._cas_form(SimpleNamespace(url='https://example.invalid/cas/login',locator=self.page.locator, get_by_role=self.page.get_by_role)))
     def test_multiple_password_inputs_refused(self):
         self.page.set_content(self.form_html)
         self.page.evaluate("document.querySelector('form').insertAdjacentHTML('beforeend','<input type=password>')")
-        self.assertIsNone(a._cas_form(SimpleNamespace(url=a.CAS_URL,locator=self.page.locator)))
+        self.assertIsNone(a._cas_form(SimpleNamespace(url=a.CAS_URL,locator=self.page.locator, get_by_role=self.page.get_by_role)))
 
 if __name__=='__main__':unittest.main()

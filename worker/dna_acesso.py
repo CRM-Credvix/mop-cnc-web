@@ -127,6 +127,8 @@ def _cas_form(page):
         'input[aria-label*="Usuário" i]',
         'input[type="text"]'
     ])
+    if page.locator('input[type="password"]:visible').count() > 1:
+        return None  # nao escolher arbitrariamente em tela com multiplas senhas
     password = _safe_locator(page,[
         'input[type="password"]',
         'input[autocomplete="current-password"]',
@@ -137,6 +139,12 @@ def _cas_form(page):
         'input[type="submit"]',
         'button:has-text("Entrar")',
     ])
+    if password is None:
+        # O Recorder real da CREDVIX nomeia o campo da senha como
+        # "Tecla Caps Lock ativada" em alguns layouts do CAS.
+        alt = page.get_by_role('textbox',name=re.compile(r'^(?:Tecla Caps Lock ativada|Senha)$',re.I))
+        if _visible(alt):
+            password=alt.first
     if not (user and password and submit):
         return None
     if user == password:
@@ -184,6 +192,8 @@ def _dna_authenticated(browser) -> bool:
                 if page.get_by_role('link',name=re.compile('M[oó]dulo Cadastro',re.I)).count():
                     return True
                 if page.get_by_role('link',name=re.compile('^Sistemas$',re.I)).count():
+                    return True
+                if host(page.url) == PORTAL_HOST and page.get_by_text(re.compile('Voc[eê] est[aá] logado com o usu[aá]rio',re.I)).count():
                     return True
             except Exception:
                 pass
