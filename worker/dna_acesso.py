@@ -103,19 +103,34 @@ def _obter_credenciais():
 
 def _visible(locator) -> bool:
     try:
-        return locator.count() == 1 and locator.first.is_visible(timeout=250)
+        matches = [locator.nth(i) for i in range(min(locator.count(), 25))
+                   if locator.nth(i).is_visible(timeout=250)]
+        return len(matches) == 1
     except Exception:
         return False
 
 
 def _safe_locator(scope, selectors):
-    """Exige candidato unico visivel por seletor; nunca escolhe .first arbitrario entre muitos."""
+    """Use only one visible matching element, including when hidden clones exist.
+
+    A selector with multiple VISIBLE candidates is ambiguous; do not fall back
+    to a weaker selector (which might accidentally choose one of those fields).
+    """
     for selector in selectors:
         loc = scope.locator(selector)
-        if _visible(loc):
-            return loc.first
+        candidates = []
+        for i in range(min(loc.count(), 25)):
+            candidate = loc.nth(i)
+            try:
+                if candidate.is_visible(timeout=250) and candidate.is_enabled(timeout=250):
+                    candidates.append(candidate)
+            except Exception:
+                continue
+            if len(candidates) > 1:
+                return None
+        if len(candidates) == 1:
+            return candidates[0]
     return None
-
 
 def _cas_form(page):
     if not is_cas(page.url):
@@ -152,23 +167,58 @@ def _cas_form(page):
     return user, password, submit
 
 
-def _page_challenge(page) -> bool:
+def _visible_message(page, pattern: str) -> bool:
+    """Only render-visible error/challenge text; never inspect input values."""
     try:
-        body = (page.locator('body').inner_text(timeout=1000) or '').lower()
-        if re.search(r'captcha|mfa|autentica[cç][aã]o de dois fatores|c[oó]digo de verifica[cç][aã]o|\btoken\b|acesso bloqueado',body):
-            return True
-        return bool(page.locator('iframe[src*="recaptcha"],iframe[src*="hcaptcha"]').count())
+        loc = page.get_by_text(re.compile(pattern, re.I))
+        for i in range(min(loc.count(), 25)):
+            if loc.nth(i).is_visible(timeout=200):
+                return True
     except Exception:
         return False
+    return False
+
+
+def _page_challenge(page) -> bool:
+    """A passive reCAPTCHA widget/mention is not an interactive challenge.
+
+    This follows the already-working boleto robot: only stop when a real
+    challenge (large challenge frame, visible action request or MFA step) appears.
+    """
+    patterns = (
+        r'selecione (?:todas as imagens|todos os quadrados)',
+        r'digite o c[oó]digo de verifica[cç][aã]o',
+        r'(?:insira|informe) o c[oó]digo (?:de )?(?:seguran[cç]a|autentica[cç][aã]o)',
+        r'autentica[cç][aã]o (?:em duas etapas|de dois fatores)',
+        r'verifica[cç][aã]o (?:expirada|obrigat[oó]ria)',
+    )
+    if any(_visible_message(page, p) for p in patterns):
+        return True
+    try:
+        frames=page.locator('iframe[title*="challenge" i], iframe[src*="bframe" i], iframe[src*="recaptcha" i]')
+        for i in range(min(frames.count(), 12)):
+            frame=frames.nth(i)
+            if not frame.is_visible(timeout=150):
+                continue
+            bounds=frame.bounding_box(timeout=300)
+            if bounds and bounds.get('width',0)>=250 and bounds.get('height',0)>=120:
+                return True
+    except Exception:
+        pass
+    return False
 
 
 def _page_invalid(page) -> bool:
-    try:
-        txt=(page.locator('body').inner_text(timeout=1000) or '').lower()
-        return bool(re.search(r'(usu[aá]rio ou senha|senha incorreta|senha inv[aá]lida|credenciais inv[aá]lidas|muitas tentativas)',txt))
-    except Exception:
-        return False
-
+    """Specific visible credential errors only (not generic words or HTML)."""
+    patterns = (
+        r'usu[aá]rio ou senha (?:inv[aá]lid[oa]s?|incorret[oa]s?)',
+        r'senha (?:incorreta|inv[aá]lida)',
+        r'credenciais (?:inv[aá]lidas|incorretas)',
+        r'dados de acesso inv[aá]lidos',
+        r'muitas tentativas de (?:login|acesso)',
+        r'conta (?:bloqueada|suspensa)',
+    )
+    return any(_visible_message(page, p) for p in patterns)
 
 def _dna_authenticated(browser) -> bool:
     """Sinais fortes, nao apenas texto principal da pagina CAS."""
@@ -193,11 +243,29 @@ def _dna_authenticated(browser) -> bool:
                     return True
                 if page.get_by_role('link',name=re.compile('^Sistemas$',re.I)).count():
                     return True
-                if host(page.url) == PORTAL_HOST and page.get_by_text(re.compile('Voc[eê] est[aá] logado com o usu[aá]rio',re.I)).count():
-                    return True
+                if host(page.url) == PORTAL_HOST:
+                    body=(page.locator('body').inner_text(timeout=1200) or '')[:4000]
+                    # A dedicated authenticated portal may display these status markers
+                    # before the 'Sistemas' navigation is populated.
+                    if re.search(r'voc[eê] est[aá] logado com o usu[aá]rio|sua sess[aã]o expira',body,re.I):
+                        return True
+                    if re.search(r'\bprincipal\b',body,re.I) and re.search(r'\b(?:sair|cadastro|vendas)\b',body,re.I):
+                        return True
             except Exception:
                 pass
     return False
+
+
+def _auth_state(browser) -> str:
+    """Safe diagnostic labels; never log URLs, credentials, CPF, or DOM snapshots."""
+    domains={host(page.url) for ctx in browser.contexts for page in ctx.pages}
+    if CADASTRO_HOST in domains:
+        return 'Cadastro carregado; verificando menu'
+    if PORTAL_HOST in domains:
+        return 'Portal DNA carregado; verificando autenticacao'
+    if CAS_HOST in domains:
+        return 'Formulario CAS ainda aberto'
+    return 'Aba de autenticacao nao identificada'
 
 
 def _wait_authenticated(browser, seconds=22):
@@ -217,11 +285,18 @@ def _login_cas(browser, page):
     for attempt in (1,2):
         if not is_cas(page.url):
             return _wait_authenticated(browser,6)
-        if _page_challenge(page) or _page_invalid(page):
-            raise LoginBloqueado('CAPTCHA, verificacao adicional ou credencial recusada. Login manual necessario.')
+        if _page_challenge(page):
+            raise LoginBloqueado('Desafio interativo ou verificacao adicional visivel no CAS.')
         form=_cas_form(page)
         if not form:
-            raise LoginBloqueado('Formulario CAS mudou: nao vou preencher campos ambiguos.')
+            # Angular may render the form after domcontentloaded. Do not retry on
+            # an arbitrary page: the allowlisted CAS path is checked each time.
+            deadline=time.monotonic()+7
+            while not form and is_cas(page.url) and time.monotonic()<deadline:
+                time.sleep(.3)
+                form=_cas_form(page)
+            if not form:
+                raise LoginBloqueado('Formulario CAS nao identificado; sem preencher campos ambiguos.')
         if cred is None:
             cred=_obter_credenciais()
         username,password,stored,vault=cred
@@ -358,12 +433,15 @@ def preparar_acesso(cdp_uri: str, *, manual_callback=input) -> str:
                     try:
                         _login_cas(browser,page)
                     except LoginBloqueado as exc:
-                        print('Autenticacao automatica indisponivel:',exc)
+                        print('Login automatico nao concluido:',exc)
+                        print('Etapa atual:',_auth_state(browser))
                 if not _dna_authenticated(browser):
-                    print('Conclua a autenticacao no Edge (CAPTCHA/MFA, se aparecer).')
-                    manual_callback('Depois do login, pressione ENTER para continuar: ')
-                    if not _wait_authenticated(browser,7):
-                        raise LoginBloqueado('Sessao nao confirmada no DNA; operacao interrompida sem alteracoes.')
+                    print('Autenticacao ainda nao confirmada: '+_auth_state(browser))
+                    print('Conclua o login no Edge, inclusive verificacoes adicionais, se exigidas.')
+                    manual_callback('Depois que aparecer o menu do DNA, pressione ENTER aqui: ')
+                    if not _wait_authenticated(browser,18):
+                        raise LoginBloqueado('Sessao nao confirmada ('+_auth_state(browser)+'). '
+                                             'Verifique o login no Edge. Nada foi alterado.')
             print('Sessao autenticada. Abrindo modulo Cadastro e Consulta de Usuarios...')
             _navegar_para_consulta(browser)
             print('Consulta de Usuarios aberta automaticamente.')
