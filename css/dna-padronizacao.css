@@ -24,3 +24,5 @@ html[data-theme="dark"] .dna-body #dnaAuditSearch{
 html[data-theme="dark"] .dna-body .dna-padronizacao-search-label{color:var(--dna-text);}
 html[data-theme="dark"] .dna-body .dna-padronizacao-error{color:#ffad9b!important;}
 @media(max-width:860px){#dnaAuditSearch{max-width:100%;}}
+/* Para o segundo piloto, o CPF/nome nao sao redigitados: reuso protegido no servidor. */
+#dnaUserEntry[hidden]{display:none!important;}
