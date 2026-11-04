@@ -10,9 +10,9 @@ O site usa **somente a fila `dna_web_*`** para solicitações de padronização.
 
 Distribuição: `CREDVIX_DNA_AGENTE_WEB_V4_HOMOLOGACAO_SEGURA.zip` (anexo entregue no ChatGPT).
 
-SHA-256 do ZIP: `7c8b768311db7722732c648007f51f9f7a7d8f184d263d298e880e584ff7e2d3`.
+SHA-256 do ZIP: `541da7fc778a22c1cb8786c67e29dbfce558aa35e60f0184db921a1cfbc7eb49`.
 
-SHA-256 do módulo `v4_payload/dna_web_executor.py`: `aca2f49696544fd61df477d546bba68fc4c127b7105b5e09af5d7f8b3c9f2b1c`.
+SHA-256 do módulo `v4_payload/dna_web_executor.py`: `79ab9391f26de357e7db7c1ad9808565bc44f6fb07721fb439d3086d394c3753`.
 
 Instalação permitida **somente** sobre o módulo V3 conhecido (`c2579f71885657d7c5daf0a89365e0a7d83e02a4ad2016f87006013acf3c242a`); caso contrário, falha fechada com backup intacto. O script de instalação não muda o motor, os modelos, o cofre WinVault, o banco de dados ou os arquivos de log preexistentes.
 
