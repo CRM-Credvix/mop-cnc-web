@@ -8,7 +8,12 @@
   const $=id=>document.getElementById(id);
   const client=window.MOP_SUPABASE;
   const shell=$('dnaShell');
-  if(!client||!shell||!$('dnaSubmit'))return;
+  if(!client||!shell||!$('dnaSubmit')){
+    const notice=$('dnaPilotNotice');
+    if(notice)notice.textContent='O módulo de autorização não inicializou. Recarregue a página; nenhuma solicitação foi criada.';
+    return;
+  }
+  document.documentElement.dataset.dnaPilotScript='loaded';
   const labels=Object.freeze({
     CONSULTOR_1:'Consultor 1',CONSULTOR_2:'Consultor 2',
     SUPERVISOR_1:'Supervisor 1',SUPERVISOR_2:'Supervisor 2'
@@ -114,7 +119,7 @@
     }catch(_){
       ready=false;active.clear();pilotReady=false;pilotCanPrepare=false;
       pilotState='indisponivel';available();
-      message('Não foi possível validar a autorização do piloto. Nenhuma solicitação pode ser enviada.',true);
+      message('Não foi possível validar a autorização do piloto no Supabase. Nenhuma solicitação pode ser enviada. Atualize a página; se persistir, informe a mensagem do console sem dados pessoais.',true);
     }
   }
   async function authorizePilot(){
