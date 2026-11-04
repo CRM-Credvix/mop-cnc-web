@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="css/perfis-dna.css?v=2026-10-22-01">
   <link rel="stylesheet" href="css/mop-shell.css?v=20261023-02b">
   <link rel="stylesheet" href="css/perfis-dna-theme.css?v=20261104-01">
-  <link rel="stylesheet" href="css/dna-padronizacao.css?v=20261104-oneclick-1">
+  <link rel="stylesheet" href="css/dna-padronizacao.css?v=20261104-origin-2">
 </head>
 <body class="dna-body">
   <div class="mop-shell dna-app-shell" id="dnaShell" hidden>
@@ -45,13 +45,15 @@
                 <div class="dna-card-icon">⇉</div>
                 <div><h2>Nova padronização</h2><p>Para a revalidação controlada, informe somente o colaborador que participou do primeiro piloto.</p></div>
               </div>
-              <div class="dna-field-head">
-                <label for="dnaNames">Colaborador para padronizar</label>
-                <span id="dnaCountInline">0 colaboradores</span>
+              <div id="dnaUserEntry">
+                <div class="dna-field-head">
+                  <label for="dnaNames">Colaborador para padronizar</label>
+                  <span id="dnaCountInline">0 colaboradores</span>
+                </div>
+                <textarea id="dnaNames" rows="7" placeholder="CPF; Nome completo" autocomplete="off" spellcheck="false" aria-describedby="dnaNamesHelp dnaInputError"></textarea>
+                <p id="dnaInputError" class="dna-input-error" role="alert" hidden></p>
+                <p class="dna-helper-line" id="dnaNamesHelp">Informe CPF e nome completo, separados por ponto e vírgula. O CPF completo não aparece no acompanhamento nem nos relatórios.</p>
               </div>
-              <textarea id="dnaNames" rows="7" placeholder="CPF; Nome completo" autocomplete="off" spellcheck="false" aria-describedby="dnaNamesHelp dnaInputError"></textarea>
-              <p id="dnaInputError" class="dna-input-error" role="alert" hidden></p>
-              <p class="dna-helper-line" id="dnaNamesHelp">Informe CPF e nome completo, separados por ponto e vírgula. O CPF completo não aparece no acompanhamento nem nos relatórios.</p>
 
               <div class="dna-field-split dna-padronizacao-model-label">
                 <label id="dnaModelLabel">Modelo de permissões a aplicar</label>
@@ -77,9 +79,9 @@
               </div>
 
               <p class="dna-helper-line" id="dnaFlowNote">
-                Próximo teste: revalidar somente o colaborador do piloto Consultor 2 já concluído.
-                Informe o mesmo CPF e nome e clique em Solicitar padronização.
-                O robô fará nova leitura e, se estiver conforme, não gravará nada.
+                Próximo teste: revalidar o mesmo colaborador do piloto Consultor 2.
+                O sistema recupera a identidade protegida do lote original; não é preciso redigitar CPF nem nome.
+                Se já estiver conforme, não haverá gravação.
               </p>
               <div class="dna-bottom-cta">
                 <span id="dnaModelAvailability">Verificando disponibilidade da execução...</span>
@@ -212,6 +214,6 @@
   <script src="js/config.js"></script>
   <script src="js/mop-shell.js?v=20261104-unico"></script>
   <script src="js/perfis-dna.js?v=20261104-unico"></script>
-  <script src="js/dna-padronizacao.js?v=20261104-oneclick-1"></script>
+  <script src="js/dna-padronizacao.js?v=20261104-origin-2"></script>
 </body>
 </html>
