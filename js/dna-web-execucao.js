@@ -11,8 +11,9 @@
   const MODELS={CONSULTOR_1:"Consultor 1",CONSULTOR_2:"Consultor 2",
     SUPERVISOR_1:"Supervisor 1",SUPERVISOR_2:"Supervisor 2"};
   let sending=false,enabled=false,key="",signature="";
+  let activeModels=new Set();
   const message=(s,bad=false)=>{const e=$("dnaWebInfo");e.textContent=s;e.style.color=bad?"#a23225":"";};
-  const chosen=()=>root.querySelector('input[name="dnaWebModelo"]:checked')?.value||"";
+  const chosen=()=>document.querySelector('input[name="dnaProfile"]:checked')?.value||"";
   const date=s=>s?new Date(s).toLocaleString("pt-BR"):"—";
   function cpfValid(raw){
     if(!/^\d{11}$/.test(raw)||/^(\d)\1{10}$/.test(raw))return false;
@@ -23,23 +24,26 @@
     return true;
   }
   function rows(){
-    const lines=$("dnaWebPessoas").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
-    if(!lines.length||lines.length>50)throw Error("Informe de 1 a 50 colaboradores.");
+    // Mesmos colaboradores da conferencia. O modelo da padronizacao e
+    // lido do seletor principal; o login opcional nao entra na fila de escrita.
+    const valid=window.DNA_CONSULTA_FILA?.parseRows();
+    if(!Array.isArray(valid))throw Error("Validador de colaboradores indisponivel.");
     const seen=new Set();
-    return lines.map((line,i)=>{
-      const parts=line.split(";").map(x=>x.trim());
-      if(parts.length!==2)throw Error("Linha "+(i+1)+": use CPF; Nome completo.");
-      const cpf=parts[0].replace(/\D/g,"");
-      const nome=parts[1].replace(/\s+/g," ");
-      if(!cpfValid(cpf)||nome.length<5||nome.length>140||!nome.includes(" "))
-        throw Error("CPF ou nome invalido na linha "+(i+1));
-      if(seen.has(cpf))throw Error("CPF duplicado no lote.");
-      seen.add(cpf);
-      return {cpf,nome};
+    return valid.map(x=>{
+      if(seen.has(x.cpf))throw Error("CPF repetido no lote de padronizacao.");
+      seen.add(x.cpf);
+      return {cpf:x.cpf,nome:x.nome};
     });
   }
+  let priorModel="";
   function prompt(){
-    $("dnaWebConfirmHelp").textContent="Para autorizar, digite exatamente APLICAR "+chosen();
+    const current=chosen();
+    if(priorModel!==current){$("dnaWebConfirm").value="";priorModel=current;}
+    $("dnaWebConfirmHelp").textContent="Para autorizar, digite exatamente APLICAR "+current;
+    $("dnaWebConfirm").placeholder="APLICAR "+current;
+    $("dnaWebCurrentModel").textContent=MODELS[current]||"Selecione um modelo";
+    const total=$("dnaNames").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).length;
+    $("dnaWebSelectedCount").textContent=total+" colaborador"+(total===1?"":"es");
   }
   async function refresh(){
     if(shell.hidden)return;
@@ -83,11 +87,11 @@
     try{
       const {data,error}=await client.from("dna_web_modelos").select("codigo,ativo");
       if(error)throw error;
-      const active=new Set((data||[]).filter(x=>x.ativo).map(x=>x.codigo));
-      enabled=Object.keys(MODELS).every(x=>active.has(x));
+      activeModels=new Set((data||[]).filter(x=>x.ativo).map(x=>x.codigo));
+      enabled=activeModels.has(chosen());
       $("dnaWebSubmit").disabled=!enabled;
-      message(enabled?"Fila autorizada; o agente Windows precisa estar conectado.":
-        "Integracao instalada, mas execucao bloqueada ate homologacao do agente Windows.",!enabled);
+      message(enabled?"Modelo habilitado no banco; confirme que o agente Windows esta conectado.":
+        "Os quatro modelos estao disponiveis para selecao. A execucao web deste modelo permanece bloqueada ate homologacao.",!enabled);
     }catch(e){message("Fila de padronizacao indisponivel. Nenhuma gravacao sera enviada.",true);}
   }
   async function submit(){
@@ -116,7 +120,9 @@
     }catch(e){message("Solicitacao nao concluida; confira o historico antes de tentar novamente. "+String(e?.message||""),true);}
     finally{sending=false;$("dnaWebSubmit").disabled=!enabled;}
   }
-  root.querySelectorAll('input[name="dnaWebModelo"]').forEach(x=>x.addEventListener("change",prompt));
+  document.querySelectorAll('input[name="dnaProfile"]').forEach(x=>
+    x.addEventListener("change",()=>{prompt();ready();}));
+  $("dnaNames").addEventListener("input",prompt);
   $("dnaWebSubmit").addEventListener("click",submit);
   $("dnaWebRefresh").addEventListener("click",refresh);
   prompt();
