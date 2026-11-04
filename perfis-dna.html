@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gestão de Perfis DNA | MOP-CNC</title>
+  <title>Padronização de Perfis DNA | CREDVIX</title>
   <script src="js/theme.js?v=20261104-admin"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,30 +13,29 @@
   <link rel="stylesheet" href="css/perfis-dna.css?v=2026-10-22-01">
   <link rel="stylesheet" href="css/mop-shell.css?v=20261023-02b">
   <link rel="stylesheet" href="css/perfis-dna-theme.css?v=20261104-01">
+  <link rel="stylesheet" href="css/dna-padronizacao.css?v=20261104-01">
 </head>
 <body class="dna-body">
   <div class="mop-shell dna-app-shell" id="dnaShell" hidden>
     <aside class="mop-nav" data-mop-shell-sidebar aria-label="Menu de navegação"></aside>
-
     <div class="app-main dna-main">
       <header class="topbar mop-shared-topbar dna-topbar" data-mop-shell-topbar></header>
-
       <main class="content dna-page-content">
         <div class="dna-banner">
-          <strong>ⓘ MÓDULO DE GESTÃO DE PERFIS DNA</strong>
-          <span>Os quatro modelos de perfil estão disponíveis para seleção e conferência. A configuração automática pelo site permanece bloqueada até a homologação da integração.</span>
+          <strong>ⓘ PADRONIZAÇÃO DNA</strong>
+          <span>Um único fluxo para padronizar usuários. O robô compara as 224 permissões antes de gravar e verifica novamente após salvar. A execução web será liberada somente depois da homologação.</span>
         </div>
 
-        <section class="dna-stage active" data-stage="gestao">
+        <section class="dna-stage active" data-stage="gestao" aria-label="Nova padronização">
           <div class="dna-page-head">
             <div>
               <p class="dna-eyebrow">MÓDULO ADMINISTRATIVO</p>
-              <h1>Gestão de <span>Perfis DNA</span></h1>
-              <p>Padronize os acessos de usuários existentes com segurança, rastreabilidade e validação antes de aplicar.</p>
+              <h1>Padronização de <span>Perfis DNA</span></h1>
+              <p>Selecione o modelo, informe os colaboradores e acompanhe o resultado. Não é necessário abrir uma conferência separada.</p>
             </div>
             <div class="dna-head-actions">
               <span class="dna-pill">🔒 Acesso exclusivo</span>
-              <span class="dna-pill dna-pill--soft-orange">🛡 Execução ainda indisponível</span>
+              <span class="dna-pill dna-pill--soft-orange" id="dnaExecutionBadge">🛡 Execução web em homologação</span>
             </div>
           </div>
 
@@ -44,388 +43,156 @@
             <section class="dna-card dna-card--main">
               <div class="dna-card-title-row">
                 <div class="dna-card-icon">⇉</div>
-                <div>
-                  <h2>Seleção do modelo e conferência de usuários</h2>
-                  <p>Informe os colaboradores que terão seus acessos conferidos.</p>
-                </div>
+                <div><h2>Nova padronização</h2><p>Uma solicitação pode conter até 50 colaboradores, todos para o mesmo modelo.</p></div>
               </div>
-
               <div class="dna-field-head">
-                <label for="dnaNames">Colaboradores para consulta no DNA</label>
-                <span id="dnaCountInline">0 nomes informados</span>
+                <label for="dnaNames">Colaboradores para padronizar</label>
+                <span id="dnaCountInline">0 colaboradores</span>
               </div>
-              <textarea id="dnaNames" rows="10" placeholder="CPF; Nome completo; Login opcional — um colaborador por linha" autocomplete="off" aria-describedby="dnaNamesHelp dnaInputError"></textarea>
+              <textarea id="dnaNames" rows="7" placeholder="CPF; Nome completo — um colaborador por linha" autocomplete="off" spellcheck="false" aria-describedby="dnaNamesHelp dnaInputError"></textarea>
               <p id="dnaInputError" class="dna-input-error" role="alert" hidden></p>
-              <div class="dna-helper-line" id="dnaNamesHelp">ⓘ Uma linha por colaborador: CPF; Nome completo; Login opcional · até 50 · CPF criptografado no Supabase</div>
+              <p class="dna-helper-line" id="dnaNamesHelp">Informe CPF e nome completo, separados por ponto e vírgula. Cada linha corresponde a um usuário. O CPF completo não aparece no acompanhamento nem nos relatórios.</p>
 
-              <div class="dna-field-split">
-                <label>Modelo de perfil desejado (não será aplicado nesta etapa)</label>
-                <span>4 modelos disponíveis</span>
+              <div class="dna-field-split dna-padronizacao-model-label">
+                <label id="dnaModelLabel">Modelo de permissões a aplicar</label>
+                <span>4 modelos homologados no robô local</span>
               </div>
-              <div class="dna-profile-grid" role="radiogroup" aria-label="Selecione um dos quatro modelos DNA">
+              <div class="dna-profile-grid" role="radiogroup" aria-labelledby="dnaModelLabel">
                 <label class="dna-profile-option" data-profile-card="CONSULTOR_1">
                   <input type="radio" name="dnaProfile" value="CONSULTOR_1">
-                  <div class="dna-profile-icon">⌘</div>
-                  <div><strong>Consultor 1</strong><small>Perfil Consultor</small></div>
-                  <span class="dna-profile-check">✓</span>
+                  <div class="dna-profile-icon">⌘</div><div><strong>Consultor 1</strong><small>Perfil Consultor</small></div><span class="dna-profile-check">✓</span>
                 </label>
                 <label class="dna-profile-option active" data-profile-card="CONSULTOR_2">
                   <input type="radio" name="dnaProfile" value="CONSULTOR_2" checked>
-                  <div class="dna-profile-icon">⌘</div>
-                  <div><strong>Consultor 2</strong><small>Perfil Consultor</small></div>
-                  <span class="dna-profile-check">✓</span>
+                  <div class="dna-profile-icon">⌘</div><div><strong>Consultor 2</strong><small>Perfil Consultor</small></div><span class="dna-profile-check">✓</span>
                 </label>
                 <label class="dna-profile-option" data-profile-card="SUPERVISOR_1">
                   <input type="radio" name="dnaProfile" value="SUPERVISOR_1">
-                  <div class="dna-profile-icon">🛡</div>
-                  <div><strong>Supervisor 1</strong><small>Perfil Supervisor</small></div>
-                  <span class="dna-profile-check">✓</span>
+                  <div class="dna-profile-icon">🛡</div><div><strong>Supervisor 1</strong><small>Perfil Supervisor</small></div><span class="dna-profile-check">✓</span>
                 </label>
                 <label class="dna-profile-option" data-profile-card="SUPERVISOR_2">
                   <input type="radio" name="dnaProfile" value="SUPERVISOR_2">
-                  <div class="dna-profile-icon">🛡</div>
-                  <div><strong>Supervisor 2</strong><small>Perfil Supervisor</small></div>
-                  <span class="dna-profile-check">✓</span>
+                  <div class="dna-profile-icon">🛡</div><div><strong>Supervisor 2</strong><small>Perfil Supervisor</small></div><span class="dna-profile-check">✓</span>
                 </label>
               </div>
-              <p class="dna-helper-line">Os quatro modelos foram homologados no robô Windows. Selecioná-los não executa alterações; a padronização pelo site continua bloqueada até o aceite final.</p>
 
-              <div class="dna-bottom-cta">
-                <span>Etapa 1 de 3 · Seleção e validação</span>
-                <button class="dna-button dna-button--primary" type="button" id="goConference">Conferir usuários <span>→</span></button>
+              <div class="dna-padronizacao-approval">
+                <label for="dnaConfirm" id="dnaConfirmHelp">Confirmação: digite APLICAR CONSULTOR_2</label>
+                <input id="dnaConfirm" type="text" autocomplete="off" spellcheck="false" placeholder="APLICAR CONSULTOR_2" aria-describedby="dnaConfirmHelp dnaSubmitInfo">
+                <p class="dna-helper-line">A confirmação será exigida apenas quando a execução web estiver homologada e habilitada para o modelo selecionado.</p>
               </div>
+              <div class="dna-bottom-cta">
+                <span id="dnaModelAvailability">Verificando disponibilidade da execução...</span>
+                <button id="dnaSubmit" class="dna-button dna-button--primary" type="button" disabled>Solicitar padronização</button>
+              </div>
+              <p id="dnaSubmitInfo" class="dna-subcopy dna-padronizacao-message" role="status">Nenhuma alteração foi solicitada.</p>
             </section>
 
             <aside class="dna-sidebar-stack">
               <section class="dna-card">
                 <div class="dna-card-title-row">
                   <div class="dna-card-icon dna-card-icon--muted">▣</div>
-                  <div>
-                    <h2>Padrão selecionado</h2>
-                    <p>Modelo selecionado para futura padronização.</p>
-                  </div>
+                  <div><h2>Padrão selecionado</h2><p>Modelo já homologado no robô local.</p></div>
                 </div>
-
                 <div class="dna-reference-card">
                   <div class="dna-reference-head">
                     <strong id="summaryProfileCaps">CONSULTOR 2</strong>
-                    <span class="dna-status-chip dna-status-chip--blue">● Modelo local homologado</span>
+                    <span class="dna-status-chip dna-status-chip--blue">● Modelo local</span>
                   </div>
                   <div class="dna-reference-grid">
                     <span>Perfil</span><strong id="summaryProfile">Consultor</strong>
-                    <span>Sub perfil</span><strong id="summarySubprofile">Consultor 2</strong>
+                    <span>Subperfil</span><strong id="summarySubprofile">Consultor 2</strong>
                     <span>Controles capturados</span><strong>227</strong>
                     <span>Permissões individuais</span><strong>224</strong>
-                    <span>Situação</span><strong>Homologado no robô local</strong>
+                    <span>Execução web</span><strong id="summaryWebStatus">Aguardando homologação</strong>
                   </div>
                 </div>
-
-                <button class="dna-inline-link" type="button" data-target="conferencia">◌ Ver diferenças entre perfis</button>
               </section>
-
               <section class="dna-card">
-                <h3>Proteções previstas para o robô</h3>
+                <h3>Como funciona a reexecução</h3>
                 <ul class="dna-check-list">
-                  <li>Não criar, excluir ou recriar contas</li>
-                  <li>Bloquear nomes duplicados ou ambíguos</li>
-                  <li>Comparar antes de gravar e conferir após salvar</li>
-                  <li>Registro individual de cada alteração</li>
+                  <li>O robô primeiro lê e compara o usuário com o modelo selecionado.</li>
+                  <li>Se já estiver correto, conclui sem gravar.</li>
+                  <li>Se houver diferenças, ajusta, grava uma vez e valida em nova sessão.</li>
+                  <li>Se houver gravação incerta ou revisão pendente, não reexecuta automaticamente.</li>
+                  <li>A troca entre Consultor e Supervisor permanece bloqueada.</li>
                 </ul>
               </section>
             </aside>
           </div>
 
+          <section class="dna-card dna-padronizacao-history">
+            <div class="dna-table-head">
+              <div>
+                <h2>Últimas padronizações</h2>
+                <p>Solicitações reais registradas na fila de padronização, sem criar uma conferência separada.</p>
+              </div>
+              <button class="dna-button dna-button--secondary" type="button" data-target="acompanhamento">Acompanhar todas →</button>
+            </div>
+            <p class="dna-subcopy" id="dnaRecentStatus">Carregando solicitações...</p>
+            <div class="dna-table-shell">
+              <table class="dna-table" aria-label="Últimas padronizações">
+                <thead><tr><th>Solicitação</th><th>Modelo</th><th>Colaborador</th><th>CPF final</th><th>Situação</th><th>Atualizado</th></tr></thead>
+                <tbody id="dnaRecentRows"><tr><td class="dna-empty-row" colspan="6">Nenhuma solicitação registrada.</td></tr></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section class="dna-stage" data-stage="acompanhamento" aria-label="Acompanhamento">
+          <div class="dna-page-head">
+            <div><p class="dna-eyebrow">EXECUÇÃO E VALIDAÇÃO</p>
+              <h1>Acompanhamento da <span>padronização</span></h1>
+              <p>O resultado só é confirmado após a leitura independente das permissões.</p>
+            </div>
+            <div class="dna-head-actions"><button id="dnaRefresh" class="dna-button dna-button--secondary" type="button">⟳ Atualizar</button></div>
+          </div>
           <div class="dna-stat-grid">
-            <div class="dna-stat-card"><div class="dna-stat-icon">◔</div><div><strong>—</strong><span>Na fila</span><small>Aguardando integração</small></div></div>
-            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--blue">⌁</div><div><strong>—</strong><span>Em análise</span><small>Aguardando integração</small></div></div>
-            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--green">✓</div><div><strong>—</strong><span>Concluídos</span><small>Aguardando integração</small></div></div>
-            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--purple">△</div><div><strong>—</strong><span>Em revisão</span><small>Aguardando integração</small></div></div>
+            <div class="dna-stat-card"><div class="dna-stat-icon">◔</div><div><strong id="dnaMetricWaiting">0</strong><span>Aguardando</span><small>Fila de padronização</small></div></div>
+            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--blue">⌁</div><div><strong id="dnaMetricRunning">0</strong><span>Em execução</span><small>Agente Windows</small></div></div>
+            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--green">✓</div><div><strong id="dnaMetricComplete">0</strong><span>Concluídos</span><small>Confirmado ou já conforme</small></div></div>
+            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--purple">△</div><div><strong id="dnaMetricReview">0</strong><span>Revisão</span><small>Não repetir até resolver</small></div></div>
           </div>
-
           <section class="dna-card">
             <div class="dna-table-head">
-              <div>
-                <h2>Últimas solicitações DNA</h2>
-                <p>Solicitações registradas após a integração com o robô.</p>
-              </div>
-              <button class="dna-button dna-button--ghost" type="button" data-target="auditoria">Ver histórico completo <span>→</span></button>
+              <div><h2>Resultado por colaborador</h2><p>Dados reais do Supabase; o CPF aparece apenas com os quatro dígitos finais.</p></div>
+              <span class="dna-status-chip dna-status-chip--blue">● Atualização periódica</span>
             </div>
+            <p id="dnaQueueStatus" role="status" class="dna-subcopy">Carregando fila de padronização...</p>
             <div class="dna-table-shell">
-              <table class="dna-table">
-                <thead>
-                  <tr><th>Lote</th><th>Solicitado em</th><th>Perfil</th><th>Usuários</th><th>Resultado</th><th></th></tr>
-                </thead>
-                <tbody><tr><td colspan="6" class="dna-empty-row">O histórico de solicitações estará disponível após a integração do banco e do robô DNA.</td></tr></tbody>
+              <table class="dna-table" aria-label="Situação das padronizações">
+                <thead><tr><th>Solicitação</th><th>Modelo</th><th>Colaborador</th><th>CPF final</th><th>Situação</th><th>Atualizado</th></tr></thead>
+                <tbody id="dnaQueueRows"><tr><td class="dna-empty-row" colspan="6">Nenhuma solicitação registrada.</td></tr></tbody>
               </table>
             </div>
           </section>
-        </section>
-
-        <section class="dna-stage" data-stage="conferencia">
-          <div class="dna-page-head">
-            <div>
-              <p class="dna-eyebrow">ETAPA 2 DE 3 · VALIDAÇÃO</p>
-              <h1>Conferência de <span>usuários</span></h1>
-              <p>Verifique os cadastros encontrados e as divergências antes de qualquer gravação.</p>
-            </div>
-            <div class="dna-head-actions">
-              <span class="dna-pill">🔒 Somente leitura</span>
-              <span class="dna-pill dna-pill--soft-orange" id="conferencePatternPill">🛡 Modelo selecionado: Consultor 2</span>
-            </div>
-          </div>
-
-          <div class="dna-stepper">
-            <button type="button" class="dna-step is-done" data-target="gestao">✓ 1. Seleção do perfil</button>
-            <button type="button" class="dna-step is-active">2. Conferência</button>
-            <button type="button" class="dna-step is-muted" data-target="acompanhamento">3. Execução e validação</button>
-          </div>
-
-          <div class="dna-layout dna-layout--secondary">
-            <section class="dna-card">
-              <div class="dna-card-topline">
-                <div>
-                  <h2>Conferência da lista informada</h2>
-                  <p><span id="previewCountText">0 usuários informados</span> · confira antes de enviar a solicitação</p>
-                </div>
-                <span class="dna-status-chip dna-status-chip--blue">● Prévia local</span>
-              </div>
-
-              <div class="dna-chip-row">
-                <span id="dnaFoundChip" class="dna-status-chip dna-status-chip--green">● 0 nomes na lista</span>
-                <span id="dnaAmbiguousChip" class="dna-status-chip dna-status-chip--purple">● Identidades não verificadas</span>
-                <span id="dnaMissingChip" class="dna-status-chip dna-status-chip--red">● Consulta indisponível</span>
-              </div>
-
-              <div class="dna-warning-box" id="dnaWarningBox">
-                <strong>ⓘ A solicitação será enviada ao Supabase</strong>
-                <p>A fila de conferência é somente leitura e trabalha por família (Consultor/Supervisor), usando referências preliminares Consultor 2 / Supervisor 1. O modelo exato escolhido será utilizado apenas quando a padronização web for homologada. Nenhuma permissão será alterada.</p>
-              </div>
-
-              <div class="dna-table-shell">
-                <table class="dna-table" id="conferenceTable">
-                  <thead>
-                    <tr><th>Usuário informado</th><th>Cadastro DNA</th><th>Perfil atual</th><th>Validação</th><th>Ação</th></tr>
-                  </thead>
-                  <tbody id="conferenceRows"></tbody>
-                </table>
-              </div>
-
-              <p id="dnaQueueMessage" class="dna-subcopy" role="status" aria-live="polite">Nenhuma solicitação enviada. Ao registrar, o lote aguardará o worker local.</p>
-              <div class="dna-conference-footer">
-                <span>ⓘ Somente usuários identificados sem ambiguidade poderão seguir para o piloto.</span>
-                <div class="dna-inline-actions">
-                  <button class="dna-button dna-button--secondary" type="button" data-target="gestao">Voltar</button>
-                  <button class="dna-button dna-button--primary" id="dnaQueueCreate" type="button">Registrar conferência na fila</button>
-                  <button class="dna-button dna-button--primary" type="button" disabled title="Aguardando integração do worker e autorização no banco">Iniciar configuração (indisponível)</button>
-                </div>
-              </div>
-            </section>
-
-            <aside class="dna-sidebar-stack">
-              <section class="dna-card">
-                <div class="dna-card-title-row">
-                  <div class="dna-card-icon dna-card-icon--orange">⌘</div>
-                  <div>
-                    <h2>Verificação de acesso</h2>
-                    <p>Comparação completa, não só as diferenças.</p>
-                  </div>
-                </div>
-                <div class="dna-soft-box">
-                  <strong id="verificationPatternText">Modelo escolhido: Consultor 2</strong>
-                  <p>Na execução, as 224 permissões individuais deverão ser comparadas, inclusive as desmarcadas. O acesso SSO será conferido separadamente.</p>
-                </div>
-                <ul class="dna-check-list dna-check-list--compact">
-                  <li>Identidade única por cadastro antes de aplicar alterações</li>
-                  <li>Caixas homônimas identificadas pelo contexto técnico, não só pelo texto</li>
-                  <li>Releitura obrigatória do cadastro após Gravar e Confirmar</li>
-                </ul>
-              </section>
-              <section class="dna-card" id="dnaLegacyDifferences">
-                <h3>Referências preliminares: Consultor 2 × Supervisor 1</h3>
-                <p>Diferenças entre Consultor e Supervisor nas capturas de referência.</p>
-                <ul class="dna-difference-list">
-                  <li><span>• Acompanhamento → Produção de Agentes</span><strong class="dna-diff-action" data-consultor="desmarcar">Desmarcar</strong></li>
-                  <li><span>• Manutenção → Boleto de Liquidação</span><strong class="dna-diff-action" data-consultor="desmarcar">Desmarcar</strong></li>
-                  <li><span>• Manutenção → Carta para Solicitação de Saldo</span><strong class="dna-diff-action" data-consultor="marcar">Marcar</strong></li>
-                  <li><span>• Proposta → Formalização de Contratos TAC</span><strong class="dna-diff-action" data-consultor="desmarcar">Desmarcar</strong></li>
-                  <li><span>• Compra Eletrônica Individual</span><strong class="dna-diff-action" data-consultor="marcar">Marcar</strong></li>
-                  <li><span>• Realizar vínculo de documentos</span><strong class="dna-diff-action" data-consultor="marcar">Marcar</strong></li>
-                </ul>
-                <p class="dna-reference-note">Ações indicadas variam conforme o perfil selecionado. Nomes iguais ou identificações ambíguas exigem confirmação da identidade antes da execução.</p>
-              </section>
-            </aside>
-          </div>
-        </section>
-
-        <section class="dna-stage" data-stage="acompanhamento">
-          <div class="dna-page-head">
-            <div>
-              <p class="dna-eyebrow">ETAPA 3 DE 3 · OPERAÇÃO</p>
-              <h1>Acompanhamento <span>do lote</span></h1>
-              <p>Visibilidade por usuário, com confirmação de persistência e tratamento individual de falhas.</p>
-            </div>
-            <div class="dna-head-actions">
-              <span class="dna-pill">◔ Nenhum lote iniciado</span>
-              <span class="dna-pill dna-pill--soft-orange">◌ Integração pendente</span>
-            </div>
-          </div>
-
-          <div class="dna-stepper">
-            <button type="button" class="dna-step is-done" data-target="gestao">✓ 1. Seleção do perfil</button>
-            <button type="button" class="dna-step is-done" data-target="conferencia">✓ 2. Conferência</button>
-            <button type="button" class="dna-step is-active">3. Execução e validação</button>
-          </div>
-
-          <div class="dna-layout dna-layout--secondary-acomp">
-            <section class="dna-card">
-              <div class="dna-card-topline">
-                <div>
-                  <h2>Progresso da configuração</h2>
-                  <p>Padrão selecionado: <strong id="progressPatternText">Consultor · Consultor 2</strong></p>
-                </div>
-                <span class="dna-status-chip dna-status-chip--blue">● Aguardando integração</span>
-              </div>
-              <div class="dna-progress-head"><strong>— de —</strong><span>—</span></div>
-              <p class="dna-subcopy">Nenhuma configuração iniciada</p>
-              <div class="dna-progress-bar" role="progressbar" aria-label="Execução não iniciada" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span style="width:0%"></span></div>
-              <div class="dna-mini-stats">
-                <div><strong>—</strong><span>Verificados</span></div>
-                <div><strong>—</strong><span>Já corretos</span></div>
-                <div><strong>—</strong><span>Em revisão</span></div>
-                <div><strong>—</strong><span>Pendentes</span></div>
-              </div>
-
-              <div class="dna-table-head dna-table-head--compact">
-                <div>
-                  <h3>Resultado por usuário</h3>
-                  <p>Os resultados individuais serão apresentados após a integração do worker.</p>
-                </div>
-                <button class="dna-button dna-button--ghost" type="button" disabled>⟳ Atualizar (indisponível)</button>
-              </div>
-              <div class="dna-table-shell">
-                <table class="dna-table">
-                  <thead><tr><th>Usuário</th><th>Etapa atual</th><th>Resultado</th><th>Conferência</th></tr></thead>
-                  <tbody><tr><td colspan="4" class="dna-empty-row">Nenhum processamento iniciado. Os registros serão exibidos após a conexão do worker.</td></tr></tbody>
-                </table>
-              </div>
-            </section>
-
-            <aside class="dna-sidebar-stack">
-              <section class="dna-card">
-                <div class="dna-card-title-row">
-                  <div class="dna-card-icon dna-card-icon--muted">⌁</div>
-                  <div>
-                    <h2>Linha do tempo</h2>
-                    <p>Eventos importantes da execução.</p>
-                  </div>
-                </div>
-                <ol class="dna-timeline">
-                  <li><strong>Aguardando integração</strong><span>Nenhuma solicitação registrada.</span></li>
-                </ol>
-                <div class="dna-soft-box">
-                  <strong>Quando ocorre uma dúvida no salvamento</strong>
-                  <p>O robô interrompe a tentativa de gravação e solicita verificação. Nunca repete uma mutação às cegas.</p>
-                </div>
-              </section>
-
-              <section class="dna-card">
-                <h3>Notificações sem ambiguidade</h3>
-                <ul class="dna-check-list dna-check-list--compact">
-                  <li>“Na fila” não significa concluído</li>
-                  <li>“Configurado” exige validação após salvar</li>
-                  <li>Falhas continuam visíveis no histórico</li>
-                </ul>
-                <button class="dna-button dna-button--ghost dna-button--full" type="button" data-target="auditoria">Ver histórico de auditoria <span>→</span></button>
-              </section>
-            </aside>
-          </div>
-        </section>
-
-        <section class="dna-stage" data-stage="auditoria">
-          <div class="dna-page-head">
-            <div>
-              <p class="dna-eyebrow">RASTREABILIDADE ADMINISTRATIVA</p>
-              <h1>Histórico e <span>auditoria DNA</span></h1>
-              <p>Acompanhe quem solicitou, qual padrão foi aplicado e quais cadastros foram verificados.</p>
-            </div>
-            <div class="dna-head-actions">
-              <span class="dna-pill">🔒 Visualização restrita</span>
-              <button id="dnaExportCsv" class="dna-button dna-button--ghost" type="button" disabled title="CSV de metadados, sem CPF e sem permissões">↓ Exportar CSV</button>
-            </div>
-          </div>
-
-          <div class="dna-stat-grid dna-stat-grid--audit">
-            <div class="dna-stat-card"><div class="dna-stat-icon">☷</div><div><span>Lotes registrados</span><strong>—</strong><small>Aguardando integração</small></div></div>
-            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--green">✓</div><div><span>Verificados</span><strong>—</strong><small>Aguardando integração</small></div></div>
-            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--purple">△</div><div><span>Em revisão</span><strong>—</strong><small>Aguardando integração</small></div></div>
-            <div class="dna-stat-card"><div class="dna-stat-icon dna-stat-icon--blue">◔</div><div><span>Última atualização</span><strong>—</strong><small>Sem registros</small></div></div>
-          </div>
-
-          <section class="dna-card" aria-label="Importar diagnósticos visuais">
-            <div class="dna-card-title-row">
-              <div class="dna-card-icon dna-card-icon--muted">▧</div>
-              <div>
-                <h2>Importar diagnósticos visuais</h2>
-                <p>Registre relatórios v2 obtidos pelo robô somente leitura. A identidade do cadastro continua pendente de homologação.</p>
-              </div>
-            </div>
-            <div class="dna-inline-actions">
-              <label for="dnaReportFiles">Arquivos JSON (até 10 por vez)</label>
-              <input id="dnaReportFiles" type="file" accept=".json,application/json" multiple>
-              <button id="dnaReportUpload" class="dna-button dna-button--primary" type="button">Registrar diagnósticos</button>
-              <button id="dnaReportRefresh" class="dna-button dna-button--secondary" type="button">Atualizar registros</button>
-            </div>
-            <p id="dnaReportInfo" role="status">Relatórios antigos sem evidência completa não podem ser importados. Nenhuma permissão será modificada.</p>
-            <div class="dna-table-shell">
-              <table class="dna-table" aria-label="Últimos diagnósticos importados">
-                <thead><tr><th>Leitura</th><th>Importação</th><th>Referência</th><th>Divergências</th><th>Identidade</th><th>Resultado</th></tr></thead>
-                <tbody id="dnaReportRows"><tr><td colspan="6" class="dna-empty-row">Clique em Atualizar registros para consultar o Supabase.</td></tr></tbody>
-              </table>
-            </div>
-          </section>
-
           <section class="dna-card">
-            <div class="dna-card-title-row">
-              <div class="dna-card-icon dna-card-icon--muted">☰</div>
-              <div>
-                <h2>Consultar registros</h2>
-                <p>Busque por lote, perfil ou solicitante autorizado.</p>
-              </div>
-            </div>
-            <div class="dna-filter-grid">
-              <div>
-                <label for="dnaSearchRecord">Buscar registro</label>
-                <input id="dnaSearchRecord" type="text" placeholder="Leitura ou perfil">
-              </div>
-              <div>
-                <label for="dnaFilterProfile">Perfil</label>
-                <select id="dnaFilterProfile"><option value="">Todos</option><option value="CONSULTOR">Consultor 2</option><option value="SUPERVISOR">Supervisor 1</option></select>
-              </div>
-              <div>
-                <label for="dnaFilterStatus">Status</label>
-                <select id="dnaFilterStatus"><option value="">Todos</option><option value="conforme">Conforme na tela</option><option value="divergente">Divergências visuais</option><option value="revisao">Revisão necessária</option></select>
-              </div>
-              <div class="dna-filter-action"><button id="dnaClearFilters" class="dna-button dna-button--ghost dna-button--full" type="button">✕ Limpar filtros</button></div>
-            </div>
+            <h3>Reexecutar uma padronização</h3>
+            <p>Quando uma padronização estiver concluída, você pode iniciar uma nova solicitação para o mesmo colaborador, caso suspeite de permissões divergentes. O robô fará uma nova leitura inicial: se tudo estiver conforme, não haverá gravação. Solicitações em execução ou com estado incerto não devem ser duplicadas.</p>
+            <div class="dna-padronizacao-secondary-actions"><button class="dna-button dna-button--secondary" type="button" data-target="gestao">Nova padronização →</button></div>
           </section>
+        </section>
 
+        <section class="dna-stage" data-stage="auditoria" aria-label="Histórico de padronização">
+          <div class="dna-page-head">
+            <div><p class="dna-eyebrow">RASTREABILIDADE</p>
+              <h1>Histórico de <span>padronizações</span></h1>
+              <p>Registro das solicitações e resultados do robô, sem uma fila paralela de conferência.</p>
+            </div>
+            <div class="dna-head-actions"><button id="dnaAuditRefresh" class="dna-button dna-button--secondary" type="button">⟳ Atualizar</button></div>
+          </div>
           <section class="dna-card">
             <div class="dna-table-head">
-              <div>
-                <h2>Registro das solicitações</h2>
-                <p>Histórico de lotes de execução. Os diagnósticos visuais importados aparecem acima.</p>
-              </div>
-              <small>Horários em pt-BR após a integração</small>
+              <div><h2>Solicitações de padronização</h2><p>Uma nova solicitação após conclusão será registrada como nova execução, preservando o histórico anterior.</p></div>
             </div>
+            <label for="dnaAuditSearch" class="dna-padronizacao-search-label">Filtrar por nome, modelo ou número de solicitação</label>
+            <input id="dnaAuditSearch" type="search" autocomplete="off" placeholder="Buscar no histórico">
+            <p class="dna-subcopy" id="dnaAuditStatus" role="status">Carregando histórico...</p>
             <div class="dna-table-shell">
-              <table class="dna-table">
-                <thead><tr><th>Lote</th><th>Data e hora</th><th>Perfil aplicado</th><th>Solicitante</th><th>Usuários</th><th>Status final</th><th>Ação</th></tr></thead>
-                <tbody><tr><td colspan="7" class="dna-empty-row">Aguardando integração com o banco de auditoria DNA. Nenhum registro fictício é apresentado.</td></tr></tbody>
+              <table class="dna-table" aria-label="Histórico de padronizações">
+                <thead><tr><th>Solicitação</th><th>Modelo</th><th>Colaborador</th><th>CPF final</th><th>Situação</th><th>Atualizado</th></tr></thead>
+                <tbody id="dnaAuditRows"><tr><td class="dna-empty-row" colspan="6">Nenhuma padronização registrada.</td></tr></tbody>
               </table>
-            </div>
-            <div class="dna-audit-foot">
-              <div><strong>—</strong><span>Lotes registrados</span></div>
-              <div><strong>—</strong><span>Cadastros criados ou excluídos</span></div>
             </div>
           </section>
         </section>
@@ -443,11 +210,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
-  <script src="js/mop-shell.js?v=20261023-02"></script>
-  <script src="js/perfis-dna.js?v=20261104-fourmodels"></script>
-  <script src="js/dna-relatorios.js?v=20261028-05"></script>
-  <script src="js/dna-dashboard.js?v=20261028-02"></script>
-  <script src="js/dna-consulta-fila.js?v=20261104-family-fix"></script>
-  <script src="js/dna-web-status.js?v=20261104-01"></script>
+  <script src="js/mop-shell.js?v=20261104-unico"></script>
+  <script src="js/perfis-dna.js?v=20261104-unico"></script>
+  <script src="js/dna-padronizacao.js?v=20261104-unico"></script>
 </body>
 </html>
