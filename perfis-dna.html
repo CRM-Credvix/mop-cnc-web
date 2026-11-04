@@ -22,7 +22,7 @@
       <main class="content dna-page-content">
         <div class="dna-banner">
           <strong>ⓘ MÓDULO DE GESTÃO DE PERFIS DNA</strong>
-          <span>Auditoria e acompanhamento de diagnósticos estão disponíveis. A conferência continua disponível. A padronização web depende de um agente Windows autorizado e validado.</span>
+          <span>Quatro modelos de perfil disponíveis para seleção e conferência. A gravação de permissões pelo site permanece bloqueada até a homologação completa.</span>
         </div>
 
         <section class="dna-stage active" data-stage="gestao">
@@ -34,47 +34,17 @@
             </div>
             <div class="dna-head-actions">
               <span class="dna-pill">🔒 Acesso exclusivo</span>
-              <span class="dna-pill dna-pill--soft-orange">🛡 Agente Windows pendente</span>
+              <span class="dna-pill dna-pill--soft-orange">🛡 Execução web em homologação</span>
             </div>
           </div>
 
           
-          <!-- Fila segura de padronizacao: separada da conferencia anterior -->
-          <section id="dnaWebExec" class="dna-card" aria-label="Padronizacao automatica de perfis DNA" style="margin:20px 0">
-            <div class="dna-card-title-row">
-              <div class="dna-card-icon">⇉</div>
-              <div><h2>Padronização automática — quatro modelos</h2>
-                <p>Solicitações protegidas; a execução ocorre somente no agente Windows autorizado.</p></div>
-            </div>
-            <p class="dna-helper-line">A mudança entre famílias Consultor/Supervisor continua bloqueada. Nenhum CPF ou senha será exibido nos logs. A fila ficará indisponível até a integração ser homologada.</p>
-            <div class="dna-profile-grid" role="group" aria-label="Modelo de padronização">
-              <label class="dna-profile-option"><input type="radio" name="dnaWebModelo" value="CONSULTOR_1" checked><strong>Consultor 1</strong></label>
-              <label class="dna-profile-option"><input type="radio" name="dnaWebModelo" value="CONSULTOR_2"><strong>Consultor 2</strong></label>
-              <label class="dna-profile-option"><input type="radio" name="dnaWebModelo" value="SUPERVISOR_1"><strong>Supervisor 1</strong></label>
-              <label class="dna-profile-option"><input type="radio" name="dnaWebModelo" value="SUPERVISOR_2"><strong>Supervisor 2</strong></label>
-            </div>
-            <div class="dna-field-head"><label for="dnaWebPessoas">Colaboradores autorizados (até 50)</label></div>
-            <textarea id="dnaWebPessoas" rows="5" placeholder="CPF; Nome completo — um por linha" autocomplete="off"></textarea>
-            <label for="dnaWebConfirm" id="dnaWebConfirmHelp">Para autorizar, digite exatamente APLICAR CONSULTOR_1</label>
-            <input id="dnaWebConfirm" type="text" autocomplete="off" placeholder="APLICAR CONSULTOR_1" style="display:block;width:100%;margin:10px 0;padding:12px">
-            <div class="dna-inline-actions">
-              <button id="dnaWebSubmit" class="dna-button dna-button--primary" type="button" disabled>Registrar padronização autorizada</button>
-              <button id="dnaWebRefresh" class="dna-button dna-button--secondary" type="button">Atualizar acompanhamento</button>
-            </div>
-            <p id="dnaWebInfo" role="status" class="dna-subcopy">Aguardando validação da fila e do agente Windows.</p>
-            <div class="dna-table-shell"><table class="dna-table">
-              <thead><tr><th>Lote</th><th>Modelo</th><th>Colaborador</th><th>CPF (final)</th><th>Estado</th><th>Diferenças</th><th>Atualizado</th></tr></thead>
-              <tbody id="dnaWebRows"><tr><td colspan="7" class="dna-empty-row">Nenhuma solicitação disponível.</td></tr></tbody>
-            </table></div>
-            <p class="dna-subcopy" id="dnaWebUpdated" role="status">Sem atualizações.</p>
-          </section>
-
           <div class="dna-layout dna-layout--primary">
             <section class="dna-card dna-card--main">
               <div class="dna-card-title-row">
                 <div class="dna-card-icon">⇉</div>
                 <div>
-                  <h2>Nova conferência de usuários</h2>
+                  <h2>Seleção do modelo e conferência de usuários</h2>
                   <p>Informe os colaboradores que terão seus acessos conferidos.</p>
                 </div>
               </div>
@@ -88,29 +58,36 @@
               <div class="dna-helper-line" id="dnaNamesHelp">ⓘ Uma linha por colaborador: CPF; Nome completo; Login opcional · até 50 · CPF criptografado no Supabase</div>
 
               <div class="dna-field-split">
-                <label>Referência para conferência (não será aplicada)</label>
-                <span>Selecione um padrão</span>
+                <label>Modelo de perfil desejado (nenhuma alteração automática nesta etapa)</label>
+                <span>4 modelos disponíveis</span>
               </div>
-              <div class="dna-profile-grid">
-                <label class="dna-profile-option active" data-profile-card="CONSULTOR">
-                  <input type="radio" name="dnaProfile" value="CONSULTOR" checked>
+              <div class="dna-profile-grid" role="radiogroup" aria-label="Selecione um dos quatro modelos DNA">
+                <label class="dna-profile-option" data-profile-card="CONSULTOR_1">
+                  <input type="radio" name="dnaProfile" value="CONSULTOR_1">
                   <div class="dna-profile-icon">⌘</div>
-                  <div>
-                    <strong>Consultor</strong>
-                    <small>Sub perfil Consultor 2</small>
-                  </div>
+                  <div><strong>Consultor 1</strong><small>Perfil Consultor</small></div>
                   <span class="dna-profile-check">✓</span>
                 </label>
-                <label class="dna-profile-option" data-profile-card="SUPERVISOR">
-                  <input type="radio" name="dnaProfile" value="SUPERVISOR">
+                <label class="dna-profile-option active" data-profile-card="CONSULTOR_2">
+                  <input type="radio" name="dnaProfile" value="CONSULTOR_2" checked>
+                  <div class="dna-profile-icon">⌘</div>
+                  <div><strong>Consultor 2</strong><small>Perfil Consultor</small></div>
+                  <span class="dna-profile-check">✓</span>
+                </label>
+                <label class="dna-profile-option" data-profile-card="SUPERVISOR_1">
+                  <input type="radio" name="dnaProfile" value="SUPERVISOR_1">
                   <div class="dna-profile-icon">🛡</div>
-                  <div>
-                    <strong>Supervisor</strong>
-                    <small>Sub perfil Supervisor 1</small>
-                  </div>
+                  <div><strong>Supervisor 1</strong><small>Perfil Supervisor</small></div>
+                  <span class="dna-profile-check">✓</span>
+                </label>
+                <label class="dna-profile-option" data-profile-card="SUPERVISOR_2">
+                  <input type="radio" name="dnaProfile" value="SUPERVISOR_2">
+                  <div class="dna-profile-icon">🛡</div>
+                  <div><strong>Supervisor 2</strong><small>Perfil Supervisor</small></div>
                   <span class="dna-profile-check">✓</span>
                 </label>
               </div>
+              <p class="dna-helper-line">Os quatro modelos foram homologados no robô Windows. Selecioná-los não executa alterações; a padronização pelo site continua bloqueada até o aceite final.</p>
 
               <div class="dna-bottom-cta">
                 <span>Etapa 1 de 3 · Seleção e validação</span>
@@ -124,21 +101,21 @@
                   <div class="dna-card-icon dna-card-icon--muted">▣</div>
                   <div>
                     <h2>Padrão selecionado</h2>
-                    <p>Referência de permissões capturada no DNA.</p>
+                    <p>Modelo selecionado para a futura padronização.</p>
                   </div>
                 </div>
 
                 <div class="dna-reference-card">
                   <div class="dna-reference-head">
-                    <strong id="summaryProfileCaps">CONSULTOR</strong>
-                    <span class="dna-status-chip dna-status-chip--blue">● Referência capturada</span>
+                    <strong id="summaryProfileCaps">CONSULTOR 2</strong>
+                    <span class="dna-status-chip dna-status-chip--blue">● Modelo local homologado</span>
                   </div>
                   <div class="dna-reference-grid">
                     <span>Perfil</span><strong id="summaryProfile">Consultor</strong>
                     <span>Sub perfil</span><strong id="summarySubprofile">Consultor 2</strong>
                     <span>Controles capturados</span><strong>227</strong>
                     <span>Permissões individuais</span><strong>224</strong>
-                    <span>Referência</span><strong>22/10/2026</strong>
+                    <span>Situação</span><strong>Homologado no robô local</strong>
                   </div>
                 </div>
 
@@ -156,6 +133,29 @@
               </section>
             </aside>
           </div>
+
+          <!-- A padronizacao web usa o mesmo modelo e a mesma lista informados acima. -->
+          <section id="dnaWebExec" class="dna-card" aria-label="Padronização automática de perfis DNA" style="margin:20px 0">
+            <div class="dna-card-title-row">
+              <div class="dna-card-icon">⇉</div>
+              <div><h2>Padronização pelo site</h2>
+                <p>Após homologação, o agente Windows executará apenas solicitações autorizadas.</p></div>
+            </div>
+            <p class="dna-helper-line">Esta etapa usa o modelo e os colaboradores selecionados em «Seleção do modelo e conferência de usuários», acima. Trocas entre Consultor e Supervisor continuam proibidas.</p>
+            <p class="dna-subcopy">Modelo escolhido: <strong id="dnaWebCurrentModel">Consultor 2</strong> · <span id="dnaWebSelectedCount">0 colaboradores</span></p>
+            <label for="dnaWebConfirm" id="dnaWebConfirmHelp">Para autorizar, digite exatamente APLICAR CONSULTOR_2</label>
+            <input id="dnaWebConfirm" type="text" autocomplete="off" placeholder="APLICAR CONSULTOR_2" style="display:block;width:100%;margin:10px 0;padding:12px">
+            <div class="dna-inline-actions">
+              <button id="dnaWebSubmit" class="dna-button dna-button--primary" type="button" disabled>Registrar padronização autorizada</button>
+              <button id="dnaWebRefresh" class="dna-button dna-button--secondary" type="button">Atualizar acompanhamento</button>
+            </div>
+            <p id="dnaWebInfo" role="status" class="dna-subcopy">Padronização web bloqueada até homologação.</p>
+            <div class="dna-table-shell"><table class="dna-table">
+              <thead><tr><th>Lote</th><th>Modelo</th><th>Colaborador</th><th>CPF (final)</th><th>Estado</th><th>Diferenças</th><th>Atualizado</th></tr></thead>
+              <tbody id="dnaWebRows"><tr><td colspan="7" class="dna-empty-row">Nenhuma solicitação disponível.</td></tr></tbody>
+            </table></div>
+            <p class="dna-subcopy" id="dnaWebUpdated" role="status">Sem atualizações.</p>
+          </section>
 
           <div class="dna-stat-grid">
             <div class="dna-stat-card"><div class="dna-stat-icon">◔</div><div><strong>—</strong><span>Na fila</span><small>Aguardando integração</small></div></div>
@@ -192,7 +192,7 @@
             </div>
             <div class="dna-head-actions">
               <span class="dna-pill">🔒 Somente leitura</span>
-              <span class="dna-pill dna-pill--soft-orange" id="conferencePatternPill">🛡 Padrão Consultor 2</span>
+              <span class="dna-pill dna-pill--soft-orange" id="conferencePatternPill">🛡 Modelo selecionado: Consultor 2</span>
             </div>
           </div>
 
@@ -220,7 +220,7 @@
 
               <div class="dna-warning-box" id="dnaWarningBox">
                 <strong>ⓘ A solicitação será enviada ao Supabase</strong>
-                <p>Após registrar, cada CPF ficará protegido no banco. A verificação no DNA começará quando o worker local estiver conectado. Nenhuma permissão será alterada.</p>
+                <p>A conferência atual é somente leitura e é registrada por família (Consultor/Supervisor), com referências preliminares Consultor 2 / Supervisor 1. A opção exata Consultor 1, Consultor 2, Supervisor 1 ou Supervisor 2 é usada apenas na futura padronização web. Nenhuma permissão será alterada nesta etapa.</p>
               </div>
 
               <div class="dna-table-shell">
@@ -253,7 +253,7 @@
                   </div>
                 </div>
                 <div class="dna-soft-box">
-                  <strong id="verificationPatternText">Padrão de referência: Consultor → Consultor 2</strong>
+                  <strong id="verificationPatternText">Modelo solicitado: Consultor 2</strong>
                   <p>Na execução, as 224 permissões individuais deverão ser comparadas, inclusive as desmarcadas. O acesso SSO será conferido separadamente.</p>
                 </div>
                 <ul class="dna-check-list dna-check-list--compact">
@@ -262,8 +262,8 @@
                   <li>Releitura obrigatória do cadastro após Gravar e Confirmar</li>
                 </ul>
               </section>
-              <section class="dna-card">
-                <h3>6 diferenças entre modelos</h3>
+              <section class="dna-card" id="dnaLegacyDifferences">
+                <h3>Referências preliminares: Consultor 2 × Supervisor 1</h3>
                 <p>Diferenças entre Consultor e Supervisor nas capturas de referência.</p>
                 <ul class="dna-difference-list">
                   <li><span>• Acompanhamento → Produção de Agentes</span><strong class="dna-diff-action" data-consultor="desmarcar">Desmarcar</strong></li>
@@ -466,10 +466,10 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
   <script src="js/mop-shell.js?v=20261023-02"></script>
-  <script src="js/perfis-dna.js?v=20261028-queue01"></script>
+  <script src="js/perfis-dna.js?v=20261104-fourmodels"></script>
   <script src="js/dna-relatorios.js?v=20261028-05"></script>
   <script src="js/dna-dashboard.js?v=20261028-02"></script>
-  <script src="js/dna-consulta-fila.js?v=20261028-01"></script>
-  <script src="js/dna-web-execucao.js?v=20261103-01"></script>
+  <script src="js/dna-consulta-fila.js?v=20261104-fourmodels"></script>
+  <script src="js/dna-web-execucao.js?v=20261104-fourmodels"></script>
 </body>
 </html>
