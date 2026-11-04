@@ -1,0 +1,257 @@
+/* CREDVIX DNA | adapta o visual administrativo ao tema compartilhado MOP.
+   A preferencia e gerenciada SOMENTE por js/theme.js (mop-cnc-theme).
+   A estrutura e as cores claras originais permanecem inalteradas. */
+html[data-theme="dark"] {
+  --dna-bg:#171411;
+  --dna-surface:#26211e;
+  --dna-card:#25201d;
+  --dna-border:#50433b;
+  --dna-border-strong:#69574b;
+  --dna-text:#f4eee9;
+  --dna-muted:#c8bcb2;
+  --dna-subtle:#b4a69a;
+  --dna-orange:#f5a36c;
+  --dna-orange-dark:#dd7d3c;
+  --dna-orange-soft:#39271d;
+  --dna-orange-softer:#34251e;
+  --dna-green:#8bd8b3;
+  --dna-green-soft:#183b2e;
+  --dna-blue:#93cdea;
+  --dna-blue-soft:#1c3442;
+  --dna-purple:#c2adeb;
+  --dna-purple-soft:#322944;
+  --dna-red:#f7a191;
+  --dna-red-soft:#422722;
+  --dna-neutral-tag:#3b322c;
+  --dna-shadow:0 1px 3px rgba(0,0,0,.30),0 10px 26px rgba(0,0,0,.20);
+}
+html[data-theme="dark"],
+html[data-theme="dark"] body.dna-body,
+html[data-theme="dark"] .dna-body .dna-main {
+  background:var(--dna-bg)!important;
+  color:var(--dna-text)!important;
+}
+html[data-theme="dark"] .dna-body .dna-topbar {
+  background:#211c19!important;
+  border-bottom-color:var(--dna-border)!important;
+}
+html[data-theme="dark"] .dna-body .dna-topbar .breadcrumb,
+html[data-theme="dark"] .dna-body .dna-page-head p,
+html[data-theme="dark"] .dna-body .dna-card p,
+html[data-theme="dark"] .dna-body .dna-field-head,
+html[data-theme="dark"] .dna-body .dna-field-split,
+html[data-theme="dark"] .dna-body .dna-helper-line,
+html[data-theme="dark"] .dna-body .dna-conference-footer,
+html[data-theme="dark"] .dna-body .dna-bottom-cta,
+html[data-theme="dark"] .dna-body .dna-subcopy {
+  color:var(--dna-muted);
+}
+html[data-theme="dark"] .dna-body .mop-user-chip .mop-identity strong {
+  color:var(--dna-text);
+}
+html[data-theme="dark"] .dna-body .mop-user-chip .mop-identity small {
+  color:var(--dna-muted);
+}
+html[data-theme="dark"] .dna-body .dna-banner {
+  background:var(--dna-blue-soft);
+  border-color:#42687d;
+  color:#c2e7f9;
+}
+html[data-theme="dark"] .dna-body .dna-pill {
+  background:#2c2520;
+  border-color:var(--dna-border-strong);
+  color:var(--dna-text);
+}
+html[data-theme="dark"] .dna-body .dna-pill--soft-orange {
+  background:var(--dna-orange-soft);
+  border-color:#8d542c;
+  color:#ffc399;
+}
+html[data-theme="dark"] .dna-body .dna-card,
+html[data-theme="dark"] .dna-body .dna-stat-card {
+  background:var(--dna-card);
+  border-color:var(--dna-border);
+  color:var(--dna-text);
+}
+html[data-theme="dark"] .dna-body .dna-card h2,
+html[data-theme="dark"] .dna-body .dna-card h3,
+html[data-theme="dark"] .dna-body .dna-page-head h1,
+html[data-theme="dark"] .dna-body .dna-access-card h1 {
+  color:var(--dna-text);
+}
+html[data-theme="dark"] .dna-body .dna-card-icon {
+  background:#442d21;
+  color:var(--dna-orange);
+}
+html[data-theme="dark"] .dna-body .dna-card-icon--muted,
+html[data-theme="dark"] .dna-body .dna-stat-icon {
+  background:#38302a;
+  color:var(--dna-muted);
+}
+html[data-theme="dark"] .dna-body .dna-stat-icon--green {
+  background:var(--dna-green-soft);
+  color:var(--dna-green);
+}
+html[data-theme="dark"] .dna-body .dna-stat-icon--blue {
+  background:var(--dna-blue-soft);
+  color:var(--dna-blue);
+}
+html[data-theme="dark"] .dna-body .dna-stat-icon--purple {
+  background:var(--dna-purple-soft);
+  color:var(--dna-purple);
+}
+html[data-theme="dark"] .dna-body .dna-field-head label,
+html[data-theme="dark"] .dna-body .dna-field-split label,
+html[data-theme="dark"] .dna-body .dna-filter-grid label {
+  color:var(--dna-text);
+}
+html[data-theme="dark"] .dna-body #dnaNames,
+html[data-theme="dark"] .dna-body .dna-filter-grid input,
+html[data-theme="dark"] .dna-body .dna-filter-grid select {
+  background:#1c1917;
+  border-color:var(--dna-border-strong);
+  color:var(--dna-text);
+}
+html[data-theme="dark"] .dna-body #dnaNames::placeholder,
+html[data-theme="dark"] .dna-body .dna-filter-grid input::placeholder {
+  color:#b6a89e;
+}
+html[data-theme="dark"] .dna-body .dna-profile-option {
+  background:#2c2520;
+  border-color:var(--dna-border-strong);
+  color:var(--dna-text);
+}
+html[data-theme="dark"] .dna-body .dna-profile-option strong,
+html[data-theme="dark"] .dna-body .dna-reference-grid strong,
+html[data-theme="dark"] .dna-body .dna-reference-head strong,
+html[data-theme="dark"] .dna-body .dna-soft-box strong,
+html[data-theme="dark"] .dna-body .dna-timeline strong,
+html[data-theme="dark"] .dna-body .dna-stat-card strong {
+  color:var(--dna-text);
+}
+html[data-theme="dark"] .dna-body .dna-profile-option small,
+html[data-theme="dark"] .dna-body .dna-reference-grid span,
+html[data-theme="dark"] .dna-body .dna-stat-card span,
+html[data-theme="dark"] .dna-body .dna-stat-card small,
+html[data-theme="dark"] .dna-body .dna-mini-stats span,
+html[data-theme="dark"] .dna-body .dna-timeline span,
+html[data-theme="dark"] .dna-body .dna-audit-foot span {
+  color:var(--dna-muted);
+}
+html[data-theme="dark"] .dna-body .dna-profile-option.active {
+  background:#422a1e;
+  border-color:var(--dna-orange);
+}
+html[data-theme="dark"] .dna-body .dna-profile-option:hover {
+  border-color:var(--dna-orange);
+}
+html[data-theme="dark"] .dna-body .dna-reference-card,
+html[data-theme="dark"] .dna-body .dna-soft-box,
+html[data-theme="dark"] .dna-body .dna-mini-stats {
+  background:#211d1a;
+  border-color:var(--dna-border);
+}
+html[data-theme="dark"] .dna-body .dna-stat-card {
+  background:var(--dna-card);
+}
+html[data-theme="dark"] .dna-body .dna-bottom-cta,
+html[data-theme="dark"] .dna-body .dna-difference-list li {
+  border-color:var(--dna-border);
+}
+html[data-theme="dark"] .dna-body .dna-check-list li,
+html[data-theme="dark"] .dna-body .dna-difference-list li {
+  color:var(--dna-muted);
+}
+html[data-theme="dark"] .dna-body .dna-table-shell,
+html[data-theme="dark"] .dna-body .dna-table {
+  background:#211c19;
+  border-color:var(--dna-border);
+}
+html[data-theme="dark"] .dna-body .dna-table thead th {
+  background:#312922;
+  color:#e5d8cd;
+  border-bottom-color:var(--dna-border);
+}
+html[data-theme="dark"] .dna-body .dna-table tbody td {
+  color:var(--dna-text);
+  border-bottom-color:var(--dna-border);
+}
+html[data-theme="dark"] .dna-body .dna-table tbody tr:hover {
+  background:#302823;
+}
+html[data-theme="dark"] .dna-body .dna-tag--neutral {
+  color:#e3d4c8;
+}
+html[data-theme="dark"] .dna-body .dna-button--primary {
+  background:#b85213;
+  color:#fff;
+  box-shadow:0 8px 20px rgba(0,0,0,.18);
+}
+html[data-theme="dark"] .dna-body .dna-button--primary:hover {
+  background:#a4470b;
+}
+html[data-theme="dark"] .dna-body .dna-button--secondary,
+html[data-theme="dark"] .dna-body .dna-button--ghost {
+  background:#312922;
+  border-color:var(--dna-border-strong);
+  color:var(--dna-text);
+}
+html[data-theme="dark"] .dna-body .dna-button--secondary:hover,
+html[data-theme="dark"] .dna-body .dna-button--ghost:hover {
+  background:#42352d;
+}
+html[data-theme="dark"] .dna-body .dna-step {
+  background:var(--dna-card);
+  border-color:var(--dna-border);
+  color:var(--dna-muted);
+}
+html[data-theme="dark"] .dna-body .dna-step.is-done {
+  background:var(--dna-green-soft);
+  color:var(--dna-green);
+  border-color:#37634e;
+}
+html[data-theme="dark"] .dna-body .dna-step.is-active {
+  background:var(--dna-orange-soft);
+  color:#ffb985;
+  border-color:#87502a;
+}
+html[data-theme="dark"] .dna-body .dna-step.is-muted {
+  background:#25201d;
+  color:var(--dna-subtle);
+}
+html[data-theme="dark"] .dna-body .dna-warning-box {
+  background:#3b301c;
+  border-color:#8c6935;
+}
+html[data-theme="dark"] .dna-body .dna-warning-box strong {
+  color:#ffcf8b;
+}
+html[data-theme="dark"] .dna-body .dna-warning-box p {
+  color:#f3dfb8;
+}
+html[data-theme="dark"] .dna-body .dna-progress-bar {
+  background:#45382f;
+}
+html[data-theme="dark"] .dna-body .dna-timeline li::before {
+  background:var(--dna-border);
+}
+html[data-theme="dark"] .dna-body .dna-timeline li::after {
+  color:var(--dna-muted);
+}
+html[data-theme="dark"] .dna-body .dna-input-error {
+  color:#ffad9b!important;
+}
+html[data-theme="dark"] .dna-body .dna-access {
+  background:var(--dna-bg);
+}
+html[data-theme="dark"] .dna-body input:focus-visible,
+html[data-theme="dark"] .dna-body button:focus-visible,
+html[data-theme="dark"] .dna-body a:focus-visible {
+  outline:2px solid var(--dna-orange);
+  outline-offset:3px;
+}
+/* O seletor vem do mesmo tema global: nenhum estado/armazenamento paralelo. */
+@media (max-width:860px) {
+  .dna-body .mop-shared-topbar .theme-switcher { flex-shrink:0; }
+  .dna-body .mop-shared-topbar .mop-topbar-actions { gap:4px; }
+}
