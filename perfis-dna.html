@@ -76,6 +76,20 @@
                 </label>
               </div>
 
+              <div class="dna-padronizacao-approval" id="dnaPilotArea" hidden>
+                <h3>Piloto controlado — Consultor 2</h3>
+                <p class="dna-helper-line" id="dnaPilotDescription">
+                  Autoriza somente UM colaborador da lista atual. O CPF e o nome precisam permanecer iguais
+                  até o envio. Uso único em até 30 minutos, sem possibilidade de autorizar novamente pelo site.
+                </p>
+                <label for="dnaPilotText">Para autorizar, digite AUTORIZAR PILOTO CONSULTOR_2</label>
+                <input id="dnaPilotText" type="text" autocomplete="off" spellcheck="false"
+                  placeholder="AUTORIZAR PILOTO CONSULTOR_2" aria-describedby="dnaPilotDescription">
+                <button class="dna-button dna-button--secondary" id="dnaPilotAuthorize" type="button" disabled>
+                  Autorizar um colaborador para o piloto
+                </button>
+                <p id="dnaPilotNotice" role="status" class="dna-helper-line"></p>
+              </div>
               <div class="dna-padronizacao-approval">
                 <label for="dnaConfirm" id="dnaConfirmHelp">Confirmação: digite APLICAR CONSULTOR_2</label>
                 <input id="dnaConfirm" type="text" autocomplete="off" spellcheck="false" placeholder="APLICAR CONSULTOR_2" aria-describedby="dnaConfirmHelp dnaSubmitInfo">
@@ -212,6 +226,6 @@
   <script src="js/config.js"></script>
   <script src="js/mop-shell.js?v=20261104-unico"></script>
   <script src="js/perfis-dna.js?v=20261104-unico"></script>
-  <script src="js/dna-padronizacao.js?v=20261104-unico"></script>
+  <script src="js/dna-padronizacao.js?v=20261104-piloto-1"></script>
 </body>
 </html>
