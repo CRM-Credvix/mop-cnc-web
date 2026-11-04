@@ -31,7 +31,6 @@
   const review=new Set(['revisao','falha_estado_desconhecido','bloqueado','falha_sem_gravar']);
   let active=new Set(), ready=false, sending=false, loading=false, retriesDigest='',retryKey='';
   let cachedLotes=[],cachedItems=[];
-  let pilotReady=false,pilotState='nao_preparado';
   const selected=()=>document.querySelector('input[name="dnaProfile"]:checked')?.value||'';
   const fmtDate=s=>s?new Date(s).toLocaleString('pt-BR'):'—';
   const safeText=(node,v)=>{node.textContent=String(v??'—');};
@@ -71,74 +70,39 @@
     safeText(box,err?.message||'Verifique os dados dos colaboradores.');
     $('dnaNames').setAttribute('aria-invalid','true');
   }
-  function revalidacaoOrigem(){
-    return selected()==='CONSULTOR_2' && !active.has('CONSULTOR_2')
-      && ready && pilotReady && pilotState==='revalidacao_disponivel';
-  }
   function available(){
     const code=selected();
-    const restricted=code==='CONSULTOR_2'&&!active.has(code);
-    const originMode=restricted&&['revalidacao_disponivel','revalidacao_solicitada','consumido'].includes(pilotState);
-    const oneClick=revalidacaoOrigem();
-    const authorized=ready&&(active.has(code)||oneClick);
-    const entry=$('dnaUserEntry');
-    entry.hidden=originMode;
-    if(originMode&&$('dnaNames').value){
-      // Nao manter em memoria os dados redigitados: o backend le o lote original.
-      $('dnaNames').value='';
-      $('dnaInputError').hidden=true;
-      $('dnaNames').removeAttribute('aria-invalid');
-      $('dnaCountInline').textContent='0 colaboradores';
-    }
-    let valid=oneClick;
-    if(!oneClick&&authorized){
-      try{valid=parseRows().length===1;}catch(_){valid=false;}
-    }
+    // O CPF e nome devem permanecer visiveis para TODOS os modelos, inclusive Consultor 2.
+    $('dnaUserEntry').hidden=false;
+    const authorized=ready&&active.has(code);
+    let valid=false;
+    try{valid=parseRows().length===1;}catch(_){valid=false;}
     $('dnaSubmit').disabled=sending||!authorized||!valid;
-    safeText($('summaryWebStatus'),oneClick?'Revalidação pelo lote original':authorized?'Modelo habilitado':'Em homologação');
-    safeText($('dnaExecutionBadge'),oneClick?'🛡 Revalidação segura':'🛡 Execução web em homologação');
-    const expl=$('dnaFlowNote');
-    let explanation='Selecione o modelo e acompanhe o resultado. Os demais modelos aguardam homologação.';
-    let status='Execução web indisponível para este modelo até homologação.';
-    if(oneClick){
-      explanation='Revalidação do colaborador do primeiro piloto: o servidor recuperará CPF e nome protegidos do lote original. Nenhuma informação pessoal precisa ser redigitada. Se encontrar divergências, o robô poderá aplicar correções.';
-      status='Revalidação autorizada para o mesmo colaborador. Clique uma vez em Solicitar padronização.';
-    }else if(code==='CONSULTOR_2'&&pilotState==='revalidacao_solicitada'){
-      explanation='A revalidação deste colaborador já foi solicitada. Acompanhe o estado da tarefa antes de qualquer nova ação.';
-      status='Revalidação já solicitada. Consulte o Acompanhamento; não envie novamente.';
-    }else if(code==='CONSULTOR_2'&&pilotState==='consumido'){
-      explanation='Primeiro piloto concluído; uma nova solicitação exige confirmação no banco.';
-      status='Revalidação indisponível para esta conta.';
-    }else if(authorized){
-      explanation='Informe um colaborador e solicite a padronização. O robô confere antes de gravar.';
-      status=valid?'Solicitação disponível.':'Informe CPF e nome completos válidos.';
-    }
-    safeText(expl,explanation);
-    safeText($('dnaModelAvailability'),status);
+    safeText($('summaryWebStatus'),authorized?'Modelo habilitado':'Aguardando liberação');
+    safeText($('dnaExecutionBadge'),authorized?'🛡 Padronização autorizada':'🛡 Execução web em homologação');
+    const explanation='Informe CPF e nome completo do colaborador que deseja padronizar. '+
+      'O robô verificará a identidade, comparará as 224 permissões e só gravará se encontrar divergências. '+
+      'A seleção de um colaborador não substitui a autorização de execução do modelo.';
+    safeText($('dnaFlowNote'),explanation);
+    const label=authorized
+      ?valid?'Pronto para solicitar padronização deste colaborador.':'Informe um CPF e nome completos válidos.'
+      :'Informe o colaborador desejado. A execução desse modelo ainda aguarda habilitação para novos colaboradores.';
+    safeText($('dnaModelAvailability'),label);
   }
   function selectedChanged(){
-    if(!Object.hasOwn(labels,selected())){ready=false;available();return;}
     available();
   }
   async function loadModels(){
-    ready=false;pilotReady=false;available();
+    ready=false;available();
     try{
-      const [modelsResult,pilotResult]=await Promise.all([
-        client.from('dna_web_modelos').select('codigo,ativo'),
-        client.rpc('dna_web_status_piloto')
-      ]);
-      if(modelsResult.error)throw modelsResult.error;
-      if(pilotResult.error)throw pilotResult.error;
-      active=new Set((modelsResult.data||[]).filter(x=>x.ativo===true).map(x=>x.codigo));
-      const status=pilotResult.data||{};
-      pilotReady=status.pode_enviar===true&&status.modelo==='CONSULTOR_2';
-      pilotState=status.estado||'nao_identificado';
+      const {data,error}=await client.from('dna_web_modelos').select('codigo,ativo');
+      if(error)throw error;
+      active=new Set((data||[]).filter(model=>model.ativo===true).map(model=>model.codigo));
       ready=true;
       available();
     }catch(_){
-      ready=false;active.clear();pilotReady=false;
-      pilotState='indisponivel';available();
-      message('Não foi possível validar a revalidação no Supabase. Nenhuma solicitação pode ser enviada.',true);
+      ready=false;active.clear();available();
+      message('Não foi possível consultar a habilitação dos modelos no Supabase. Nenhuma solicitação será enviada.',true);
     }
   }
   function cell(row,value){
@@ -241,50 +205,38 @@
     return 'Não foi possível registrar ou confirmar o envio. Código técnico: '+(/^[A-Z0-9]{4,10}$/.test(code)?code:'indisponível')+'. Consulte o Acompanhamento.';
   }
   async function submit(){
-    if(sending||!ready||!(active.has(selected())||revalidacaoOrigem()))return;
-    let rows=null,code,fromOriginal;
+    if(sending||!ready||!active.has(selected()))return;
+    let rows,code;
     try{
       code=selected();
       if(!Object.hasOwn(labels,code))throw Error('Selecione um modelo válido.');
-      fromOriginal=revalidacaoOrigem();
-      if(!fromOriginal){
-        rows=parseRows();
-        if(rows.length!==1)throw Error('Informe exatamente um colaborador.');
-      }
+      rows=parseRows();
+      if(rows.length!==1)throw Error('Informe exatamente um colaborador.');
       $('dnaInputError').hidden=true;
     }catch(err){informError(err);message(err.message,true);return;}
-    const digest=fromOriginal?'REVALIDAR_CONSULTOR_2_ORIGEM':JSON.stringify([code,rows]);
+    const digest=JSON.stringify([code,rows]);
     if(retriesDigest!==digest){retriesDigest=digest;retryKey=crypto.randomUUID();}
     sending=true;available();
     message('Enviando solicitação única ao Supabase... Não clique novamente.');
     try{
-      const request=fromOriginal
-        ?client.rpc('dna_web_revalidar_piloto',{p_idempotencia:retryKey})
-        :client.rpc('dna_web_criar_lote',{
-          p_modelo:code,p_itens:rows,p_idempotencia:retryKey,p_confirmacao:'APLICAR '+code
-        });
-      const {data,error}=await request;
+      const {data,error}=await client.rpc('dna_web_criar_lote',{
+        p_modelo:code,p_itens:rows,p_idempotencia:retryKey,
+        // Compatibilidade da API; nao exige frase digitada pelo operador.
+        p_confirmacao:'APLICAR '+code
+      });
       if(error)throw error;
       $('dnaNames').value='';
       $('dnaNames').dispatchEvent(new Event('input',{bubbles:true}));
       retriesDigest='';retryKey='';
-      message('Solicitação '+String(data).slice(0,8)+' registrada. Acompanhe o resultado no menu Acompanhamento.');
+      message('Solicitação '+String(data).slice(0,8)+' registrada. Consulte o Acompanhamento.');
       await loadQueue();
       await loadModels();
       document.querySelector('[data-target="acompanhamento"]')?.click();
     }catch(err){
-      // O backend e a chave de idempotencia impedem nova gravacao caso a resposta se perca.
       await loadModels();
       await loadQueue();
-      if(fromOriginal&&pilotState==='revalidacao_solicitada'){
-        message('A revalidação já está registrada no Supabase. Consulte o Acompanhamento; não envie novamente.');
-      }else{
-        message(safeRequestError(err),true);
-      }
-    }finally{
-      sending=false;
-      available();
-    }
+      message(safeRequestError(err),true);
+    }finally{sending=false;available();}
   }
   $('dnaSubmit').addEventListener('click',submit);
   $('dnaNames').addEventListener('input',available);
