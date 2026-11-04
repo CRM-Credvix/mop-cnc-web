@@ -3,29 +3,35 @@
   const $=id=>document.getElementById(id);
   const root=$('dnaShell'), denied=$('dnaDenied');
   const allowedStages=['gestao','conferencia','acompanhamento','auditoria'];
-  const state={profile:'CONSULTOR'};
-  const templates={
-    CONSULTOR:{profile:'Consultor',sub:'Consultor 2'},
-    SUPERVISOR:{profile:'Supervisor',sub:'Supervisor 1'}
-  };
+  const state={profile:'CONSULTOR_2'};
+  const templates=Object.freeze({
+    CONSULTOR_1:{profile:'Consultor',sub:'Consultor 1',familia:'CONSULTOR'},
+    CONSULTOR_2:{profile:'Consultor',sub:'Consultor 2',familia:'CONSULTOR'},
+    SUPERVISOR_1:{profile:'Supervisor',sub:'Supervisor 1',familia:'SUPERVISOR'},
+    SUPERVISOR_2:{profile:'Supervisor',sub:'Supervisor 2',familia:'SUPERVISOR'}
+  });
   const normalize=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').trim();
   const names=()=>$('dnaNames').value.split(/\r?\n/).map(s=>s.trim().replace(/\s+/g,' ')).filter(Boolean);
   const showError=(message)=>{const el=$('dnaInputError');el.textContent=message;el.hidden=!message; $('dnaNames').setAttribute('aria-invalid',String(Boolean(message)));};
-  function getCurrentTemplate(){return templates[state.profile];}
+  function getCurrentTemplate(){return templates[state.profile] || templates.CONSULTOR_2;}
   function updateProfile(){
     const checked=document.querySelector('input[name="dnaProfile"]:checked');
-    state.profile=checked?checked.value:'CONSULTOR';
+    state.profile=checked && templates[checked.value] ? checked.value : 'CONSULTOR_2';
     document.querySelectorAll('[data-profile-card]').forEach(el=>el.classList.toggle('active',el.dataset.profileCard===state.profile));
     const t=getCurrentTemplate();
-    $('summaryProfileCaps').textContent=state.profile;
+    $('summaryProfileCaps').textContent=t.sub.toLocaleUpperCase('pt-BR');
     $('summaryProfile').textContent=t.profile;
     $('summarySubprofile').textContent=t.sub;
-    $('conferencePatternPill').textContent='Padrão '+t.sub;
-    $('verificationPatternText').textContent='Padrão de referência: '+t.profile+' → '+t.sub;
+    $('conferencePatternPill').textContent='Modelo selecionado: '+t.sub;
+    $('verificationPatternText').textContent='Modelo escolhido: '+t.sub;
+    // A fila antiga de conferência opera apenas por família; não extrapolar
+    // as seis diferenças preliminares para os modelos 1 e 2 adicionais.
+    const oldDiff=$('dnaLegacyDifferences');
+    if(oldDiff)oldDiff.hidden=!['CONSULTOR_2','SUPERVISOR_1'].includes(state.profile);
     $('progressPatternText').textContent=t.profile+' · '+t.sub;
     document.querySelectorAll('.dna-diff-action').forEach(el=>{
       const consultor=el.dataset.consultor;
-      const action=state.profile==='CONSULTOR'?consultor:(consultor==='marcar'?'desmarcar':'marcar');
+      const action=t.familia==='CONSULTOR'?consultor:(consultor==='marcar'?'desmarcar':'marcar');
       el.textContent=action==='marcar'?'Marcar':'Desmarcar';
       el.classList.toggle('dna-pos',action==='marcar');
       el.classList.toggle('dna-neg',action==='desmarcar');
