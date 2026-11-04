@@ -167,4 +167,5 @@ BEGIN
 END;
 $lote$;
 REVOKE ALL ON FUNCTION dna_private.dna_web_criar_lote(text,jsonb,uuid,text) FROM PUBLIC,anon;
+NOTIFY pgrst, 'reload schema';
 COMMIT;
