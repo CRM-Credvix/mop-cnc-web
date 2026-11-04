@@ -121,9 +121,14 @@
     let items;
     try {items=parseRows();}catch(e){return text(e.message,true);}
     const selected=document.querySelector('input[name="dnaProfile"]:checked');
-    const perfil=selected?.value;
-    if(!['CONSULTOR','SUPERVISOR'].includes(perfil))return text('Selecione o perfil.',true);
-    const signature=JSON.stringify([perfil,items]);
+    // A fila de conferência antiga é SOMENTE LEITURA e distingue apenas
+    // famílias. A seleção fina C1/C2/S1/S2 nunca é tratada como aplicada.
+    const modelo=selected?.value||'';
+    const familias={CONSULTOR_1:'CONSULTOR',CONSULTOR_2:'CONSULTOR',
+      SUPERVISOR_1:'SUPERVISOR',SUPERVISOR_2:'SUPERVISOR'};
+    const perfil=familias[modelo];
+    if(!perfil)return text('Selecione um dos quatro modelos.',true);
+    const signature=JSON.stringify([modelo,perfil,items]);
     if(lastDigest!==signature){lastDigest=signature;lastKey=crypto.randomUUID();}
     sending=true;create.disabled=true;
     text('Registrando solicitação de conferência…');
@@ -136,7 +141,7 @@
       lastDigest=''; lastKey=''; // forget CPF from the idempotency signature after success
       names.value='';
       names.dispatchEvent(new Event('input',{bubbles:true}));
-      text(`Lote ${short(selectedBatch)} registrado com ${items.length} colaborador(es). Aguardando conexão do robô local.`);
+      text(`Lote ${short(selectedBatch)} registrado para consulta de identidade da família ${perfil} (somente leitura). O modelo ${modelo.replace('_',' ')} não será aplicado nesta conferência.`);
       document.querySelector('[data-target="acompanhamento"]')?.click();
       await load(true);
     }catch(e){text('Não foi possível criar a solicitação: '+(e?.message||'erro de acesso'),true);}
