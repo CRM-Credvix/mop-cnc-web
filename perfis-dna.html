@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="css/perfis-dna.css?v=2026-10-22-01">
   <link rel="stylesheet" href="css/mop-shell.css?v=20261023-02b">
   <link rel="stylesheet" href="css/perfis-dna-theme.css?v=20261104-01">
-  <link rel="stylesheet" href="css/dna-padronizacao.css?v=20261104-piloto-1">
+  <link rel="stylesheet" href="css/dna-padronizacao.css?v=20261104-piloto-2">
 </head>
 <body class="dna-body">
   <div class="mop-shell dna-app-shell" id="dnaShell" hidden>
@@ -76,7 +76,7 @@
                 </label>
               </div>
 
-              <div class="dna-padronizacao-approval" id="dnaPilotArea" hidden>
+              <div class="dna-padronizacao-approval" id="dnaPilotArea">
                 <h3>Piloto controlado — Consultor 2</h3>
                 <p class="dna-helper-line" id="dnaPilotDescription">
                   Autoriza somente UM colaborador da lista atual. O CPF e o nome precisam permanecer iguais
@@ -88,7 +88,7 @@
                 <button class="dna-button dna-button--secondary" id="dnaPilotAuthorize" type="button" disabled>
                   Autorizar um colaborador para o piloto
                 </button>
-                <p id="dnaPilotNotice" role="status" class="dna-helper-line"></p>
+                <p id="dnaPilotNotice" role="status" aria-live="polite" class="dna-helper-line">Verificando no Supabase se a autorização do piloto está disponível. O botão permanecerá bloqueado até a confirmação.</p>
               </div>
               <div class="dna-padronizacao-approval">
                 <label for="dnaConfirm" id="dnaConfirmHelp">Confirmação: digite APLICAR CONSULTOR_2</label>
@@ -226,6 +226,6 @@
   <script src="js/config.js"></script>
   <script src="js/mop-shell.js?v=20261104-unico"></script>
   <script src="js/perfis-dna.js?v=20261104-unico"></script>
-  <script src="js/dna-padronizacao.js?v=20261104-piloto-1"></script>
+  <script src="js/dna-padronizacao.js?v=20261104-piloto-2"></script>
 </body>
 </html>
