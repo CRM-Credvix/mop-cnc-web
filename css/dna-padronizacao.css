@@ -1,0 +1,31 @@
+/* CREDVIX DNA — layout de padronizacao unica; cores dos temas herdadas do MOP. */
+.dna-padronizacao-model-label{margin-top:22px;}
+.dna-padronizacao-approval{display:grid;gap:8px;margin-top:20px;}
+.dna-padronizacao-approval label{font-size:13px;font-weight:800;color:var(--dna-text);}
+.dna-padronizacao-approval input,#dnaAuditSearch{
+  width:100%;height:46px;border:1px solid var(--dna-border-strong);
+  border-radius:12px;padding:0 14px;background:#fff;color:var(--dna-text);
+  font:600 14px Inter,Arial,sans-serif;outline:none;box-sizing:border-box;
+}
+.dna-padronizacao-approval input:focus-visible,#dnaAuditSearch:focus-visible{
+  border-color:var(--dna-orange);box-shadow:0 0 0 3px rgba(201,91,18,.15);
+}
+.dna-padronizacao-approval input::placeholder,#dnaAuditSearch::placeholder{color:var(--dna-muted);font-weight:400;}
+.dna-padronizacao-approval .dna-helper-line{margin:0;color:var(--dna-muted);font-weight:400;}
+.dna-padronizacao-history{margin-top:18px;}
+.dna-padronizacao-message{margin:12px 0!important;}
+.dna-padronizacao-error{color:var(--dna-red)!important;font-weight:700;}
+.dna-padronizacao-search-label{display:block;margin:12px 0 8px;color:var(--dna-text);font-size:13px;font-weight:700;}
+#dnaAuditSearch{max-width:480px;margin-bottom:14px;}
+.dna-padronizacao-secondary-actions{margin-top:14px;}
+.dna-body .dna-stage>.dna-card+.dna-card{margin-top:16px;}
+.dna-body .dna-stage>.dna-card h3{margin-bottom:8px;}
+.dna-body .dna-stage>.dna-card .dna-subcopy{margin-bottom:12px!important;}
+html[data-theme="dark"] .dna-body .dna-padronizacao-approval input,
+html[data-theme="dark"] .dna-body #dnaAuditSearch{
+  color:var(--dna-text);background:#1c1917;border-color:var(--dna-border-strong);
+}
+html[data-theme="dark"] .dna-body .dna-padronizacao-approval label,
+html[data-theme="dark"] .dna-body .dna-padronizacao-search-label{color:var(--dna-text);}
+html[data-theme="dark"] .dna-body .dna-padronizacao-error{color:#ffad9b!important;}
+@media(max-width:860px){.dna-padronizacao-approval input,#dnaAuditSearch{max-width:100%;}}

@@ -6,15 +6,14 @@
   const ADMIN_EMAIL = 'crm@credvix.com';
   const VERSION = 'v2026-10-23-02';
   const isDna = /(?:^|\/)perfis-dna\.html$/i.test(location.pathname);
-  const routes = ['gestao', 'conferencia', 'acompanhamento', 'auditoria'];
+  const routes = ['gestao', 'acompanhamento', 'auditoria'];
   const menu = Object.freeze([
     {id:'app',label:'Nova solicitação',icon:'⌂',href:'app.html'},
     {id:'history',label:'Histórico de emissões',icon:'◷',href:'historico.html'},
     {id:'help',label:'Ajuda',icon:'?',href:'app.html#ajuda'},
-    {id:'gestao',label:'Gestão de Perfis DNA',icon:'◇',href:'perfis-dna.html#gestao',admin:true},
-    {id:'conferencia',label:'Conferência',icon:'↗',href:'perfis-dna.html#conferencia',admin:true},
-    {id:'acompanhamento',label:'Acompanhamento',icon:'⌁',href:'perfis-dna.html#acompanhamento',admin:true},
-    {id:'auditoria',label:'Auditoria DNA',icon:'☰',href:'perfis-dna.html#auditoria',admin:true}
+    {id:'gestao',label:'Padronização DNA',icon:'◇',href:'perfis-dna.html#gestao',admin:true},
+    {id:'acompanhamento',label:'Acompanhamento DNA',icon:'⌁',href:'perfis-dna.html#acompanhamento',admin:true},
+    {id:'auditoria',label:'Histórico DNA',icon:'☰',href:'perfis-dna.html#auditoria',admin:true}
   ]);
 
   const normalize = value => String(value||'').trim().toLowerCase();
