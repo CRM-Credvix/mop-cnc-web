@@ -52,7 +52,7 @@
   const add = (tr,v) => { const c=tr.insertCell(); c.textContent=String(v??'—'); return c; };
   const text = (value,isError=false) => { msg.textContent=value;msg.style.color=isError?'#ad3928':''; };
   const status = {
-    aguardando_worker:'Aguardando robô local',em_consulta:'Em consulta',concluido:'Consulta encerrada',revisao:'Revisão necessária',
+    aguardando_worker:'Aguardando robô de conferência',em_consulta:'Em consulta',concluido:'Consulta encerrada',revisao:'Revisão necessária',
     consulta_confirmada:'Cadastro conferido no DNA',duplicidade:'Contas duplicadas',nao_encontrado:'Não encontrado',erro:'Falha',revisao_item:'Revisão'
   };
   function renderList(lotes,items,container) {
@@ -64,11 +64,11 @@
     for (const l of lotes) {
       const own=items.filter(i=>i.lote_id===l.id).sort((a,b)=>a.ordem-b.ordem);
       if (!own.length) {
-        const tr=body.insertRow();add(tr,short(l.id));add(tr,fmt(l.criado_em));add(tr,l.perfil==='CONSULTOR'?'Consultor 2':'Supervisor 1');
+        const tr=body.insertRow();add(tr,short(l.id));add(tr,fmt(l.criado_em));add(tr,l.perfil==='CONSULTOR'?'Consultor (conferência)':l.perfil==='SUPERVISOR'?'Supervisor (conferência)':'Perfil não identificado');
         const td=add(tr,'Carregando itens');td.colSpan=3;continue;
       }
       for (const i of own) {
-        const tr=body.insertRow();add(tr,short(l.id));add(tr,fmt(l.criado_em));add(tr,l.perfil==='CONSULTOR'?'Consultor 2':'Supervisor 1');
+        const tr=body.insertRow();add(tr,short(l.id));add(tr,fmt(l.criado_em));add(tr,l.perfil==='CONSULTOR'?'Consultor (conferência)':l.perfil==='SUPERVISOR'?'Supervisor (conferência)':'Perfil não identificado');
         add(tr,i.nome);add(tr,'•••.'+i.cpf_final4);add(tr,status[i.status]||i.status);
       }
     }
@@ -84,7 +84,7 @@
     const heading=document.createElement('div');heading.className='dna-table-head';
     const info=document.createElement('div');
     const h=document.createElement('h2');h.textContent='Fila de conferência (somente leitura)';
-    const p=document.createElement('p');p.textContent='Pedidos recebidos pelo Supabase. CPF completo protegido; aguardando conexão do robô local para processamento automático.';
+    const p=document.createElement('p');p.textContent='Pedidos de consulta por família (Consultor ou Supervisor). O subperfil 1/2 não é registrado nesta fila. Somente leitura: nenhum acesso será alterado.';
     info.append(h,p);
     const refresh=document.createElement('button');refresh.className='dna-button dna-button--ghost';refresh.type='button';refresh.textContent='⟳ Atualizar';refresh.addEventListener('click',()=>load(true));
     heading.append(info,refresh);
