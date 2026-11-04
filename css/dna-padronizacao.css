@@ -36,3 +36,12 @@ html[data-theme="dark"] .dna-body .dna-padronizacao-error{color:#ffad9b!importan
 #dnaPilotArea h3{margin:0 0 3px;font-size:16px;color:var(--dna-text);}
 #dnaPilotArea .dna-button{justify-self:start;}
 html[data-theme='dark'] #dnaPilotArea{background:#30231d;}
+
+/* Fallback seguro: exibe a explicacao do piloto mesmo sem JS inicializado.
+   O botao so habilita apos resposta autorizada da RPC no Supabase. */
+#dnaPilotArea:not([hidden]) { display:grid; }
+body.dna-body:not(:has(input[name="dnaProfile"][value="CONSULTOR_2"]:checked)) #dnaPilotArea {
+  display:none;
+}
+#dnaPilotAuthorize:disabled { opacity:.55; cursor:not-allowed; }
+#dnaPilotNotice { min-height:1.4em; }
