@@ -198,7 +198,7 @@
   }
   function safeRequestError(err){
     const code=String(err?.code||'');
-    if(code==='PGRST202'||code==='42883')return 'Função de revalidação não está disponível no Supabase. Atualize a página e verifique a publicação.';
+    if(code==='PGRST202'||code==='42883')return 'A função de solicitação não está disponível no Supabase. Atualize a página e verifique a publicação.';
     if(code==='42501')return 'Solicitação não autorizada ou já utilizada. Consulte o Acompanhamento antes de qualquer nova tentativa.';
     if(code==='23505')return 'Esta solicitação conflita com um lote existente. Consulte o Acompanhamento.';
     if(code==='22023')return 'Parâmetros da solicitação inválidos. Nenhuma nova tarefa foi autorizada.';
