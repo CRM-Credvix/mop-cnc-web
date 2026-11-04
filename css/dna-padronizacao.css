@@ -29,3 +29,10 @@ html[data-theme="dark"] .dna-body .dna-padronizacao-approval label,
 html[data-theme="dark"] .dna-body .dna-padronizacao-search-label{color:var(--dna-text);}
 html[data-theme="dark"] .dna-body .dna-padronizacao-error{color:#ffad9b!important;}
 @media(max-width:860px){.dna-padronizacao-approval input,#dnaAuditSearch{max-width:100%;}}
+
+/* O estilo display:grid nao pode revelar a autorizacao quando hidden. */
+#dnaPilotArea[hidden]{display:none!important;}
+#dnaPilotArea{border:1px solid var(--dna-border-strong);background:var(--dna-orange-softer);border-radius:14px;padding:16px;}
+#dnaPilotArea h3{margin:0 0 3px;font-size:16px;color:var(--dna-text);}
+#dnaPilotArea .dna-button{justify-self:start;}
+html[data-theme='dark'] #dnaPilotArea{background:#30231d;}
