@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="css/perfis-dna.css?v=2026-10-22-01">
   <link rel="stylesheet" href="css/mop-shell.css?v=20261023-02b">
   <link rel="stylesheet" href="css/perfis-dna-theme.css?v=20261104-01">
-  <link rel="stylesheet" href="css/dna-padronizacao.css?v=20261104-piloto-2">
+  <link rel="stylesheet" href="css/dna-padronizacao.css?v=20261104-oneclick-1">
 </head>
 <body class="dna-body">
   <div class="mop-shell dna-app-shell" id="dnaShell" hidden>
@@ -43,15 +43,15 @@
             <section class="dna-card dna-card--main">
               <div class="dna-card-title-row">
                 <div class="dna-card-icon">⇉</div>
-                <div><h2>Nova padronização</h2><p>Uma solicitação pode conter até 50 colaboradores, todos para o mesmo modelo.</p></div>
+                <div><h2>Nova padronização</h2><p>Para a revalidação controlada, informe somente o colaborador que participou do primeiro piloto.</p></div>
               </div>
               <div class="dna-field-head">
-                <label for="dnaNames">Colaboradores para padronizar</label>
+                <label for="dnaNames">Colaborador para padronizar</label>
                 <span id="dnaCountInline">0 colaboradores</span>
               </div>
-              <textarea id="dnaNames" rows="7" placeholder="CPF; Nome completo — um colaborador por linha" autocomplete="off" spellcheck="false" aria-describedby="dnaNamesHelp dnaInputError"></textarea>
+              <textarea id="dnaNames" rows="7" placeholder="CPF; Nome completo" autocomplete="off" spellcheck="false" aria-describedby="dnaNamesHelp dnaInputError"></textarea>
               <p id="dnaInputError" class="dna-input-error" role="alert" hidden></p>
-              <p class="dna-helper-line" id="dnaNamesHelp">Informe CPF e nome completo, separados por ponto e vírgula. Cada linha corresponde a um usuário. O CPF completo não aparece no acompanhamento nem nos relatórios.</p>
+              <p class="dna-helper-line" id="dnaNamesHelp">Informe CPF e nome completo, separados por ponto e vírgula. O CPF completo não aparece no acompanhamento nem nos relatórios.</p>
 
               <div class="dna-field-split dna-padronizacao-model-label">
                 <label id="dnaModelLabel">Modelo de permissões a aplicar</label>
@@ -76,25 +76,11 @@
                 </label>
               </div>
 
-              <div class="dna-padronizacao-approval" id="dnaPilotArea">
-                <h3>Piloto controlado — Consultor 2</h3>
-                <p class="dna-helper-line" id="dnaPilotDescription">
-                  Autoriza somente UM colaborador da lista atual. O CPF e o nome precisam permanecer iguais
-                  até o envio. Uso único em até 30 minutos, sem possibilidade de autorizar novamente pelo site.
-                </p>
-                <label for="dnaPilotText">Para autorizar, digite AUTORIZAR PILOTO CONSULTOR_2</label>
-                <input id="dnaPilotText" type="text" autocomplete="off" spellcheck="false"
-                  placeholder="AUTORIZAR PILOTO CONSULTOR_2" aria-describedby="dnaPilotDescription">
-                <button class="dna-button dna-button--secondary" id="dnaPilotAuthorize" type="button" disabled>
-                  Autorizar um colaborador para o piloto
-                </button>
-                <p id="dnaPilotNotice" role="status" aria-live="polite" class="dna-helper-line">Verificando no Supabase se a autorização do piloto está disponível. O botão permanecerá bloqueado até a confirmação.</p>
-              </div>
-              <div class="dna-padronizacao-approval">
-                <label for="dnaConfirm" id="dnaConfirmHelp">Confirmação: digite APLICAR CONSULTOR_2</label>
-                <input id="dnaConfirm" type="text" autocomplete="off" spellcheck="false" placeholder="APLICAR CONSULTOR_2" aria-describedby="dnaConfirmHelp dnaSubmitInfo">
-                <p class="dna-helper-line">A confirmação será exigida apenas quando a execução web estiver homologada e habilitada para o modelo selecionado.</p>
-              </div>
+              <p class="dna-helper-line" id="dnaFlowNote">
+                Próximo teste: revalidar somente o colaborador do piloto Consultor 2 já concluído.
+                Informe o mesmo CPF e nome e clique em Solicitar padronização.
+                O robô fará nova leitura e, se estiver conforme, não gravará nada.
+              </p>
               <div class="dna-bottom-cta">
                 <span id="dnaModelAvailability">Verificando disponibilidade da execução...</span>
                 <button id="dnaSubmit" class="dna-button dna-button--primary" type="button" disabled>Solicitar padronização</button>
@@ -226,6 +212,6 @@
   <script src="js/config.js"></script>
   <script src="js/mop-shell.js?v=20261104-unico"></script>
   <script src="js/perfis-dna.js?v=20261104-unico"></script>
-  <script src="js/dna-padronizacao.js?v=20261104-piloto-2"></script>
+  <script src="js/dna-padronizacao.js?v=20261104-oneclick-1"></script>
 </body>
 </html>

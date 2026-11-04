@@ -9,11 +9,9 @@
   const client=window.MOP_SUPABASE;
   const shell=$('dnaShell');
   if(!client||!shell||!$('dnaSubmit')){
-    const notice=$('dnaPilotNotice');
-    if(notice)notice.textContent='O módulo de autorização não inicializou. Recarregue a página; nenhuma solicitação foi criada.';
     return;
   }
-  document.documentElement.dataset.dnaPilotScript='loaded';
+  document.documentElement.dataset.dnaRequestScript='loaded';
   const labels=Object.freeze({
     CONSULTOR_1:'Consultor 1',CONSULTOR_2:'Consultor 2',
     SUPERVISOR_1:'Supervisor 1',SUPERVISOR_2:'Supervisor 2'
@@ -33,7 +31,7 @@
   const review=new Set(['revisao','falha_estado_desconhecido','bloqueado','falha_sem_gravar']);
   let active=new Set(), ready=false, sending=false, loading=false, retriesDigest='',retryKey='';
   let cachedLotes=[],cachedItems=[];
-  let pilotReady=false,pilotCanPrepare=false,pilotState='nao_preparado';
+  let pilotReady=false,pilotState='nao_preparado';
   const selected=()=>document.querySelector('input[name="dnaProfile"]:checked')?.value||'';
   const fmtDate=s=>s?new Date(s).toLocaleString('pt-BR'):'—';
   const safeText=(node,v)=>{node.textContent=String(v??'—');};
@@ -74,35 +72,32 @@
     $('dnaNames').setAttribute('aria-invalid','true');
   }
   function available(){
-    const code=selected(),pilotCode=code==='CONSULTOR_2'&&!active.has(code);
-    const allowed=ready&&(active.has(code)||(pilotCode&&pilotReady));
-    $('dnaSubmit').disabled=sending||!allowed;
-    safeText($('summaryWebStatus'),allowed?(pilotCode?'Piloto único autorizado':'Modelo habilitado'):'Em homologação');
-    safeText($('dnaModelAvailability'),allowed?
-      (pilotCode?'Piloto autorizado para um colaborador. Confirme APLICAR CONSULTOR_2 e envie uma vez.':
-        'Modelo habilitado para solicitações autorizadas.'):
-      'Execução web indisponível para este modelo até homologação.');
-    safeText($('dnaExecutionBadge'),allowed?'🛡 Piloto restrito autorizado':'🛡 Execução web em homologação');
-    const area=$('dnaPilotArea');
-    area.hidden=!pilotCode;
-    $('dnaPilotAuthorize').disabled=!ready||sending||!pilotCanPrepare||!pilotCode;
-    let note='Estado do piloto: '+pilotState+'.';
-    if(pilotState==='nao_preparado')note+=' Autorize somente quando o agente estiver pronto para executar o teste.';
-    if(pilotState==='preparado')note+=' Autorizado por 30 minutos para CPF e nome informados.';
-    if(pilotState==='consumido')note+=' Solicitação já criada. Não é possível criar outro lote com essa autorização.';
-    if(pilotState==='expirado')note+=' Autorização expirada e não renovável automaticamente.';
-    safeText($('dnaPilotNotice'),note);
+    const code=selected();
+    const restricted=code==='CONSULTOR_2'&&!active.has(code);
+    const eligible=ready&&(active.has(code)||(restricted&&pilotReady));
+    let valid=false;
+    try{valid=parseRows().length===1;}catch(_){valid=false;}
+    $('dnaSubmit').disabled=sending||!eligible||!valid;
+    safeText($('summaryWebStatus'),eligible?'Revalidação autorizada':'Em homologação');
+    safeText($('dnaExecutionBadge'),eligible?'🛡 Revalidação restrita':'🛡 Execução web em homologação');
+    let label='Execução web indisponível para este modelo até homologação.';
+    if(eligible){
+      label=valid
+        ?'Revalidação autorizada para o colaborador do piloto. Clique em Solicitar padronização uma única vez.'
+        :'Informe CPF e nome completo do mesmo colaborador do piloto anterior.';
+    } else if(code==='CONSULTOR_2'&&pilotState==='revalidacao_solicitada'){
+      label='Revalidação já solicitada. Confira o resultado no Acompanhamento; não envie novamente.';
+    } else if(code==='CONSULTOR_2'&&pilotState==='consumido'){
+      label='Revalidação indisponível: não foi possível confirmar o resultado anterior.';
+    }
+    safeText($('dnaModelAvailability'),label);
   }
   function selectedChanged(){
-    const code=selected();
-    if(!Object.hasOwn(labels,code)){ready=false;available();return;}
-    safeText($('dnaConfirmHelp'),'Confirmação: digite APLICAR '+code);
-    $('dnaConfirm').placeholder='APLICAR '+code;
-    $('dnaConfirm').value='';
+    if(!Object.hasOwn(labels,selected())){ready=false;available();return;}
     available();
   }
   async function loadModels(){
-    ready=false;pilotReady=false;pilotCanPrepare=false;available();
+    ready=false;pilotReady=false;available();
     try{
       const [modelsResult,pilotResult]=await Promise.all([
         client.from('dna_web_modelos').select('codigo,ativo'),
@@ -113,40 +108,14 @@
       active=new Set((modelsResult.data||[]).filter(x=>x.ativo===true).map(x=>x.codigo));
       const status=pilotResult.data||{};
       pilotReady=status.pode_enviar===true&&status.modelo==='CONSULTOR_2';
-      pilotCanPrepare=status.pode_preparar===true;
       pilotState=status.estado||'nao_identificado';
-      ready=true;available();
+      ready=true;
+      available();
     }catch(_){
-      ready=false;active.clear();pilotReady=false;pilotCanPrepare=false;
+      ready=false;active.clear();pilotReady=false;
       pilotState='indisponivel';available();
-      message('Não foi possível validar a autorização do piloto no Supabase. Nenhuma solicitação pode ser enviada. Atualize a página; se persistir, informe a mensagem do console sem dados pessoais.',true);
+      message('Não foi possível validar a revalidação no Supabase. Nenhuma solicitação pode ser enviada.',true);
     }
-  }
-  async function authorizePilot(){
-    if(!ready||!pilotCanPrepare||selected()!=='CONSULTOR_2'||sending)return;
-    let rows;
-    try{
-      rows=parseRows();
-      if(rows.length!==1)throw Error('O piloto exige exatamente um colaborador.');
-      if($('dnaPilotText').value.trim()!=='AUTORIZAR PILOTO CONSULTOR_2')
-        throw Error('Digite exatamente AUTORIZAR PILOTO CONSULTOR_2.');
-      $('dnaInputError').hidden=true;
-    }catch(err){informError(err);message(err.message,true);return;}
-    sending=true;available();
-    message('Registrando autorização de uso único no Supabase...');
-    try{
-      const {error}=await client.rpc('dna_web_autorizar_piloto',{
-        p_cpf:rows[0].cpf,p_nome:rows[0].nome,
-        p_confirmacao:'AUTORIZAR PILOTO CONSULTOR_2'
-      });
-      if(error)throw error;
-      $('dnaPilotText').value='';
-      message('Autorização criada. Prazo de 30 minutos: confirme APLICAR CONSULTOR_2 e solicite a padronização.');
-      await loadModels();
-    }catch(_){
-      message('Não foi possível confirmar a autorização. Consulte o estado do piloto antes de repetir a tentativa.',true);
-      await loadModels();
-    }finally{sending=false;available();}
   }
   function cell(row,value){
     const td=row.insertCell();
@@ -246,9 +215,7 @@
       code=selected();
       if(!Object.hasOwn(labels,code))throw Error('Selecione um modelo válido.');
       rows=parseRows();
-      if(!active.has(code)&&rows.length!==1)throw Error('O piloto exige exatamente um colaborador.');
-      if($('dnaConfirm').value.trim()!=='APLICAR '+code)
-        throw Error('Para confirmar, digite exatamente APLICAR '+code+'.');
+      if(rows.length!==1)throw Error('Informe exatamente um colaborador para esta revalidação.');
       $('dnaInputError').hidden=true;
     }catch(err){informError(err);message(err.message,true);return;}
     const digest=JSON.stringify([code,rows]);
@@ -257,11 +224,11 @@
     message('Registrando solicitação única... Não clique novamente.');
     try{
       const {data,error}=await client.rpc('dna_web_criar_lote',{
+        // Argumento de compatibilidade com a RPC existente; nao e um pedido de frase ao usuario.
         p_modelo:code,p_itens:rows,p_idempotencia:retryKey,p_confirmacao:'APLICAR '+code
       });
       if(error)throw error;
       $('dnaNames').value='';
-      $('dnaConfirm').value='';
       $('dnaNames').dispatchEvent(new Event('input',{bubbles:true}));
       retriesDigest='';retryKey='';
       message('Solicitação '+String(data).slice(0,8)+' registrada. Acompanhe o resultado no menu Acompanhamento.');
@@ -279,7 +246,7 @@
     }
   }
   $('dnaSubmit').addEventListener('click',submit);
-  $('dnaPilotAuthorize').addEventListener('click',authorizePilot);
+  $('dnaNames').addEventListener('input',available);
   $('dnaRefresh').addEventListener('click',()=>loadQueue());
   $('dnaAuditRefresh').addEventListener('click',()=>loadQueue());
   $('dnaAuditSearch').addEventListener('input',updateAudit);
