@@ -25,7 +25,7 @@
     falha_sem_gravar:'Falha sem gravar',
     revisao:'Revisão obrigatória — não repetir',
     falha_estado_desconhecido:'Estado incerto — não repetir'
-  });
+    });
   const pending=new Set(['aguardando_worker','em_execucao']);
   const complete=new Set(['ja_conforme','confirmado']);
   const review=new Set(['revisao','falha_estado_desconhecido','bloqueado','falha_sem_gravar']);
@@ -105,6 +105,13 @@
       message('Não foi possível consultar a habilitação dos modelos no Supabase. Nenhuma solicitação será enviada.',true);
     }
   }
+  function situation(item){
+    const code=String(item.resultado?.resultado||'');
+    if(code==='BLOQUEADO_LIMITE_SUPERVISOR_LOJA_NAO_VERIFICADO')return 'Bloqueado antes de salvar: robô não verificou o limite de supervisor por loja';
+    if(code==='DNA_LIMITE_SUPERVISOR_LOJA')return 'DNA recusou: limite de 1 supervisor por loja atingido — sem nova gravação';
+    if(code==='DNA_REGRA_NEGOCIO_RECUSADA')return 'DNA recusou a alteração — consulte o relatório da execução';
+    return states[item.estado]||item.estado||'Estado inválido';
+  }
   function cell(row,value){
     const td=row.insertCell();
     safeText(td,value);
@@ -119,7 +126,7 @@
       cell(tr,labels[lote.modelo]||'Não identificado');
       cell(tr,item.nome);
       cell(tr,'•••'+item.cpf_final4);
-      cell(tr,states[item.estado]||item.estado||'Estado inválido');
+      cell(tr,situation(item));
       cell(tr,fmtDate(item.atualizado_em));
     }
     if(!tbody.children.length){
@@ -153,7 +160,7 @@
     const filtered=cachedItems.filter(item=>{
       const lote=cachedLotes.find(x=>x.id===item.lote_id);
       if(!lote)return false;
-      const hay=(lote.id+' '+(labels[lote.modelo]||'')+' '+item.nome+' '+(states[item.estado]||''))
+      const hay=(lote.id+' '+(labels[lote.modelo]||'')+' '+item.nome+' '+situation(item))
         .toLocaleLowerCase('pt-BR');
       return !term||hay.includes(term);
     });
@@ -179,7 +186,7 @@
       cachedItems=[];
       if(cachedLotes.length){
         const {data,error:itemError}=await client.from('dna_web_itens')
-          .select('lote_id,ordem,nome,cpf_final4,estado,atualizado_em')
+          .select('lote_id,ordem,nome,cpf_final4,estado,resultado,atualizado_em')
           .in('lote_id',cachedLotes.map(x=>x.id)).order('atualizado_em',{ascending:false}).limit(3500);
         if(itemError)throw itemError;
         cachedItems=data||[];
