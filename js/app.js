@@ -9,12 +9,20 @@ window.MOP_EMISSOES.mountApp = async function(user){
   const options=document.getElementById('franchiseOptions');
   const whatsapp=document.getElementById('whatsapp');
   const form=document.getElementById('requestForm');
+  const BULK_CODE='__TODAS_AS_LOJAS__';
+  const BULK_EMAILS=new Set(['crm@credvix.com','gerencia@credvix.com']);
+  const canBulk=BULK_EMAILS.has(String(user.email||'').trim().toLowerCase());
 
   function normalize(v){return v.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();}
   function renderOptions(){
     const q=normalize(search.value.trim());
     const list=D.FRANCHISES.filter(f=>!q||normalize(f.codigo+' '+f.nome).includes(q)).slice(0,10);
-    options.innerHTML=list.map(f=>`<button type="button" class="combo-option" role="option" data-code="${D.escapeHtml(f.codigo)}"><strong>${D.escapeHtml(f.codigo)}</strong><span>${D.escapeHtml(f.nome)}</span></button>`).join('')||'<div class="empty-state">Nenhuma franquia encontrada.</div>';
+    const bulkText='todas as lojas retirar todas as lojas';
+    const bulk=canBulk&&(!q||normalize(bulkText).includes(q))
+      ? `<button type="button" class="combo-option" role="option" data-code="${BULK_CODE}"><strong>TODAS</strong><span>Todas as lojas autorizadas (${D.FRANCHISES.length})</span></button>`
+      : '';
+    const lojas=list.map(f=>`<button type="button" class="combo-option" role="option" data-code="${D.escapeHtml(f.codigo)}"><strong>${D.escapeHtml(f.codigo)}</strong><span>${D.escapeHtml(f.nome)}</span></button>`).join('');
+    options.innerHTML=bulk+lojas||'<div class="empty-state">Nenhuma franquia encontrada.</div>';
     options.hidden=false;
   }
 
@@ -23,6 +31,12 @@ window.MOP_EMISSOES.mountApp = async function(user){
   options.addEventListener('click',(e)=>{
     const btn=e.target.closest('[data-code]');
     if(!btn)return;
+    if(canBulk&&btn.dataset.code===BULK_CODE){
+      code.value=BULK_CODE;
+      search.value=`TODAS AS LOJAS — ${D.FRANCHISES.length} autorizadas`;
+      options.hidden=true;
+      return;
+    }
     const f=D.FRANCHISES.find(x=>x.codigo===btn.dataset.code);
     if(!f)return;
     code.value=f.codigo;
@@ -45,23 +59,30 @@ window.MOP_EMISSOES.mountApp = async function(user){
 
   form.addEventListener('submit',async(e)=>{
     e.preventDefault();
-    const f=D.FRANCHISES.find(x=>x.codigo===code.value);
+    const isBulk=canBulk&&code.value===BULK_CODE;
+    const f=isBulk?null:D.FRANCHISES.find(x=>x.codigo===code.value);
     const fErr=document.getElementById('franchiseError');
     const wErr=document.getElementById('whatsappError');
     const feedback=document.getElementById('requestFeedback');
     const submit=form.querySelector('button[type="submit"]');
 
     const whatsappNormalizado=normalizeWhats(whatsapp.value);
-    fErr.hidden=!!f;
+    fErr.hidden=isBulk||!!f;
     wErr.hidden=!!whatsappNormalizado;
-    if(!f||!whatsappNormalizado)return;
+    if((!isBulk&&!f)||!whatsappNormalizado)return;
+    if(isBulk&&!window.confirm(`Criar uma solicitação para cada uma das ${D.FRANCHISES.length} lojas autorizadas e enviar todas para este WhatsApp?`))return;
     submit.disabled=true;
 
     try{
-      const {data,error}=await window.MOP_SUPABASE
-        .from('pedidos_mop')
-        .insert({user_id:user.id,franquia_codigo:f.codigo,franquia_nome:f.nome,whatsapp:whatsappNormalizado})
-        .select('id,numero_usuario,status').single();
+      let data,error;
+      if(isBulk){
+        ({data,error}=await window.MOP_SUPABASE.rpc('criar_pedidos_todas_lojas_mop',{p_whatsapp:whatsappNormalizado}));
+      }else{
+        ({data,error}=await window.MOP_SUPABASE
+          .from('pedidos_mop')
+          .insert({user_id:user.id,franquia_codigo:f.codigo,franquia_nome:f.nome,whatsapp:whatsappNormalizado})
+          .select('id,numero_usuario,status').single());
+      }
       if(error){
         feedback.className='inline-alert error';
         feedback.textContent=error.code==='23505'
@@ -75,7 +96,13 @@ window.MOP_EMISSOES.mountApp = async function(user){
         return;
       }
       feedback.className='inline-alert success';
-      feedback.innerHTML=`Pedido <strong>#${D.escapeHtml(data.numero_usuario)}</strong> criado com sucesso. Status inicial: <strong>Na fila</strong>.`;
+      if(isBulk){
+        const criados=Number(data?.criados||0);
+        const ignorados=Number(data?.ignorados||0);
+        feedback.innerHTML=`<strong>${D.escapeHtml(criados)}</strong> solicitações criadas para as lojas autorizadas.${ignorados? ` <strong>${D.escapeHtml(ignorados)}</strong> loja(s) já estavam em processamento e foram ignoradas.` : ''}`;
+      }else{
+        feedback.innerHTML=`Pedido <strong>#${D.escapeHtml(data.numero_usuario)}</strong> criado com sucesso. Status inicial: <strong>Na fila</strong>.`;
+      }
       feedback.hidden=false;
       form.reset();
       code.value='';
