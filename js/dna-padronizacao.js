@@ -284,7 +284,7 @@
     if(!shell.hidden){obs.disconnect();selectedChanged();loadCapabilities();loadModels();loadQueue();}
   });
   if(shell.hidden)obs.observe(shell,{attributes:true,attributeFilter:['hidden']});
-  else{selectedChanged();loadModels();loadQueue();}
+  else{selectedChanged();loadCapabilities();loadModels();loadQueue();}
   window.setInterval(()=>{if(!shell.hidden&&!document.hidden)loadQueue();},30000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadQueue();});
 })();
