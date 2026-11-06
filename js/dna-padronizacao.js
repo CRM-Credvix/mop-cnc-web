@@ -16,6 +16,7 @@
     CONSULTOR_1:'Consultor 1',CONSULTOR_2:'Consultor 2',
     SUPERVISOR_1:'Supervisor 1',SUPERVISOR_2:'Supervisor 2'
   });
+  const modeLabels=Object.freeze({completa:'Padronização completa',somente_adicionar:'Somente adicionar'});
   const states=Object.freeze({
     aguardando_worker:'Aguardando robô',
     em_execucao:'Em execução',
@@ -126,7 +127,7 @@
       cell(tr,labels[lote.modelo]||'Não identificado');
       cell(tr,item.nome);
       cell(tr,'•••'+item.cpf_final4);
-      cell(tr,situation(item));
+      cell(tr,(modeLabels[lote.modalidade]||'Modalidade não identificada')+' · '+situation(item));
       cell(tr,fmtDate(item.atualizado_em));
     }
     if(!tbody.children.length){
@@ -180,7 +181,7 @@
     $('dnaAuditRefresh').disabled=true;
     try{
       const {data:lotes,error}=await client.from('dna_web_lotes')
-        .select('id,modelo,total,criado_em').order('criado_em',{ascending:false}).limit(75);
+        .select('id,modelo,total,modalidade,criado_em').order('criado_em',{ascending:false}).limit(75);
       if(error)throw error;
       cachedLotes=lotes||[];
       cachedItems=[];
