@@ -78,6 +78,25 @@
                 </label>
               </div>
 
+              <div class="dna-field-split dna-padronizacao-model-label">
+                <label id="dnaModeLabel">Modalidade de padronização</label>
+                <span>Defina como tratar permissões adicionais</span>
+              </div>
+              <div class="dna-profile-grid" role="radiogroup" aria-labelledby="dnaModeLabel">
+                <label class="dna-profile-option">
+                  <input type="radio" name="dnaMode" value="completa" checked>
+                  <div class="dna-profile-icon">✓</div>
+                  <div><strong>Padronização completa</strong><small>Marca as exigidas e desmarca as extras</small></div>
+                  <span class="dna-profile-check">✓</span>
+                </label>
+                <label class="dna-profile-option">
+                  <input type="radio" name="dnaMode" value="somente_adicionar" disabled>
+                  <div class="dna-profile-icon">＋</div>
+                  <div><strong>Somente adicionar</strong><small>Marca as faltantes e preserva as já marcadas</small></div>
+                  <span class="dna-profile-check">✓</span>
+                </label>
+              </div>
+              <p id="dnaModeAvailability" class="dna-helper-line" role="status">Somente adicionar aguarda a ativação do agente compatível.</p>
               <p class="dna-helper-line" id="dnaFlowNote">
                 Para padronizar, informe CPF e nome do colaborador e selecione o modelo desejado.
                 O robô confere as permissões antes de qualquer gravação. A execução web continua sujeita à habilitação segura do modelo.
@@ -213,6 +232,6 @@
   <script src="js/config.js"></script>
   <script src="js/mop-shell.js?v=20261104-unico"></script>
   <script src="js/perfis-dna.js?v=20261104-unico"></script>
-  <script src="js/dna-padronizacao.js?v=20261104-cpf-visivel-1"></script>
+  <script src="js/dna-padronizacao.js?v=20261106-modalidades2"></script>
 </body>
 </html>
