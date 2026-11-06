@@ -31,8 +31,10 @@
   const complete=new Set(['ja_conforme','confirmado']);
   const review=new Set(['revisao','falha_estado_desconhecido','bloqueado','falha_sem_gravar']);
   let active=new Set(), ready=false, sending=false, loading=false, retriesDigest='',retryKey='';
+  let modeAddEnabled=false;
   let cachedLotes=[],cachedItems=[];
   const selected=()=>document.querySelector('input[name="dnaProfile"]:checked')?.value||'';
+  const selectedMode=()=>document.querySelector('input[name="dnaMode"]:checked')?.value||'completa';
   const fmtDate=s=>s?new Date(s).toLocaleString('pt-BR'):'—';
   const safeText=(node,v)=>{node.textContent=String(v??'—');};
   function message(content,bad=false){
@@ -78,10 +80,10 @@
     const authorized=ready&&active.has(code);
     let valid=false;
     try{valid=parseRows().length===1;}catch(_){valid=false;}
-    $('dnaSubmit').disabled=sending||!authorized||!valid;
+    $('dnaSubmit').disabled=sending||!authorized||!valid||(selectedMode()==='somente_adicionar'&&!modeAddEnabled);
     safeText($('summaryWebStatus'),authorized?'Modelo habilitado':'Aguardando liberação');
     safeText($('dnaExecutionBadge'),authorized?'🛡 Padronização autorizada':'🛡 Execução web em homologação');
-    const explanation='Informe CPF e nome completo do colaborador que deseja padronizar. '+
+    const explanation='Modalidade: '+(modeLabels[selectedMode()]||'não identificada')+'. Informe CPF e nome completo do colaborador que deseja padronizar. '+
       'O robô verificará a identidade, comparará as 224 permissões e só gravará se encontrar divergências. '+
       'A seleção de um colaborador não substitui a autorização de execução do modelo.';
     safeText($('dnaFlowNote'),explanation);
@@ -91,6 +93,27 @@
     safeText($('dnaModelAvailability'),label);
   }
   function selectedChanged(){
+    available();
+  }
+  async function loadCapabilities(){
+    modeAddEnabled=false;
+    const add=document.querySelector('input[name="dnaMode"][value="somente_adicionar"]');
+    if(add)add.disabled=true;
+    try{
+      const {data,error}=await client.from('dna_web_funcionalidades')
+        .select('chave,ativo').eq('chave','somente_adicionar').maybeSingle();
+      if(error)throw error;
+      modeAddEnabled=data?.ativo===true;
+    }catch(_){modeAddEnabled=false;}
+    if(add)add.disabled=!modeAddEnabled;
+    if(!modeAddEnabled&&selectedMode()==='somente_adicionar'){
+      const complete=document.querySelector('input[name="dnaMode"][value="completa"]');
+      if(complete)complete.checked=true;
+    }
+    const info=$('dnaModeAvailability');
+    if(info)safeText(info,modeAddEnabled
+      ?'As duas modalidades estão liberadas. A modalidade escolhida será registrada e verificada pelo robô.'
+      :'Somente adicionar aguarda a ativação de agente compatível. A padronização completa permanece disponível.');
     available();
   }
   async function loadModels(){
@@ -214,21 +237,24 @@
   }
   async function submit(){
     if(sending||!ready||!active.has(selected()))return;
-    let rows,code;
+    let rows,code,mode;
     try{
       code=selected();
+      mode=selectedMode();
+      if(!['completa','somente_adicionar'].includes(mode)||
+         (mode==='somente_adicionar'&&!modeAddEnabled))throw Error('Modalidade ainda não habilitada.');
       if(!Object.hasOwn(labels,code))throw Error('Selecione um modelo válido.');
       rows=parseRows();
       if(rows.length!==1)throw Error('Informe exatamente um colaborador.');
       $('dnaInputError').hidden=true;
     }catch(err){informError(err);message(err.message,true);return;}
-    const digest=JSON.stringify([code,rows]);
+    const digest=JSON.stringify([code,mode,rows]);
     if(retriesDigest!==digest){retriesDigest=digest;retryKey=crypto.randomUUID();}
     sending=true;available();
     message('Enviando solicitação única ao Supabase... Não clique novamente.');
     try{
-      const {data,error}=await client.rpc('dna_web_criar_lote',{
-        p_modelo:code,p_itens:rows,p_idempotencia:retryKey,
+      const {data,error}=await client.rpc('dna_web_criar_lote_v2',{
+        p_modelo:code,p_itens:rows,p_idempotencia:retryKey,p_modalidade:mode,
         // Compatibilidade da API; nao exige frase digitada pelo operador.
         p_confirmacao:'APLICAR '+code
       });
@@ -248,13 +274,14 @@
   }
   $('dnaSubmit').addEventListener('click',submit);
   $('dnaNames').addEventListener('input',available);
+  document.querySelectorAll('input[name="dnaMode"]').forEach(input=>input.addEventListener('change',available));
   $('dnaRefresh').addEventListener('click',()=>loadQueue());
   $('dnaAuditRefresh').addEventListener('click',()=>loadQueue());
   $('dnaAuditSearch').addEventListener('input',updateAudit);
   window.addEventListener('dna:model-change',selectedChanged);
   window.addEventListener('dna:stage-change',()=>loadQueue());
   const obs=new MutationObserver(()=>{
-    if(!shell.hidden){obs.disconnect();selectedChanged();loadModels();loadQueue();}
+    if(!shell.hidden){obs.disconnect();selectedChanged();loadCapabilities();loadModels();loadQueue();}
   });
   if(shell.hidden)obs.observe(shell,{attributes:true,attributeFilter:['hidden']});
   else{selectedChanged();loadModels();loadQueue();}
