@@ -166,7 +166,7 @@ begin
  end if;
  select s.id into v_id from public.dna_cadastro_solicitacoes s
  where s.status='na_fila' order by s.criado_em
- for update skip locked limit 1;
+ limit 1 for update skip locked;
  if v_id is null then return; end if;
  update public.dna_cadastro_solicitacoes s set status='processando',
   etapa='reservado',worker=p_worker,token_reserva=v_token,
@@ -220,7 +220,7 @@ begin
  end if;
  select s.id into v_id from public.dna_cadastro_solicitacoes s
  where s.status='aguardando_validacao' and s.proxima_consulta<=now()
- order by s.proxima_consulta for update skip locked limit 1;
+ order by s.proxima_consulta limit 1 for update skip locked;
  if v_id is null then return; end if;
  update public.dna_cadastro_solicitacoes s set status='processando',etapa='validando',
  worker=p_worker,token_reserva=v_token,reserva_ate=now()+interval '5 minutes',
