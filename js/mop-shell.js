@@ -156,7 +156,7 @@
     const logout=$('#logoutButton');
     if(logout){
       logout.addEventListener('click',clearUser,{capture:true});
-      if(isDna)logout.addEventListener('click',async()=>{await window.MOP_SUPABASE.auth.signOut({scope:'local'});location.replace('index.html');});
+      if(isDna||isCadastro)logout.addEventListener('click',async()=>{await window.MOP_SUPABASE.auth.signOut({scope:'local'});location.replace('index.html');});
     }
     document.addEventListener('keydown',event=>{
       if(event.key==='Escape'&&document.body.classList.contains('mop-nav--open')){event.preventDefault();closeDrawer();}
