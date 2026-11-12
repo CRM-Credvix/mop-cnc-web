@@ -3,9 +3,9 @@
 -- Chaves AES/HMAC jamais sao armazenadas no banco.
 begin;
 
-create schema if not exists mop_private;
-revoke all on schema mop_private from public, anon, authenticated;
-grant usage on schema mop_private to service_role;
+create schema if not exists dna_cadastro_private;
+revoke all on schema dna_cadastro_private from public, anon, authenticated;
+grant usage on schema dna_cadastro_private to service_role;
 
 create table if not exists public.dna_cadastro_solicitacoes (
  id uuid primary key default gen_random_uuid(),
@@ -36,7 +36,7 @@ create unique index if not exists dna_cadastro_um_pendente_cpf
 on public.dna_cadastro_solicitacoes(cpf_hmac)
 where status in ('na_fila','processando','aguardando_validacao','revisao');
 
-create table if not exists mop_private.dna_cadastro_payloads (
+create table if not exists dna_cadastro_private.dna_cadastro_payloads (
  solicitacao_id uuid primary key references public.dna_cadastro_solicitacoes(id),
  cifra_base64 text not null check(length(cifra_base64) between 40 and 20000),
  criado_em timestamptz not null default now()
@@ -51,7 +51,7 @@ create table if not exists public.dna_cadastro_eventos (
 );
 
 -- Auditoria append-only: nem worker pode editar/remover eventos.
-create or replace function mop_private.dna_cadastro_evento_imutavel()
+create or replace function dna_cadastro_private.dna_cadastro_evento_imutavel()
 returns trigger language plpgsql set search_path='' as $$
 begin
  raise exception using errcode='42501',message='AUDITORIA_IMUTAVEL';
@@ -60,21 +60,21 @@ $$;
 drop trigger if exists trg_dna_cadastro_evento_imutavel on public.dna_cadastro_eventos;
 create trigger trg_dna_cadastro_evento_imutavel before update or delete
 on public.dna_cadastro_eventos for each row
-execute function mop_private.dna_cadastro_evento_imutavel();
+execute function dna_cadastro_private.dna_cadastro_evento_imutavel();
 
 alter table public.dna_cadastro_solicitacoes enable row level security;
 alter table public.dna_cadastro_eventos enable row level security;
-alter table mop_private.dna_cadastro_payloads enable row level security;
+alter table dna_cadastro_private.dna_cadastro_payloads enable row level security;
 
 revoke all on public.dna_cadastro_solicitacoes from public, anon, authenticated;
 revoke all on public.dna_cadastro_eventos from public, anon, authenticated;
-revoke all on mop_private.dna_cadastro_payloads from public, anon, authenticated;
+revoke all on dna_cadastro_private.dna_cadastro_payloads from public, anon, authenticated;
 grant select on public.dna_cadastro_solicitacoes to authenticated;
 grant select on public.dna_cadastro_eventos to authenticated;
 grant all on public.dna_cadastro_solicitacoes to service_role;
 grant all on public.dna_cadastro_eventos to service_role;
 grant usage,select on sequence public.dna_cadastro_eventos_id_seq to service_role;
-grant all on mop_private.dna_cadastro_payloads to service_role;
+grant all on dna_cadastro_private.dna_cadastro_payloads to service_role;
 
 drop policy if exists dna_cadastro_ver_proprias on public.dna_cadastro_solicitacoes;
 create policy dna_cadastro_ver_proprias on public.dna_cadastro_solicitacoes
@@ -123,7 +123,7 @@ begin
    end if;
    return v_id;
  end if;
- insert into mop_private.dna_cadastro_payloads(solicitacao_id,cifra_base64)
+ insert into dna_cadastro_private.dna_cadastro_payloads(solicitacao_id,cifra_base64)
  values(v_id,p_cifra_base64);
  insert into public.dna_cadastro_eventos(solicitacao_id,tipo,detalhe_publico)
  values(v_id,'criado','Solicitacao recebida; sem cadastro realizado no DNA.');
@@ -154,7 +154,7 @@ begin
  values(v_id,'reservado');
  return query select s.id,v_token,p.cifra_base64,s.perfil,s.lojas
  from public.dna_cadastro_solicitacoes s
- join mop_private.dna_cadastro_payloads p on p.solicitacao_id=s.id
+ join dna_cadastro_private.dna_cadastro_payloads p on p.solicitacao_id=s.id
  where s.id=v_id;
 end;
 $$;
@@ -206,7 +206,7 @@ begin
  values(v_id,'consulta_reservada');
  return query select s.id,v_token,p.cifra_base64,s.perfil,s.lojas,s.validacao_limite
  from public.dna_cadastro_solicitacoes s
- join mop_private.dna_cadastro_payloads p on p.solicitacao_id=s.id
+ join dna_cadastro_private.dna_cadastro_payloads p on p.solicitacao_id=s.id
  where s.id=v_id;
 end;
 $;
