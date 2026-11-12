@@ -7,6 +7,23 @@ create schema if not exists dna_cadastro_private;
 revoke all on schema dna_cadastro_private from public, anon, authenticated;
 grant usage on schema dna_cadastro_private to service_role;
 
+-- Chave de liberacao: desligada por padrao, inclusive apos aplicar esquema.
+create table if not exists public.dna_cadastro_config (
+ chave text primary key,
+ ativo boolean not null default false,
+ atualizado_em timestamptz not null default now(),
+ constraint dna_cadastro_config_chave check (chave='cadastro_ativo')
+);
+insert into public.dna_cadastro_config(chave,ativo) values('cadastro_ativo',false)
+on conflict(chave) do nothing;
+alter table public.dna_cadastro_config enable row level security;
+revoke all on public.dna_cadastro_config from public,anon,authenticated;
+grant select on public.dna_cadastro_config to authenticated;
+grant select,insert,update on public.dna_cadastro_config to service_role;
+drop policy if exists dna_cadastro_config_entrada on public.dna_cadastro_config;
+create policy dna_cadastro_config_entrada on public.dna_cadastro_config
+for select to authenticated using(true);
+
 create table if not exists public.dna_cadastro_solicitacoes (
  id uuid primary key default gen_random_uuid(),
  solicitante_id uuid not null references auth.users(id),
@@ -71,10 +88,10 @@ revoke all on public.dna_cadastro_eventos from public, anon, authenticated;
 revoke all on dna_cadastro_private.dna_cadastro_payloads from public, anon, authenticated;
 grant select on public.dna_cadastro_solicitacoes to authenticated;
 grant select on public.dna_cadastro_eventos to authenticated;
-grant all on public.dna_cadastro_solicitacoes to service_role;
-grant all on public.dna_cadastro_eventos to service_role;
+grant select,insert,update on public.dna_cadastro_solicitacoes to service_role;
+grant select,insert on public.dna_cadastro_eventos to service_role;
 grant usage,select on sequence public.dna_cadastro_eventos_id_seq to service_role;
-grant all on dna_cadastro_private.dna_cadastro_payloads to service_role;
+grant select,insert on dna_cadastro_private.dna_cadastro_payloads to service_role;
 
 drop policy if exists dna_cadastro_ver_proprias on public.dna_cadastro_solicitacoes;
 create policy dna_cadastro_ver_proprias on public.dna_cadastro_solicitacoes
@@ -95,6 +112,10 @@ create or replace function public.dna_cadastro_criar(
 as $$
 declare v_id uuid; v_count integer; v_distinct_count integer;
 begin
+ if not exists(select 1 from public.dna_cadastro_config
+               where chave='cadastro_ativo' and ativo=true) then
+   raise exception using errcode='42501',message='CADASTRO_DESABILITADO';
+ end if;
  if p_solicitante is null or p_idempotencia is null
     or p_cpf_hmac !~ '^[0-9a-f]{64}$' or p_cpf_final4 !~ '^[0-9]{4}$'
     or p_perfil not in ('CONSULTOR','SUPERVISOR')
