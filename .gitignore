@@ -18,3 +18,5 @@ worker/nomes.txt
 # Cadastro DNA piloto isolado (.venv e diagnosticos locais)
 .venv_cadastro_dna/
 diagnostico_cadastro_dna_estrutura.json
+
+diagnostico_cadastro_dna_campos.json
