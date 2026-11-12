@@ -15,17 +15,17 @@ class Perfil(str, Enum):
 
 SUBPERFIL_OFICIAL = {
     Perfil.CONSULTOR: "CONSULTOR_2",
-    Perfil.SUPERVISOR: "SUPERVISOR_1",
+    Perfil.SUPERVISOR: "SUPERVISOR_2",
 }
 
 ROTULO_DNA = {
     "CONSULTOR_2": "Consultor 2",
-    "SUPERVISOR_1": "Supervisor 1",
+    "SUPERVISOR_2": "Supervisor 2",
 }
 
 
 def subperfil_oficial(perfil: str) -> str:
-    """Falha fechada para Caixa, SAF, Consultor 1/3/B2C/Hibrido e Supervisor 2."""
+    """Falha fechada para Caixa, SAF, Consultor 1/3/B2C/Hibrido e Supervisor 1."""
     try:
         return SUBPERFIL_OFICIAL[Perfil(perfil)]
     except (ValueError, KeyError, TypeError) as exc:
