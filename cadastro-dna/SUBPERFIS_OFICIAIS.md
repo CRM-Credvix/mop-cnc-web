@@ -5,12 +5,12 @@
 | Perfil DNA | Subperfil definitivo de CADASTRO | Rótulo do DNA |
 |---|---|---|
 | CONSULTOR | CONSULTOR_2 | Consultor 2 |
-| SUPERVISOR | SUPERVISOR_1 | Supervisor 1 |
+| SUPERVISOR | SUPERVISOR_2 | Supervisor 2 |
 
 ## Escopo estrito
-Esta definição vale **somente para a inclusão de novos colaboradores** na futura funcionalidade Cadastro DNA do MOP-CNC. Os modelos de padronização de permissões `CONSULTOR_1`, `CONSULTOR_2`, `SUPERVISOR_1` e `SUPERVISOR_2` **continuam existentes e não são modificados**. A escolha do perfil no cadastro determina o subperfil automaticamente, sem opção de edição pelo operador.
+Esta definição vale **somente para a inclusão de novos colaboradores** na futura funcionalidade Cadastro DNA do MOP-CNC. Os modelos de padronização de permissões `CONSULTOR_1`, `CONSULTOR_2`, `SUPERVISOR_2` e `SUPERVISOR_2` **continuam existentes e não são modificados**. A escolha do perfil no cadastro determina o subperfil automaticamente, sem opção de edição pelo operador.
 
-O DNA também apresenta Consultor 1, Consultor 3, Consultor B2C, Consultor Híbrido e Supervisor 2, mas esses não são aceitos para NOVOS cadastros através deste fluxo.
+O DNA também apresenta Consultor 1, Consultor 3, Consultor B2C, Consultor Híbrido e Supervisor 1, mas esses não são aceitos para NOVOS cadastros através deste fluxo.
 
 ## Controles implementados na branch
 - `cadastro-colaboradores.html`: campo de subperfil de **somente leitura**, associado ao Perfil.
@@ -23,7 +23,7 @@ O DNA também apresenta Consultor 1, Consultor 3, Consultor B2C, Consultor Híbr
 ## Regras para o futuro robô Playwright
 1. Selecionar a loja pela linha correta e botão `+` (confirmar o identificador da franquia).
 2. Na tela Manutenção de Usuário, escolher Perfil Consultor ou Supervisor.
-3. **Esperar o DNA atualizar a lista Sub Perfil**; selecionar o rótulo exato "Consultor 2" ou "Supervisor 1".
+3. **Esperar o DNA atualizar a lista Sub Perfil**; selecionar o rótulo exato "Consultor 2" ou "Supervisor 2".
 4. Ler novamente Perfil, Sub Perfil e Loja; bloquear a execução se qualquer um divergir.
 5. Conferir SSO, limites de Supervisor por loja e permissões aplicáveis. Ainda não presumir seus valores.
 6. Só cadastrar após autorização e homologação específica dos controles. Se a resposta for incerta, nunca repetir automaticamente.
