@@ -11,6 +11,7 @@
     {id:'app',label:'Nova solicitação',icon:'⌂',href:'app.html'},
     {id:'history',label:'Histórico de emissões',icon:'◷',href:'historico.html'},
     {id:'help',label:'Ajuda',icon:'?',href:'app.html#ajuda'},
+    {id:'cadastro',label:'Cadastro de colaboradores',icon:'+',href:'cadastro-colaboradores.html',admin:true},
     {id:'gestao',label:'Padronização DNA',icon:'◇',href:'perfis-dna.html#gestao',admin:true},
     {id:'acompanhamento',label:'Acompanhamento DNA',icon:'⌁',href:'perfis-dna.html#acompanhamento',admin:true},
     {id:'auditoria',label:'Histórico DNA',icon:'☰',href:'perfis-dna.html#auditoria',admin:true}
@@ -30,6 +31,7 @@
   const $ = selector => document.querySelector(selector);
 
   function route() {
+    if (isCadastro) return 'cadastro';
     if (isDna) {
       const key=location.hash.slice(1).toLowerCase();
       return routes.includes(key)?key:'gestao';
@@ -40,7 +42,7 @@
   }
 
   function menuItem(item) {
-    const sameDocument=isDna&&item.admin;
+    const sameDocument=isDna&&routes.includes(item.id);
     const tag=sameDocument?'button':'a';
     const attributes=sameDocument?`type="button" data-target="${item.id}"`:`href="${item.href}"`;
     const current=item.id===route();
