@@ -1,6 +1,6 @@
 # Cadastro DNA — Padrão oficial de perfil e subperfil
 
-**Decisão do administrador (12/11/2026)**
+**Decisão atualizada do administrador (12/11/2026): Supervisor 2 substitui Supervisor 1 exclusivamente no novo cadastro.**
 
 | Perfil DNA | Subperfil definitivo de CADASTRO | Rótulo do DNA |
 |---|---|---|
@@ -8,7 +8,7 @@
 | SUPERVISOR | SUPERVISOR_2 | Supervisor 2 |
 
 ## Escopo estrito
-Esta definição vale **somente para a inclusão de novos colaboradores** na futura funcionalidade Cadastro DNA do MOP-CNC. Os modelos de padronização de permissões `CONSULTOR_1`, `CONSULTOR_2`, `SUPERVISOR_2` e `SUPERVISOR_2` **continuam existentes e não são modificados**. A escolha do perfil no cadastro determina o subperfil automaticamente, sem opção de edição pelo operador.
+Esta definição vale **somente para a inclusão de novos colaboradores** na futura funcionalidade Cadastro DNA do MOP-CNC. Os modelos de padronização de permissões `CONSULTOR_1`, `CONSULTOR_2`, `SUPERVISOR_1` e `SUPERVISOR_2` **continuam existentes e não são modificados**. A escolha do perfil no cadastro determina o subperfil automaticamente, sem opção de edição pelo operador.
 
 O DNA também apresenta Consultor 1, Consultor 3, Consultor B2C, Consultor Híbrido e Supervisor 1, mas esses não são aceitos para NOVOS cadastros através deste fluxo.
 
