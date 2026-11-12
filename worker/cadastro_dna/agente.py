@@ -54,6 +54,7 @@ def main() -> int:
             "worker.cadastro_dna.test_formulario",
             "worker.cadastro_dna.test_homologacao_unificada",
             "worker.cadastro_dna.test_preflight_perfil",
+            "worker.cadastro_dna.test_mapeamento_campos",
         ])
         result=unittest.TextTestRunner(verbosity=2).run(suite)
         return 0 if result.wasSuccessful() else 1
