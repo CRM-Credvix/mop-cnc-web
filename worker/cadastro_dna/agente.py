@@ -49,6 +49,8 @@ def main() -> int:
             "worker.cadastro_dna.test_estado",
             "worker.cadastro_dna.test_monitor",
             "worker.cadastro_dna.test_criptografia",
+            "worker.cadastro_dna.test_perfis",
+            "worker.cadastro_dna.test_sql_invariantes",
         ])
         result=unittest.TextTestRunner(verbosity=2).run(suite)
         return 0 if result.wasSuccessful() else 1
