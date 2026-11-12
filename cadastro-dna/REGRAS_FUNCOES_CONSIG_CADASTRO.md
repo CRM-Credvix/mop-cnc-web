@@ -32,3 +32,15 @@ Na **inclusao de novos usuarios**, o robo deve garantir que **a primeira Funcao 
 
 ## Seguranca
 Nao executar `dna_operacional_v5514.process` ou `dna_replicador_v55.execute` no fluxo de criacao. Nao copiar chaves Supabase nem credenciais DNA. O codigo da branch segue **nao produtivo**, e a feature flag de escrita permanece desligada. Nunca enviar CPF, senha ou tokens em relatorios de diagnostico.
+
+
+## Fluxo posterior ao cadastro — decisao de 12/11/2026
+- Na tela de inclusao, marcar **Usuario acesso SSO** (checkbox destacado em vermelho na captura). Nao confundir com as Funcoes Consig; sao dois controles distintos.
+- Continuar exigindo apenas a primeira Funcao Consig marcada para permitir Cadastrar.
+- Acionar **Cadastrar uma unica vez**, somente apos autorizacao de homologacao e validacao dos dados e da loja.
+- Apos a inclusao ser confirmada na interface, navegar para **Usuario -> Manutencao**.
+- Pesquisar pelo **nome completo da pessoa cadastrada**. Antes de validar CPF, conferir que a pessoa encontrada e a mesma, confrontando outros identificadores disponiveis; se houver homonimo ou resposta ambigua, interromper.
+- Acionar a opcao **Validar CPF** para a pessoa encontrada, uma unica vez.
+- Consultar o resultado posterior; distinguir cadastro, solicitacao de validacao e estado efetivamente validado/ativo. Sem evidencia, nao declarar sucesso.
+- O seletor do checkbox SSO ja possui referencia no motor legado: `[ng-model="usuario.acessoSso"]`. **Confirmar se o mesmo identificador se aplica ao formulario de inclusao antes de automatizar.**
+- O seletor de **Validar CPF** ainda precisa ser identificado em modo somente leitura. Nenhuma gravacao real foi ativada neste passo.
