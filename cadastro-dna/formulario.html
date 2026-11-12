@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cadastro DNA — protótipo isolado</title>
+<style>body{font:16px system-ui;background:#f6f4f1;color:#171411;margin:0;padding:28px}main{max-width:680px;margin:auto;background:white;padding:28px;border-radius:16px}label{display:block;font-weight:600;margin-top:14px}input,select{box-sizing:border-box;width:100%;padding:12px;border:1px solid #857a73;border-radius:8px}button{background:#c94f08;color:white;border:0;padding:13px 20px;border-radius:8px;margin-top:20px;cursor:pointer}small{display:block;margin-top:8px}#resultado{margin-top:16px}h1{font-family:Montserrat,system-ui}</style>
+</head>
+<body><main><p>PROTÓTIPO LOCAL • SEM ENVIO AO DNA</p><h1>Cadastro de colaboradores DNA</h1>
+<p>Esta tela valida o formato dos campos. Não cria solicitações nem altera permissões.</p>
+<form id="form" novalidate>
+<label for="nome">Nome completo</label><input id="nome" autocomplete="off" required minlength="5">
+<label for="cpf">CPF</label><input id="cpf" inputmode="numeric" autocomplete="off" required>
+<label for="nascimento">Data de nascimento</label><input id="nascimento" type="date" required>
+<label for="email">E-mail</label><input id="email" type="email" autocomplete="off" required>
+<label for="telefone">Telefone com DDD</label><input id="telefone" inputmode="tel" autocomplete="off" required>
+<label for="perfil">Perfil pretendido</label><select id="perfil"><option value="">Selecione</option><option>CONSULTOR</option><option>SUPERVISOR</option></select>
+<label for="lojas">Códigos das lojas (separados por vírgula)</label><input id="lojas" placeholder="Exemplo: 12345, 67890" autocomplete="off" required>
+<button type="submit">Validar preenchimento (não cadastrar)</button><div id="resultado" role="status" aria-live="polite"></div>
+</form><small>Para integração real, as lojas devem vir do catálogo autorizado no Supabase e os dados devem ser enviados somente por endpoint autenticado e protegido.</small>
+<script src="formulario.js"></script>
+</main></body></html>
