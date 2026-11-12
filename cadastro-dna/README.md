@@ -37,3 +37,31 @@ Abra `cadastro-dna/formulario.html` via um servidor HTTP local. O botão é de v
 
 ## Instalação no Windows
 Por enquanto **nenhum arquivo precisa ser instalado ou executado no Windows**. O código está na branch de testes no GitHub e ainda não constitui pacote do agente.
+
+## Etapa 2 — Interface integrada na branch
+
+- `/cadastro-colaboradores.html`: página administrativa com o mesmo menu do MOP-CNC.
+- `js/mop-shell.js`: link administrativo "Cadastro de colaboradores", mantendo as três rotas de padronização existentes.
+- `js/cadastro-colaboradores.js`: autenticação Supabase, seleção de lojas do catálogo e validação local. O botão "Solicitar cadastro" fica permanentemente desabilitado.
+- Acompanhamento tenta consultar `dna_cadastro_solicitacoes` por RLS e exibe indisponibilidade quando a tabela não existe.
+- `worker/cadastro_dna/estado.py`: contrato sem efeitos colaterais para classificar os estados, impedindo `ATIVO` sem evidência real.
+- `worker/cadastro_dna/test_estado.py`: testes unitários de transições e de bloqueio contra duplicidade.
+
+A migração `schema_proposta.sql` permanece incompleta e **não deve ser executada**. O frontend não possui chamada de criação, e nenhuma autenticação de backend para recebimento de CPF foi implementada.
+
+### Checagens de integração
+
+- Comparar a branch com `main`: nenhum arquivo do robô MOP-CNC ou de padronização foi removido.
+- Conferir que o menu "Cadastro de colaboradores" é link de outra página mesmo dentro de `perfis-dna.html`.
+- Confirmar abertura da página somente por usuário administrador autenticado. A verificação por e-mail é de interface: **não substitui a autorização RLS/RPC**.
+- Testar no Windows os cenários de cadastro incerto e falha após salvar antes de liberar escrita.
+- A lista atual exibe todas as franquias ativas do catálogo apenas para visualização; a autorização para vínculos precisa ser validada na camada segura futura.
+
+### Execução dos testes de estado
+
+A partir da raiz do repositório, com Python instalado:
+```bat
+python -m unittest worker.cadastro_dna.test_estado -v
+```
+
+Nenhum script de cadastro precisa ser iniciado no Windows nesta etapa.
