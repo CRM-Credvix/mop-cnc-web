@@ -25,7 +25,9 @@ def ler_frame(frame) -> dict:
       return [...document.querySelectorAll('select')].map(el => ({
         attrs: Object.fromEntries(['id','name','ng-model','data-ng-model','type'].map(a => [a,el.getAttribute(a)||''])),
         options: [...el.options].map(o=>o.textContent.trim()).filter(t=>known.has(t)),
-        total_options: el.options.length
+        total_options: el.options.length,
+        selected_known: known.has(el.selectedOptions[0]?.textContent.trim()||'')
+          ? el.selectedOptions[0].textContent.trim() : ''
       })).filter(x=>x.options.includes('Consultor')||x.options.includes('Supervisor')
                    ||x.options.includes('Consultor 2')||x.options.includes('Supervisor 2'))
     }"""
@@ -35,7 +37,8 @@ def ler_frame(frame) -> dict:
     for select in frame.evaluate(script):
         attrs={k:atributo_publicavel(select.get("attrs",{}).get(k)) for k in ATRIBUTOS_SEGUROS}
         selects.append({"identificadores":attrs,"opcoes_reconhecidas":select["options"],
-                        "total_opcoes":int(select["total_options"])})
+                        "total_opcoes":int(select["total_options"]),
+                        "selecionado_reconhecido":select.get("selected_known","")})
     return {"botao_cadastrar":buttons,"campos":labels,"selects":selects,
             "padrao_esperado":PERFIL_TO_SUBPERFIL,
             "aviso":"Somente estrutura; nenhum cadastro efetuado."}
