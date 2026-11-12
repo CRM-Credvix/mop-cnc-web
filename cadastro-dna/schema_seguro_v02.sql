@@ -13,7 +13,7 @@ create table if not exists public.dna_cadastro_solicitacoes (
  idempotencia uuid not null,
  cpf_hmac text not null check(cpf_hmac ~ '^[0-9a-f]{64}$'),
  cpf_final4 text not null check(cpf_final4 ~ '^[0-9]{4}$'),
- lojas text[] not null check(array_length(lojas,1) between 1 and 100),
+ lojas text[] not null check(coalesce(array_length(lojas,1),0) between 1 and 100),
  perfil text not null check(perfil in ('CONSULTOR','SUPERVISOR')),
  status text not null default 'na_fila'
    check(status in ('na_fila','processando','aguardando_validacao','ativo','erro','revisao')),
@@ -46,6 +46,18 @@ create table if not exists public.dna_cadastro_eventos (
  detalhe_publico text,
  criado_em timestamptz not null default now()
 );
+
+-- Auditoria append-only: nem worker pode editar/remover eventos.
+create or replace function mop_private.dna_cadastro_evento_imutavel()
+returns trigger language plpgsql set search_path='' as $
+begin
+ raise exception using errcode='42501',message='AUDITORIA_IMUTAVEL';
+end;
+$;
+drop trigger if exists trg_dna_cadastro_evento_imutavel on public.dna_cadastro_eventos;
+create trigger trg_dna_cadastro_evento_imutavel before update or delete
+on public.dna_cadastro_eventos for each row
+execute function mop_private.dna_cadastro_evento_imutavel();
 
 alter table public.dna_cadastro_solicitacoes enable row level security;
 alter table public.dna_cadastro_eventos enable row level security;
