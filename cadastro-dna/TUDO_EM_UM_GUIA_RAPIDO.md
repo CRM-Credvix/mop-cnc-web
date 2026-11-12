@@ -44,3 +44,6 @@ Ela NAO cadastra usuarios, NAO altera Funcoes Consig e NAO grava no Supabase.
 - Os modelos da padronizacao antiga ficam intactos.
 
 **Producao continua BLOQUEADA.**
+
+## Atualizacao: identificadores dos demais campos
+O mesmo BAT agora inclui em cada JSON o campo `estrutura.mapeamento_campos`, que registra somente identificadores tecnicos (`id`, `name`, `ng-model`, `type`) dos controles obrigatorios e a contagem do controle SSO. Nao captura valores digitados. Os dois relatórios antigos nao incluem esse detalhe: para fechar essa etapa, execute novamente o BAT da branch atualizada e envie os dois JSONs novos. Continuam bloqueados cadastro e alteracao de permissoes.
