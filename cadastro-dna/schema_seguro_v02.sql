@@ -32,10 +32,10 @@ create table if not exists public.dna_cadastro_solicitacoes (
  cpf_final4 text not null check(cpf_final4 ~ '^[0-9]{4}$'),
  lojas text[] not null check(coalesce(array_length(lojas,1),0) between 1 and 100),
  perfil text not null check(perfil in ('CONSULTOR','SUPERVISOR')),
- subperfil text not null check(subperfil in ('CONSULTOR_2','SUPERVISOR_1')),
+ subperfil text not null check(subperfil in ('CONSULTOR_2','SUPERVISOR_2')),
  constraint dna_cadastro_perfil_subperfil_oficial check (
    (perfil='CONSULTOR' and subperfil='CONSULTOR_2') or
-   (perfil='SUPERVISOR' and subperfil='SUPERVISOR_1')
+   (perfil='SUPERVISOR' and subperfil='SUPERVISOR_2')
  ),
  status text not null default 'na_fila'
    check(status in ('na_fila','processando','aguardando_validacao','ativo','erro','revisao')),
@@ -141,7 +141,7 @@ begin
  insert into public.dna_cadastro_solicitacoes
  (solicitante_id,idempotencia,cpf_hmac,cpf_final4,lojas,perfil,subperfil)
  values(p_solicitante,p_idempotencia,p_cpf_hmac,p_cpf_final4,p_lojas,p_perfil,
-   case p_perfil when 'CONSULTOR' then 'CONSULTOR_2' when 'SUPERVISOR' then 'SUPERVISOR_1' end)
+   case p_perfil when 'CONSULTOR' then 'CONSULTOR_2' when 'SUPERVISOR' then 'SUPERVISOR_2' end)
  on conflict(solicitante_id,idempotencia) do nothing returning id into v_id;
  if v_id is null then
    select id into v_id from public.dna_cadastro_solicitacoes
