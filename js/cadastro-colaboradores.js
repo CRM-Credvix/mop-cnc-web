@@ -14,6 +14,14 @@
  let enviando = false;
  let chaveTentativa = '';
  let impressaoTentativa = '';
+ const SUBPERFIS_CADASTRO = Object.freeze({CONSULTOR:'CONSULTOR_2',SUPERVISOR:'SUPERVISOR_1'});
+ const ROTULOS_SUBPERFIL = Object.freeze({CONSULTOR_2:'Consultor 2',SUPERVISOR_1:'Supervisor 1'});
+ function sincronizarSubperfil() {
+   const subperfil=SUBPERFIS_CADASTRO[f('perfil')];
+   const node=$('subperfilOficial');
+   node.value=subperfil?ROTULOS_SUBPERFIL[subperfil]:'Selecione o perfil';
+   node.dataset.codigo=subperfil||'';
+ }
  function cpfValido(input){
    const cpf = digits(input);
    if(!/^\d{11}$/.test(cpf) || /^(\d)\1{10}$/.test(cpf))return false;
@@ -35,7 +43,9 @@
       new Date(birth+'T12:00:00')>new Date()) errors.push('Nascimento inválido.');
    if(!form.elements.namedItem('email').checkValidity()) errors.push('E-mail inválido.');
    if(!/^\d{10,11}$/.test(telefone)) errors.push('Telefone inválido.');
-   if(!['CONSULTOR','SUPERVISOR'].includes(f('perfil')))errors.push('Selecione um perfil.');
+   if(!Object.hasOwn(SUBPERFIS_CADASTRO,f('perfil')))errors.push('Selecione um perfil.');
+   if ($('subperfilOficial').dataset.codigo!==SUBPERFIS_CADASTRO[f('perfil')])
+     errors.push('Subperfil oficial não corresponde ao perfil.');
    if(![...document.querySelectorAll('input[name="loja"]:checked')].length)errors.push('Selecione uma loja.');
    $('formFeedback').textContent=errors.length?errors.join(' '):'Preenchimento válido. Nenhum dado foi enviado.';
    return errors.length === 0;
@@ -94,7 +104,7 @@
      });
      if (error || !data?.id) throw Error('SOLICITACAO_NAO_CONFIRMADA');
      $('formFeedback').textContent='Solicitação '+String(data.id).slice(0,8)+' registrada. Acompanhe na tabela abaixo.';
-     form.reset();chaveTentativa='';impressaoTentativa='';
+     form.reset();sincronizarSubperfil();chaveTentativa='';impressaoTentativa='';
      await loadFila();
    } catch (_) {
      // Na falha de rede, a mesma chave de idempotencia sera usada em nova tentativa
@@ -143,6 +153,8 @@
      await Promise.allSettled([loadLojas(),loadFila(),loadLiberacao()]);
    }catch(_){denied.hidden=false;$('lojasInfo').textContent='Falha ao carregar lojas.';}
  }
+ form.elements.namedItem('perfil').addEventListener('change',sincronizarSubperfil);
+ sincronizarSubperfil();
  $('validar').addEventListener('click',validate);
  form.addEventListener('submit',enviar);
  $('atualizar').addEventListener('click',loadFila);
