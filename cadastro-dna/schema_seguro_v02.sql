@@ -32,6 +32,11 @@ create table if not exists public.dna_cadastro_solicitacoes (
  cpf_final4 text not null check(cpf_final4 ~ '^[0-9]{4}$'),
  lojas text[] not null check(coalesce(array_length(lojas,1),0) between 1 and 100),
  perfil text not null check(perfil in ('CONSULTOR','SUPERVISOR')),
+ subperfil text not null check(subperfil in ('CONSULTOR_2','SUPERVISOR_1')),
+ constraint dna_cadastro_perfil_subperfil_oficial check (
+   (perfil='CONSULTOR' and subperfil='CONSULTOR_2') or
+   (perfil='SUPERVISOR' and subperfil='SUPERVISOR_1')
+ ),
  status text not null default 'na_fila'
    check(status in ('na_fila','processando','aguardando_validacao','ativo','erro','revisao')),
  etapa text not null default 'fila',
@@ -134,8 +139,9 @@ begin
  end if;
  -- NUNCA fazer ON CONFLICT por CPF. Conflito gera revisao/consulta, nao nova inclusao.
  insert into public.dna_cadastro_solicitacoes
- (solicitante_id,idempotencia,cpf_hmac,cpf_final4,lojas,perfil)
- values(p_solicitante,p_idempotencia,p_cpf_hmac,p_cpf_final4,p_lojas,p_perfil)
+ (solicitante_id,idempotencia,cpf_hmac,cpf_final4,lojas,perfil,subperfil)
+ values(p_solicitante,p_idempotencia,p_cpf_hmac,p_cpf_final4,p_lojas,p_perfil,
+   case p_perfil when 'CONSULTOR' then 'CONSULTOR_2' when 'SUPERVISOR' then 'SUPERVISOR_1' end)
  on conflict(solicitante_id,idempotencia) do nothing returning id into v_id;
  if v_id is null then
    select id into v_id from public.dna_cadastro_solicitacoes
@@ -157,7 +163,7 @@ $$;
 -- Reservar apenas novos itens. NUNCA reassumir processando expirado:
 -- apos queda do Windows, escrita pode ter ocorrido e exige conciliacao manual.
 create or replace function public.dna_cadastro_reservar(p_worker text)
-returns table(id uuid, token uuid, cifra_base64 text, perfil text, lojas text[])
+returns table(id uuid, token uuid, cifra_base64 text, perfil text, subperfil text, lojas text[])
 language plpgsql security invoker set search_path='' as $$
 declare v_id uuid; v_token uuid := gen_random_uuid();
 begin
@@ -175,7 +181,7 @@ begin
  where s.id=v_id;
  insert into public.dna_cadastro_eventos(solicitacao_id,tipo)
  values(v_id,'reservado');
- return query select s.id,v_token,p.cifra_base64,s.perfil,s.lojas
+ return query select s.id,v_token,p.cifra_base64,s.perfil,s.subperfil,s.lojas
  from public.dna_cadastro_solicitacoes s
  join dna_cadastro_private.dna_cadastro_payloads p on p.solicitacao_id=s.id
  where s.id=v_id;
@@ -210,7 +216,7 @@ $$;
 
 -- Reserva de consulta nao causa nova inclusao; resultado incerto sempre requer revisao.
 create or replace function public.dna_cadastro_reservar_validacao(p_worker text)
-returns table(id uuid, token uuid, cifra_base64 text, perfil text, lojas text[],
+returns table(id uuid, token uuid, cifra_base64 text, perfil text, subperfil text, lojas text[],
  validacao_limite timestamptz)
 language plpgsql security invoker set search_path='' as $$
 declare v_id uuid; v_token uuid := gen_random_uuid();
