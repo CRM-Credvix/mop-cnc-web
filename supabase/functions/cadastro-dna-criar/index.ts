@@ -50,13 +50,16 @@ function validar(raw: unknown) {
   if(Number.isNaN(d.valueOf()) || d.toISOString().slice(0,10)!==nascimento || d>new Date())throw new Error('DATA_INVALIDA')
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length>254)throw new Error('EMAIL_INVALIDO')
   if (!/^\d{10,11}$/.test(telefone)) throw new Error('TELEFONE_INVALIDO')
-  if (!['CONSULTOR','SUPERVISOR'].includes(perfil))throw new Error('PERFIL_INVALIDO')
+  // Subperfil derivado no backend: nao aceitar escolha arbitraria do navegador.
+  const subperfil=perfil==='CONSULTOR'?'CONSULTOR_2':perfil==='SUPERVISOR'?'SUPERVISOR_1':null
+  if (!subperfil || (data.subperfil!==undefined && data.subperfil!==subperfil))
+    throw new Error('PERFIL_OU_SUBPERFIL_INVALIDO')
   if (!Array.isArray(lojas) || lojas.length<1 || lojas.length>100 ||
       lojas.some(x=>typeof x!=='string'|| !/^\d+$/.test(x)) ||
       new Set(lojas).size!==lojas.length) throw new Error('LOJAS_INVALIDAS')
   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(idempotencia))
     throw new Error('IDEMPOTENCIA_INVALIDA')
-  return {nome,cpf,nascimento,email,telefone,perfil,lojas:lojas as string[],idempotencia}
+  return {nome,cpf,nascimento,email,telefone,perfil,subperfil,lojas:lojas as string[],idempotencia}
 }
 
 Deno.serve(async req => {
