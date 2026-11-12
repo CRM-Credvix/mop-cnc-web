@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -42,6 +43,7 @@ def resumo_frame(frame) -> dict:
 
 
 def inspecionar(cdp_url: str) -> dict:
+    sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
     from dna_diagnostico import _verify_local_cdp, allowed_url
     from playwright.sync_api import sync_playwright
     _verify_local_cdp(cdp_url)
