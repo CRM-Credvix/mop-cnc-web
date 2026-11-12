@@ -52,11 +52,11 @@ create table if not exists public.dna_cadastro_eventos (
 
 -- Auditoria append-only: nem worker pode editar/remover eventos.
 create or replace function mop_private.dna_cadastro_evento_imutavel()
-returns trigger language plpgsql set search_path='' as $
+returns trigger language plpgsql set search_path='' as $$
 begin
  raise exception using errcode='42501',message='AUDITORIA_IMUTAVEL';
 end;
-$;
+$$;
 drop trigger if exists trg_dna_cadastro_evento_imutavel on public.dna_cadastro_eventos;
 create trigger trg_dna_cadastro_evento_imutavel before update or delete
 on public.dna_cadastro_eventos for each row
@@ -174,7 +174,11 @@ begin
  if v_old is null then return false; end if;
  update public.dna_cadastro_solicitacoes set
  status=p_status,etapa=p_etapa,motivo_publico=p_motivo_publico,
- atualizado_em=now(),reserva_ate=null,token_reserva=null where id=p_id;
+ atualizado_em=now(),reserva_ate=null,token_reserva=null,
+ validacao_inicio=case when p_status='aguardando_validacao' then coalesce(validacao_inicio,now()) else validacao_inicio end,
+ validacao_limite=case when p_status='aguardando_validacao' then coalesce(validacao_limite,now()+interval '10 minutes') else validacao_limite end,
+ proxima_consulta=case when p_status='aguardando_validacao' then now()+interval '30 seconds' else null end
+ where id=p_id;
  insert into public.dna_cadastro_eventos(solicitacao_id,tipo,detalhe_publico)
  values(p_id,'finalizado',p_status);
  return true;
