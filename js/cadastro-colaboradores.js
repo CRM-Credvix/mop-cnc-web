@@ -14,8 +14,8 @@
  let enviando = false;
  let chaveTentativa = '';
  let impressaoTentativa = '';
- const SUBPERFIS_CADASTRO = Object.freeze({CONSULTOR:'CONSULTOR_2',SUPERVISOR:'SUPERVISOR_1'});
- const ROTULOS_SUBPERFIL = Object.freeze({CONSULTOR_2:'Consultor 2',SUPERVISOR_1:'Supervisor 1'});
+ const SUBPERFIS_CADASTRO = Object.freeze({CONSULTOR:'CONSULTOR_2',SUPERVISOR:'SUPERVISOR_2'});
+ const ROTULOS_SUBPERFIL = Object.freeze({CONSULTOR_2:'Consultor 2',SUPERVISOR_2:'Supervisor 2'});
  function sincronizarSubperfil() {
    const subperfil=SUBPERFIS_CADASTRO[f('perfil')];
    const node=$('subperfilOficial');
