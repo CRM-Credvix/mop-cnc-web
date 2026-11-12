@@ -11,8 +11,8 @@ class TesteSql(unittest.TestCase):
         self.assertEqual(SQL.count("\nbegin;"),1)
 
     def test_delimitadores_plpgsql_em_pares(self):
-        self.assertEqual(SQL.count("as $$"),5)
-        self.assertEqual(SQL.count("$$;"),5)
+        self.assertEqual(SQL.count("as $"),6)
+        self.assertEqual(SQL.count("$;"),6)
         self.assertNotIn("as $\n",SQL)
 
     def test_configuracao_bloqueada_por_padrao(self):
