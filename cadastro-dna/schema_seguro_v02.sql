@@ -22,6 +22,9 @@ create table if not exists public.dna_cadastro_solicitacoes (
  worker text,
  token_reserva uuid,
  reserva_ate timestamptz,
+ validacao_inicio timestamptz,
+ validacao_limite timestamptz,
+ proxima_consulta timestamptz,
  tentativas smallint not null default 0 check(tentativas between 0 and 3),
  dna_usuario_id text,
  criado_em timestamptz not null default now(),
@@ -178,14 +181,65 @@ begin
 end;
 $$;
 
+-- Reserva de consulta nao causa nova inclusao; resultado incerto sempre requer revisao.
+create or replace function public.dna_cadastro_reservar_validacao(p_worker text)
+returns table(id uuid, token uuid, cifra_base64 text, perfil text, lojas text[],
+ validacao_limite timestamptz)
+language plpgsql security invoker set search_path='' as $
+declare v_id uuid; v_token uuid := gen_random_uuid();
+begin
+ if length(coalesce(p_worker,'')) not between 3 and 100 then
+  raise exception using errcode='22023',message='WORKER_INVALIDO';
+ end if;
+ select s.id into v_id from public.dna_cadastro_solicitacoes s
+ where s.status='aguardando_validacao' and s.proxima_consulta<=now()
+ order by s.proxima_consulta for update skip locked limit 1;
+ if v_id is null then return; end if;
+ update public.dna_cadastro_solicitacoes s set status='processando',etapa='validando',
+ worker=p_worker,token_reserva=v_token,reserva_ate=now()+interval '5 minutes',
+ atualizado_em=now() where s.id=v_id;
+ insert into public.dna_cadastro_eventos(solicitacao_id,tipo)
+ values(v_id,'consulta_reservada');
+ return query select s.id,v_token,p.cifra_base64,s.perfil,s.lojas,s.validacao_limite
+ from public.dna_cadastro_solicitacoes s
+ join mop_private.dna_cadastro_payloads p on p.solicitacao_id=s.id
+ where s.id=v_id;
+end;
+$;
+
+-- Limpador conservador: nao reassume tarefa cujo worker caiu.
+-- Uma escrita anterior pode ter sido efetivada.
+create or replace function public.dna_cadastro_sinalizar_expirados()
+returns integer language plpgsql security invoker set search_path='' as $
+declare v_total integer;
+begin
+ with changed as (
+  update public.dna_cadastro_solicitacoes set status='revisao',
+    etapa='reserva_expirada',
+    motivo_publico='Execucao interrompida: conferir no DNA antes de qualquer novo cadastro.',
+    token_reserva=null,reserva_ate=null,atualizado_em=now()
+  where status='processando' and reserva_ate<now()
+  returning id
+ ), audited as (
+  insert into public.dna_cadastro_eventos(solicitacao_id,tipo)
+  select id,'reserva_expirada' from changed returning id
+ ) select count(*) into v_total from audited;
+ return v_total;
+end;
+$;
+
 -- O worker nao deve aceitar ATIVO sem verificacao independente do DNA.
 -- O banco nao verifica a evidencia; esse gate adicional deve existir no worker
 -- e ser testado antes da implantacao.
 revoke all on function public.dna_cadastro_criar(uuid,uuid,text,text,text[],text,text) from public,anon,authenticated;
 revoke all on function public.dna_cadastro_reservar(text) from public,anon,authenticated;
+revoke all on function public.dna_cadastro_reservar_validacao(text) from public,anon,authenticated;
+revoke all on function public.dna_cadastro_sinalizar_expirados() from public,anon,authenticated;
 revoke all on function public.dna_cadastro_finalizar(uuid,uuid,text,text,text) from public,anon,authenticated;
 grant execute on function public.dna_cadastro_criar(uuid,uuid,text,text,text[],text,text) to service_role;
 grant execute on function public.dna_cadastro_reservar(text) to service_role;
+grant execute on function public.dna_cadastro_reservar_validacao(text) to service_role;
+grant execute on function public.dna_cadastro_sinalizar_expirados() to service_role;
 grant execute on function public.dna_cadastro_finalizar(uuid,uuid,text,text,text) to service_role;
 
 commit;
