@@ -2,7 +2,7 @@
 
 ## Evidencias analisadas (12/11/2026)
 - Captura da tela de inclusao com Perfil **Consultor**, Sub Perfil **Consultor 2**.
-- Operador informou que as **Funcoes Consig nao serao alteradas** no fluxo de cadastro.
+- Operador confirmou que as **Funcoes Consig sao iguais para Consultor e Supervisor** e nao serao alteradas no fluxo de cadastro.
 - Arquivos de referencia locais enviados: `dna_web_executor.py`, `dna_operacional_v5514.py`, `dna_replicador_v55.py`.
 
 ## Regra de negocio confirmada
@@ -10,7 +10,7 @@ Na **inclusao de novos usuarios**, o robo nao devera marcar/desmarcar nem fazer 
 
 **Os quatro modelos do modulo existente de padronizacao sao preservados**. O novo cadastro usa apenas:
 - CONSULTOR -> CONSULTOR_2 (Consultor 2)
-- SUPERVISOR -> SUPERVISOR_1 (Supervisor 1)
+- SUPERVISOR -> SUPERVISOR_2 (Supervisor 2)
 
 ## Nao confundir dois fluxos
 1. **Cadastro**: escolher loja pela linha e icone `+`, preencher os dados, definir perfil/subperfil oficiais, conferir regras de formulario e a submissao unica; nao editar permissoes.
@@ -23,8 +23,8 @@ Na **inclusao de novos usuarios**, o robo nao devera marcar/desmarcar nem fazer 
 - Nenhum desses tres arquivos demonstra de forma suficiente os seletores e o retorno definitivo da acao **Cadastrar** ou a **validacao do CPF** apos a inclusao; a nova automacao segue bloqueada.
 
 ## O que falta homologar antes de escrita
-- Confirmar valores padrao dos campos SSO, Login IB Consig, Descricao uso Perfil, perfil e subperfil, tanto no Consultor 2 como no Supervisor 1.
-- Conferir se a lista de Funcoes Consig muda ao selecionar Supervisor 1; registrar somente os estados observados, sem tocar nos controles.
+- Confirmar valores padrao dos campos SSO, Login IB Consig, Descricao uso Perfil, perfil e subperfil, tanto no Consultor 2 como no Supervisor 2.
+- Manter as Funcoes Consig inalteradas nos dois perfis, conforme regra confirmada; interromper se uma alteracao automatica inesperada ocorrer.
 - Mapear o botao Cadastrar e os modais de confirmacao somente para **um teste autorizado**, com uma unica tentativa.
 - Confirmar se o DNA considera cadastro criado, CPF validado e conta Ativa como eventos distintos; nao deduzir sucesso pelo clique.
 - Validar limite de Supervisor por loja e ausencia de conta existente, em especial se houver varios vinculos de franquia.
