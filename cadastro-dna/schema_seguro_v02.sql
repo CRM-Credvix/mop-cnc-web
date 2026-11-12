@@ -128,7 +128,7 @@ begin
  where codigo=any(p_lojas) and ativo=true;
  select count(distinct loja.codigo) into v_distinct_count
  from unnest(p_lojas) as loja(codigo)
- where loja.codigo ~ '^[0-9]+
+ where loja.codigo ~ '^[0-9]+$';
  if v_count<>array_length(p_lojas,1) or v_distinct_count<>array_length(p_lojas,1) then
    raise exception using errcode='42501',message='LOJA_INVALIDA';
  end if;
