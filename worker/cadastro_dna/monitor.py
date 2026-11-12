@@ -29,8 +29,10 @@ def decidir(observacao: Observacao, *, limite: datetime, agora: datetime | None 
         agora = datetime.now(timezone.utc)
     if agora.tzinfo is None or limite.tzinfo is None:
         raise ValueError("Datas precisam de timezone.")
-    if observacao.sinal == Sinal.AMBIGUO or not observacao.identidade_unica:
+    if observacao.sinal == Sinal.AMBIGUO:
         return "revisao", "Identidade ou resultado ambiguo: conferir manualmente."
+    if observacao.sinal in (Sinal.ATIVO, Sinal.ERRO) and not observacao.identidade_unica:
+        return "revisao", "Resultado sem identidade unica: conferir manualmente."
     if observacao.sinal == Sinal.ERRO:
         return "erro", (observacao.motivo_publico or "Erro informado pelo DNA.")[:240]
     if (observacao.sinal == Sinal.ATIVO and observacao.situacao_usuario_ativo
@@ -45,9 +47,10 @@ def observacao_de_consulta_identidade(consulta: dict) -> Observacao:
     """A consulta existente prova a identidade na manutencao, mas NAO a acao CPF."""
     status = str(consulta.get("status", ""))
     identidade = status == "trinca_consistente_na_tela" and consulta.get("contas_mesmo_cpf") == 1
+    pendente = status == "nao_encontrado" and consulta.get("contas_mesmo_cpf") == 0
     return Observacao(
         identidade_unica=identidade,
         situacao_usuario_ativo=identidade,
         validacao_cpf_confirmada=False,
-        sinal=Sinal.PENDENTE if identidade else Sinal.AMBIGUO,
+        sinal=Sinal.PENDENTE if identidade or pendente else Sinal.AMBIGUO,
     )
