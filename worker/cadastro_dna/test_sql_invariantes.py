@@ -20,10 +20,10 @@ class TesteSql(unittest.TestCase):
         self.assertIn("CADASTRO_DESABILITADO",SQL)
 
     def test_subperfil_oficial_e_consistente(self):
-        self.assertIn("subperfil text not null check(subperfil in ('CONSULTOR_2','SUPERVISOR_1'))",SQL)
+        self.assertIn("subperfil text not null check(subperfil in ('CONSULTOR_2','SUPERVISOR_2'))",SQL)
         self.assertIn("dna_cadastro_perfil_subperfil_oficial",SQL)
         self.assertIn("when 'CONSULTOR' then 'CONSULTOR_2'",SQL)
-        self.assertIn("when 'SUPERVISOR' then 'SUPERVISOR_1'",SQL)
+        self.assertIn("when 'SUPERVISOR' then 'SUPERVISOR_2'",SQL)
 
     def test_controle_cpf(self):
         self.assertIn("create unique index if not exists dna_cadastro_cpf_unico",SQL)
