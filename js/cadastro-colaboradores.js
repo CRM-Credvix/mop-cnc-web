@@ -76,7 +76,7 @@
    }
    if (!validate()) return;
    const dados = {
-     nome:f('nome').replace(/\\s+/g,' '),cpf:digits(f('cpf')),nascimento:f('nascimento'),
+     nome:f('nome').replace(/\s+/g,' '),cpf:digits(f('cpf')),nascimento:f('nascimento'),
      email:f('email'),telefone:digits(f('telefone')),perfil:f('perfil'),
      lojas:[...document.querySelectorAll('input[name="loja"]:checked')].map(x=>x.value)
    };
