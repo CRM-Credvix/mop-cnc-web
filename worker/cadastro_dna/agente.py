@@ -45,9 +45,11 @@ def main() -> int:
         # -m unittest worker.cadastro_dna.test_* funciona na raiz do repositorio.
         root=Path(__file__).resolve().parents[2]
         sys.path.insert(0,str(root))
-        suite=unittest.defaultTestLoader.discover(
-            str(Path(__file__).resolve().parent),pattern="test_*.py",
-            top_level_dir=str(root))
+        suite=unittest.defaultTestLoader.loadTestsFromNames([
+            "worker.cadastro_dna.test_estado",
+            "worker.cadastro_dna.test_monitor",
+            "worker.cadastro_dna.test_criptografia",
+        ])
         result=unittest.TextTestRunner(verbosity=2).run(suite)
         return 0 if result.wasSuccessful() else 1
     if args.executar:
