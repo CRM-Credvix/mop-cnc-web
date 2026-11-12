@@ -26,7 +26,7 @@ jobs:
       - name: Instalar dependencias de teste
         run: python -m pip install --disable-pip-version-check "cryptography==46.0.4"
       - name: Testar estado, monitor e AES-GCM
-        run: python -m unittest -v worker.cadastro_dna.test_estado worker.cadastro_dna.test_monitor worker.cadastro_dna.test_criptografia
+        run: python -m unittest -v worker.cadastro_dna.test_estado worker.cadastro_dna.test_monitor worker.cadastro_dna.test_criptografia worker.cadastro_dna.test_sql_invariantes
       - name: Validar sintaxe de scripts
         run: |
           node --check js/cadastro-colaboradores.js
