@@ -2,18 +2,18 @@
 
 ## Evidencias analisadas (12/11/2026)
 - Captura da tela de inclusao com Perfil **Consultor**, Sub Perfil **Consultor 2**.
-- Operador confirmou que as **Funcoes Consig sao iguais para Consultor e Supervisor** e nao serao alteradas no fluxo de cadastro.
+- Operador confirmou que as **Funcoes Consig sao iguais para Consultor e Supervisor**. Esclarecimento posterior: na inclusao, o DNA exige ao menos uma Funcao Consig para habilitar Cadastrar.
 - Arquivos de referencia locais enviados: `dna_web_executor.py`, `dna_operacional_v5514.py`, `dna_replicador_v55.py`.
 
 ## Regra de negocio confirmada
-Na **inclusao de novos usuarios**, o robo nao devera marcar/desmarcar nem fazer replicacao integral das Funcoes Consig. A tela pode apresentar funcoes ja carregadas de acordo com o subperfil; a identidade e os controles precisam ser lidos de novo imediatamente antes de Cadastrar, sem tentar corrigir mudancas inesperadas automaticamente.
+Na **inclusao de novos usuarios**, o robo deve garantir que **a primeira Funcao Consig da lista** esteja marcada, pois o formulario exige pelo menos uma funcao antes de habilitar Cadastrar. Se ja estiver marcada, nao clicar novamente para evitar desmarcar. **Nao marcar outras permissoes, nao desmarcar nenhuma e nao executar replicacao integral**. O seletor/ordem exata da primeira Funcao Consig ainda precisa ser confirmado no DOM antes de automatizar esse clique. A regra e igual para Consultor 2 e Supervisor 2. A selecao de uma funcao habilita a submissao, mas nao prova sucesso do cadastro.
 
 **Os quatro modelos do modulo existente de padronizacao sao preservados**. O novo cadastro usa apenas:
 - CONSULTOR -> CONSULTOR_2 (Consultor 2)
 - SUPERVISOR -> SUPERVISOR_2 (Supervisor 2)
 
 ## Nao confundir dois fluxos
-1. **Cadastro**: escolher loja pela linha e icone `+`, preencher os dados, definir perfil/subperfil oficiais, conferir regras de formulario e a submissao unica; nao editar permissoes.
+1. **Cadastro**: escolher loja pela linha e icone `+`, preencher os dados, definir perfil/subperfil oficiais, garantir exclusivamente a primeira Funcao Consig marcada e a submissao unica; nenhuma padronizacao das demais permissoes.
 2. **Padronizacao**: ja possui motor separado com leitura de **224 permissoes** e tres controles especiais de SSO/globais, planos de diferencas, autorizacao e verificacao independente. Nao chamar o motor de gravacao da padronizacao como substituto do botao Cadastrar.
 
 ## Resultados importantes dos arquivos existentes
@@ -24,9 +24,9 @@ Na **inclusao de novos usuarios**, o robo nao devera marcar/desmarcar nem fazer 
 
 ## O que falta homologar antes de escrita
 - Confirmar valores padrao dos campos SSO, Login IB Consig, Descricao uso Perfil, perfil e subperfil, tanto no Consultor 2 como no Supervisor 2.
-- Manter as Funcoes Consig inalteradas nos dois perfis, conforme regra confirmada; interromper se uma alteracao automatica inesperada ocorrer.
+- Identificar inequivocamente a primeira Funcao Consig, marcar somente se desmarcada e verificar que nenhuma outra permissao foi modificada.
 - Mapear o botao Cadastrar e os modais de confirmacao somente para **um teste autorizado**, com uma unica tentativa.
-- Confirmar se o DNA considera cadastro criado, CPF validado e conta Ativa como eventos distintos; nao deduzir sucesso pelo clique.
+- Registrar somente o resultado demonstrado pela interface apos Cadastrar; nao inventar validacao de CPF ou status Ativo sem evidencia. Uma tentativa incerta nao pode ser repetida automaticamente.
 - Validar limite de Supervisor por loja e ausencia de conta existente, em especial se houver varios vinculos de franquia.
 - Revisar seletores estaveis, obter evidencias de nova sessao somente leitura e executar testes integrados.
 
