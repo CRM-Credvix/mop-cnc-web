@@ -5,16 +5,16 @@ echo =======================================================
 echo CREDVIX - CADASTRO DNA - DIAGNOSTICO SEM ENVIO
 echo =======================================================
 echo Nenhum cadastro sera criado e nenhuma fila sera reservada.
-where py >nul 2>&1
-if %errorlevel%==0 (
-  py -3 -m worker.cadastro_dna.agente --testes
-  if errorlevel 1 goto falha
-  py -3 -m worker.cadastro_dna.agente --diagnostico
-) else (
-  python -m worker.cadastro_dna.agente --testes
-  if errorlevel 1 goto falha
-  python -m worker.cadastro_dna.agente --diagnostico
+set "PY=.venv_cadastro_dna\Scripts\python.exe"
+if not exist "%PY%" (
+ echo Primeiro execute CADASTRO_DNA_PREPARAR_TESTE.bat nesta pasta.
+ pause
+ exit /b 2
 )
+"%PY%" -m worker.cadastro_dna.agente --testes
+if errorlevel 1 goto falha
+"%PY%" -m worker.cadastro_dna.agente --diagnostico
+if errorlevel 1 goto falha
 echo.
 echo DIAGNOSTICO FINALIZADO - SEM ALTERACOES PRODUTIVAS.
 pause
