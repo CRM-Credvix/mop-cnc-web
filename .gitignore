@@ -14,3 +14,7 @@ worker/resultados/
 worker/*state*.json
 worker/*session*.json
 worker/nomes.txt
+
+# Cadastro DNA piloto isolado (.venv e diagnosticos locais)
+.venv_cadastro_dna/
+diagnostico_cadastro_dna_estrutura.json
