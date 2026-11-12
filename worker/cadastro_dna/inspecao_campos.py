@@ -13,6 +13,7 @@ from pathlib import Path
 
 
 def ler_frame(frame) -> dict:
+    from .mapeamento_campos import mapear_campos
     from .contrato_formulario import (
         ROTULOS_RECONHECIDOS, ATRIBUTOS_SEGUROS, atributo_publicavel,
         PERFIL_TO_SUBPERFIL,
@@ -40,6 +41,7 @@ def ler_frame(frame) -> dict:
                         "total_opcoes":int(select["total_options"]),
                         "selecionado_reconhecido":select.get("selected_known","")})
     return {"botao_cadastrar":buttons,"campos":labels,"selects":selects,
+            "mapeamento_campos":mapear_campos(frame),
             "padrao_esperado":PERFIL_TO_SUBPERFIL,
             "aviso":"Somente estrutura; nenhum cadastro efetuado."}
 
