@@ -51,7 +51,7 @@ function validar(raw: unknown) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length>254)throw new Error('EMAIL_INVALIDO')
   if (!/^\d{10,11}$/.test(telefone)) throw new Error('TELEFONE_INVALIDO')
   // Subperfil derivado no backend: nao aceitar escolha arbitraria do navegador.
-  const subperfil=perfil==='CONSULTOR'?'CONSULTOR_2':perfil==='SUPERVISOR'?'SUPERVISOR_1':null
+  const subperfil=perfil==='CONSULTOR'?'CONSULTOR_2':perfil==='SUPERVISOR'?'SUPERVISOR_2':null
   if (!subperfil || (data.subperfil!==undefined && data.subperfil!==subperfil))
     throw new Error('PERFIL_OU_SUBPERFIL_INVALIDO')
   if (!Array.isArray(lojas) || lojas.length<1 || lojas.length>100 ||
