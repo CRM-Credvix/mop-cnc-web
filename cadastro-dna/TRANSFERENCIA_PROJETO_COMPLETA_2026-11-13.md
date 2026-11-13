@@ -1818,3 +1818,628 @@ if __name__=="__main__":
     unittest.main()
 ```
 
+### `cadastro-colaboradores.html`
+```html
+<!doctype html>
+<html lang="pt-BR" class="mop-shell-loading">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cadastro de colaboradores DNA | CREDVIX</title>
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="css/tokens.css"><link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/mop-shell.css">
+<link rel="stylesheet" href="css/cadastro-colaboradores.css">
+</head>
+<body>
+<div class="mop-shell" id="cadastroShell" hidden>
+<aside class="mop-nav" data-mop-shell-sidebar aria-label="Menu de navegação"></aside>
+<div class="app-main"><header class="topbar mop-shared-topbar" data-mop-shell-topbar></header>
+<main class="content cvx-cadastro">
+<p class="cvx-eyebrow">MÓDULO ADMINISTRATIVO</p>
+<h1>Cadastro de <span>Colaboradores DNA</span></h1>
+<p>Cadastre colaboradores e acompanhe a validação do CPF. A execução automática permanece bloqueada até homologação.</p>
+<section class="cvx-card" aria-label="Nova solicitação">
+<div class="cvx-heading"><h2>Dados do colaborador</h2><strong class="cvx-flag">Em homologação</strong></div>
+<form id="cadastroForm" novalidate>
+<div class="cvx-grid">
+<label>Nome completo<input name="nome" autocomplete="off" required minlength="5"></label>
+<label>CPF<input name="cpf" inputmode="numeric" autocomplete="off" required></label>
+<label>Data de nascimento<input name="nascimento" type="date" required></label>
+<label>E-mail<input name="email" type="email" autocomplete="off" required></label>
+<label>Telefone com DDD<input name="telefone" inputmode="tel" autocomplete="off" required></label>
+<label>Perfil<select name="perfil" required><option value="">Selecione</option><option value="CONSULTOR">Consultor</option><option value="SUPERVISOR">Supervisor</option></select></label>
+<label>Subperfil oficial<input id="subperfilOficial" aria-label="Subperfil oficial" value="Selecione o perfil" readonly disabled><small id="subperfilAviso">Definido automaticamente: Consultor 2 ou Supervisor 2. Não editável.</small></label>
+</div>
+<fieldset><legend>Loja(s) de vínculo</legend><p id="lojasInfo" role="status">Carregando lojas cadastradas no MOP-CNC…</p><div id="lojasLista" class="cvx-lojas"></div></fieldset>
+<div class="cvx-actions">
+<button type="button" id="validar" class="cvx-button">Conferir preenchimento</button>
+<button type="submit" disabled id="solicitar" class="cvx-button" aria-describedby="avisoBloqueio">Solicitar cadastro (bloqueado)</button>
+</div>
+<p id="avisoBloqueio">Nenhum cadastro será enviado. A fila segura e o agente Windows ainda não foram homologados.</p>
+<p id="formFeedback" role="status" aria-live="polite"></p>
+</form></section>
+<section class="cvx-card" aria-label="Acompanhamento de cadastros">
+<div class="cvx-heading"><h2>Acompanhamento</h2><button type="button" id="atualizar" class="cvx-button">Atualizar</button></div>
+<p id="filaInfo" role="status">Aguardando autenticação…</p>
+<div class="cvx-scroll"><table><thead><tr><th>Solicitação</th><th>Situação</th><th>Etapa</th><th>Atualização</th><th>Motivo</th></tr></thead><tbody id="filaRows"></tbody></table></div>
+</section>
+</main></div></div>
+<p id="cadastroDenied" class="cvx-denied" hidden>Acesso administrativo não autorizado. <a href="app.html">Voltar ao MOP-CNC</a></p>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script><script src="js/mop-shell.js"></script>
+<script src="js/cadastro-colaboradores.js"></script>
+</body></html>
+```
+
+### `css/cadastro-colaboradores.css`
+```css
+.cvx-cadastro{max-width:1100px;margin:0 auto;padding:24px 22px 54px;color:#171411}.cvx-cadastro h1{font-size:clamp(1.7rem,4vw,2.3rem);margin:3px 0 6px;font-weight:800}.cvx-cadastro h1 span{color:#b04307}.cvx-eyebrow{color:#b04307;font-size:12px;font-weight:750;letter-spacing:.08em}.cvx-card{background:#fff;border:1px solid #ded5cf;border-radius:18px;padding:22px;margin-top:20px}.cvx-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.cvx-flag{font-size:12px;color:#8f5107;background:#fff4df;border-radius:20px;padding:7px 10px}.cvx-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.cvx-grid label{font-weight:650;font-size:14px}.cvx-grid input,.cvx-grid select{display:block;width:100%;box-sizing:border-box;border:1px solid #857a73;border-radius:8px;padding:12px;margin-top:6px;background:white;color:#171411;font-size:16px}.cvx-cadastro fieldset{border:1px solid #ded5cf;border-radius:10px;margin-top:16px}.cvx-lojas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.cvx-lojas label{display:flex;align-items:center;gap:8px;font-size:14px}.cvx-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.cvx-button{padding:10px 15px;border-radius:9px;border:1px solid #b04307;background:#b04307;color:white;font:inherit;cursor:pointer}.cvx-button:disabled{background:#eee8e3;color:#5b514b;border-color:#b8ada7;cursor:not-allowed}.cvx-scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:640px}th,td{text-align:left;border-bottom:1px solid #ded5cf;padding:11px 8px;font-size:14px}#formFeedback{font-weight:650}#avisoBloqueio{color:#70665f;font-size:13px}.cvx-denied{padding:24px}@media(max-width:700px){.cvx-grid,.cvx-lojas{grid-template-columns:1fr}.cvx-card{padding:15px}}
+```
+
+### `js/cadastro-colaboradores.js`
+```javascript
+/* MOP-CNC | cadastro DNA: envio SOMENTE se banco e backend liberarem. */
+(() => {
+ 'use strict';
+ const client = window.MOP_SUPABASE;
+ const shell = document.getElementById('cadastroShell');
+ const denied = document.getElementById('cadastroDenied');
+ const form = document.getElementById('cadastroForm');
+ const $ = id => document.getElementById(id);
+ const normalize = value => String(value || '').trim().toLowerCase();
+ const digits = value => String(value || '').replace(/\D/g,'');
+ let user = null;
+ let loading = false;
+ let liberado = false;
+ let enviando = false;
+ let chaveTentativa = '';
+ let impressaoTentativa = '';
+ const SUBPERFIS_CADASTRO = Object.freeze({CONSULTOR:'CONSULTOR_2',SUPERVISOR:'SUPERVISOR_2'});
+ const ROTULOS_SUBPERFIL = Object.freeze({CONSULTOR_2:'Consultor 2',SUPERVISOR_2:'Supervisor 2'});
+ function sincronizarSubperfil() {
+   const subperfil=SUBPERFIS_CADASTRO[f('perfil')];
+   const node=$('subperfilOficial');
+   node.value=subperfil?ROTULOS_SUBPERFIL[subperfil]:'Selecione o perfil';
+   node.dataset.codigo=subperfil||'';
+ }
+ function cpfValido(input){
+   const cpf = digits(input);
+   if(!/^\d{11}$/.test(cpf) || /^(\d)\1{10}$/.test(cpf))return false;
+   for(let n=9;n<=10;n++){
+     let soma=0;for(let i=0;i<n;i++)soma+=Number(cpf[i])*(n+1-i);
+     if(Number(cpf[n])!==((soma*10)%11)%10)return false;
+   }
+   return true;
+ }
+ const f = name => form.elements.namedItem(name).value.trim();
+ function validate(){
+   const errors=[];
+   const nome=f('nome').replace(/\s+/g,' ');
+   const birth=f('nascimento');
+   const telefone=digits(f('telefone'));
+   if(nome.length<5||!nome.includes(' ')) errors.push('Nome completo inválido.');
+   if(!cpfValido(f('cpf'))) errors.push('CPF inválido.');
+   if(!birth || !/^\d{4}-\d{2}-\d{2}$/.test(birth) || Number.isNaN(Date.parse(birth)) ||
+      new Date(birth+'T12:00:00')>new Date()) errors.push('Nascimento inválido.');
+   if(!form.elements.namedItem('email').checkValidity()) errors.push('E-mail inválido.');
+   if(!/^\d{10,11}$/.test(telefone)) errors.push('Telefone inválido.');
+   if(!Object.hasOwn(SUBPERFIS_CADASTRO,f('perfil')))errors.push('Selecione um perfil.');
+   if ($('subperfilOficial').dataset.codigo!==SUBPERFIS_CADASTRO[f('perfil')])
+     errors.push('Subperfil oficial não corresponde ao perfil.');
+   if(![...document.querySelectorAll('input[name="loja"]:checked')].length)errors.push('Selecione uma loja.');
+   $('formFeedback').textContent=errors.length?errors.join(' '):'Preenchimento válido. Nenhum dado foi enviado.';
+   return errors.length === 0;
+ }
+ async function loadLojas(){
+   const r=await client.from('franquias_mop').select('codigo,nome').eq('ativo',true).order('nome');
+   if(r.error)throw r.error;
+   $('lojasLista').replaceChildren();
+   for(const loja of r.data||[]){
+     const label=document.createElement('label'),box=document.createElement('input'),text=document.createElement('span');
+     box.type='checkbox';box.name='loja';box.value=loja.codigo;
+     text.textContent=loja.codigo+' — '+loja.nome;label.append(box,text);$('lojasLista').append(label);
+   }
+   $('lojasInfo').textContent=(r.data||[]).length+' lojas no catálogo. A autorização por usuário será validada no backend antes de liberar qualquer solicitação.';
+ }
+ async function loadLiberacao() {
+   liberado = false;
+   $('solicitar').disabled = true;
+   try {
+     const {data,error} = await client.from('dna_cadastro_config')
+       .select('ativo').eq('chave','cadastro_ativo').maybeSingle();
+     if (!error && data?.ativo===true) {
+       liberado = true;
+       $('solicitar').disabled = false;
+       $('solicitar').textContent = 'Solicitar cadastro';
+       $('avisoBloqueio').textContent = 'O cadastro será registrado na fila segura. A ativação só será confirmada após validação do DNA.';
+       return;
+     }
+   } catch (_) {}
+   $('solicitar').textContent = 'Solicitar cadastro (bloqueado)';
+   $('avisoBloqueio').textContent = 'Cadastro indisponível até homologação do banco, segurança e robô Windows.';
+ }
+ async function enviar(event) {
+   event.preventDefault();
+   if (!liberado || enviando) {
+     $('formFeedback').textContent = 'Cadastro bloqueado ou já em processamento.';
+     return;
+   }
+   if (!validate()) return;
+   const dados = {
+     nome:f('nome').replace(/\s+/g,' '),cpf:digits(f('cpf')),nascimento:f('nascimento'),
+     email:f('email'),telefone:digits(f('telefone')),perfil:f('perfil'),
+     lojas:[...document.querySelectorAll('input[name="loja"]:checked')].map(x=>x.value)
+   };
+   const impressao = JSON.stringify(dados);
+   if (impressaoTentativa!==impressao) {
+     chaveTentativa=crypto.randomUUID();
+     impressaoTentativa=impressao;
+   }
+   enviando=true;$('solicitar').disabled=true;
+   $('formFeedback').textContent='Enviando solicitação segura. Não clique novamente.';
+   try {
+     // A funcao exige Auth + allowlist de UUID, e o SQL exige cadastro_ativo=true.
+     const {data,error}=await client.functions.invoke('cadastro-dna-criar',{
+       body:{...dados,idempotencia:chaveTentativa}
+     });
+     if (error || !data?.id) throw Error('SOLICITACAO_NAO_CONFIRMADA');
+     $('formFeedback').textContent='Solicitação '+String(data.id).slice(0,8)+' registrada. Acompanhe na tabela abaixo.';
+     form.reset();sincronizarSubperfil();chaveTentativa='';impressaoTentativa='';
+     await loadFila();
+   } catch (_) {
+     // Na falha de rede, a mesma chave de idempotencia sera usada em nova tentativa
+     // enquanto o conteudo do formulario nao for alterado.
+     $('formFeedback').textContent='Envio não confirmado. Consulte o acompanhamento antes de tentar novamente.';
+     await loadFila();
+   } finally {
+     enviando=false;
+     await loadLiberacao();
+   }
+ }
+ const statuses={na_fila:'Na fila',processando:'Processando',aguardando_validacao:'Aguardando validação',ativo:'Ativo',erro:'Erro',revisao:'Revisão obrigatória'};
+ async function loadFila(){
+   if(loading||!user)return;loading=true;$('atualizar').disabled=true;
+   try{
+     const r=await client.from('dna_cadastro_solicitacoes')
+       .select('id,status,etapa,motivo_publico,atualizado_em')
+       .order('criado_em',{ascending:false}).limit(50);
+     if(r.error){
+       $('filaInfo').textContent=['42P01','PGRST205','42501'].includes(r.error.code)
+         ?'A fila de cadastro ainda não está instalada ou autorizada. Nenhuma solicitação foi criada.'
+         :'Acompanhamento indisponível. Nenhuma alteração realizada.';
+       $('filaRows').replaceChildren();return;
+     }
+     const rows=r.data||[];$('filaInfo').textContent=rows.length+' solicitação(ões) visível(is) para esta conta.';
+     $('filaRows').replaceChildren();
+     for(const item of rows){
+       const tr=document.createElement('tr');
+       const values=[String(item.id).slice(0,8),statuses[item.status]||item.status,item.etapa||'—',
+         item.atualizado_em?new Date(item.atualizado_em).toLocaleString('pt-BR'):'—',
+         item.motivo_publico||'—'];
+       for(const v of values){const td=document.createElement('td');td.textContent=String(v);tr.append(td);}
+       $('filaRows').append(tr);
+     }
+   }catch(_){$('filaInfo').textContent='Acompanhamento indisponível.'}
+   finally{loading=false;$('atualizar').disabled=false;}
+ }
+ async function init(){
+   try{
+     if(!client)throw Error('Cliente Supabase indisponível');
+     const {data,error}=await client.auth.getUser();
+     if(error||!data?.user){location.replace('index.html');return;}
+     if(normalize(data.user.email)!=='crm@credvix.com'){denied.hidden=false;return;}
+     user=data.user; shell.hidden=false;
+     window.MOP_SHELL?.setUser(user);
+     await Promise.allSettled([loadLojas(),loadFila(),loadLiberacao()]);
+   }catch(_){denied.hidden=false;$('lojasInfo').textContent='Falha ao carregar lojas.';}
+ }
+ form.elements.namedItem('perfil').addEventListener('change',sincronizarSubperfil);
+ sincronizarSubperfil();
+ $('validar').addEventListener('click',validate);
+ form.addEventListener('submit',enviar);
+ $('atualizar').addEventListener('click',loadFila);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden&&user)loadFila();});
+ window.setInterval(()=>{if(user&&!document.hidden)loadFila();},30000);
+ init();
+})();
+```
+
+### `supabase/functions/cadastro-dna-criar/index.ts`
+```typescript
+// Supabase Edge Function - cadastro-dna-criar (NAO implantada)
+// Autenticacao + autorizacao no servidor; CPF cifrado antes de chegar ao banco.
+// Secrets obrigatorios: DNA_CADASTRO_ALLOWED_USER_IDS, DNA_CADASTRO_AES_KEY_HEX,
+// DNA_CADASTRO_HMAC_KEY_HEX, DNA_CADASTRO_ALLOWED_ORIGIN.
+// SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY sao injetados pela plataforma.
+import { createClient } from 'npm:@supabase/supabase-js@2.57.0'
+
+const ALLOWED_ORIGIN = Deno.env.get('DNA_CADASTRO_ALLOWED_ORIGIN') || ''
+const headers = (origin: string | null) => ({
+  'Content-Type': 'application/json; charset=utf-8',
+  ...(origin === ALLOWED_ORIGIN && ALLOWED_ORIGIN ? {'Access-Control-Allow-Origin': origin, 'Vary': 'Origin'} : {}),
+  'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+})
+const result = (status: number, data: unknown, origin: string | null) =>
+  new Response(JSON.stringify(data), {status, headers: headers(origin)})
+
+function hexBytes(value: string): Uint8Array {
+  if (!/^[0-9a-f]{64}$/i.test(value)) throw new Error('CONFIGURACAO_CRIPTO_INVALIDA')
+  return Uint8Array.from(value.match(/.{2}/g)!.map(v => parseInt(v, 16)))
+}
+function b64(bytes: Uint8Array): string {
+  let s = ''
+  for (let i=0; i<bytes.length; i+=8192) s += String.fromCharCode(...bytes.subarray(i,i+8192))
+  return btoa(s)
+}
+function cpfValido(value: string): boolean {
+  if (!/^\d{11}$/.test(value) || /^(\d)\1{10}$/.test(value)) return false
+  for (let n=9; n<=10; n++) {
+    let soma=0
+    for (let i=0; i<n; i++) soma += Number(value[i]) * (n+1-i)
+    if (Number(value[n]) !== ((soma*10)%11)%10) return false
+  }
+  return true
+}
+function validar(raw: unknown) {
+  if (!raw || typeof raw!=='object' || Array.isArray(raw)) throw new Error('ENTRADA_INVALIDA')
+  const data=raw as Record<string,unknown>
+  const nome=String(data.nome||'').trim().replace(/\s+/g,' ')
+  const cpf=String(data.cpf||'').replace(/\D/g,'')
+  const nascimento=String(data.nascimento||'')
+  const email=String(data.email||'').trim().toLowerCase()
+  const telefone=String(data.telefone||'').replace(/\D/g,'')
+  const perfil=String(data.perfil||'')
+  const lojas=data.lojas
+  const idempotencia=String(data.idempotencia||'')
+  if (nome.length<5 || nome.length>140 || !nome.includes(' ') || !cpfValido(cpf)) throw new Error('COLABORADOR_INVALIDO')
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(nascimento)) throw new Error('DATA_INVALIDA')
+  const d=new Date(nascimento+'T12:00:00Z')
+  if(Number.isNaN(d.valueOf()) || d.toISOString().slice(0,10)!==nascimento || d>new Date())throw new Error('DATA_INVALIDA')
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length>254)throw new Error('EMAIL_INVALIDO')
+  if (!/^\d{10,11}$/.test(telefone)) throw new Error('TELEFONE_INVALIDO')
+  // Subperfil derivado no backend: nao aceitar escolha arbitraria do navegador.
+  const subperfil=perfil==='CONSULTOR'?'CONSULTOR_2':perfil==='SUPERVISOR'?'SUPERVISOR_2':null
+  if (!subperfil || (data.subperfil!==undefined && data.subperfil!==subperfil))
+    throw new Error('PERFIL_OU_SUBPERFIL_INVALIDO')
+  if (!Array.isArray(lojas) || lojas.length<1 || lojas.length>100 ||
+      lojas.some(x=>typeof x!=='string'|| !/^\d+$/.test(x)) ||
+      new Set(lojas).size!==lojas.length) throw new Error('LOJAS_INVALIDAS')
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(idempotencia))
+    throw new Error('IDEMPOTENCIA_INVALIDA')
+  return {nome,cpf,nascimento,email,telefone,perfil,subperfil,lojas:lojas as string[],idempotencia}
+}
+
+Deno.serve(async req => {
+  const origin=req.headers.get('origin')
+  if (req.method==='OPTIONS') return new Response(null,{status:204,headers:headers(origin)})
+  if (req.method!=='POST') return result(405,{erro:'METODO_NAO_PERMITIDO'},origin)
+  // Proibir origens web inesperadas. Clientes nao-web ainda dependem de JWT + UUID allowlist.
+  if (origin && origin!==ALLOWED_ORIGIN) return result(403,{erro:'ORIGEM_NAO_PERMITIDA'},origin)
+  const required=['DNA_CADASTRO_ALLOWED_USER_IDS','DNA_CADASTRO_AES_KEY_HEX',
+    'DNA_CADASTRO_HMAC_KEY_HEX','DNA_CADASTRO_ALLOWED_ORIGIN',
+    'SUPABASE_URL','SUPABASE_SERVICE_ROLE_KEY']
+  if(required.some(k=>!Deno.env.get(k)))return result(503,{erro:'RECURSO_NAO_HABILITADO'},origin)
+  const bearer=req.headers.get('authorization')||''
+  const jwt=/^Bearer\s+(.+)$/i.exec(bearer)?.[1]
+  if (!jwt) return result(401,{erro:'AUTENTICACAO_OBRIGATORIA'},origin)
+  const allowed=(Deno.env.get('DNA_CADASTRO_ALLOWED_USER_IDS')||'').split(',').map(s=>s.trim())
+  const supabase=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{
+    auth:{persistSession:false,autoRefreshToken:false}
+  })
+  try {
+    const {data:{user},error:authError}=await supabase.auth.getUser(jwt)
+    if(authError||!user) return result(401,{erro:'SESSAO_INVALIDA'},origin)
+    if(!allowed.includes(user.id)) return result(403,{erro:'ACESSO_ADMIN_NEGADO'},origin)
+    if(Number(req.headers.get('content-length')||'0')>8000)return result(413,{erro:'REQUISICAO_GRANDE'},origin)
+    const body=await req.text()
+    if(body.length>8000)return result(413,{erro:'REQUISICAO_GRANDE'},origin)
+    let validated
+    try{validated=validar(JSON.parse(body))}catch{return result(400,{erro:'DADOS_INVALIDOS'},origin)}
+    const aes=await crypto.subtle.importKey('raw',hexBytes(Deno.env.get('DNA_CADASTRO_AES_KEY_HEX')!),'AES-GCM',false,['encrypt'])
+    const hmac=await crypto.subtle.importKey('raw',hexBytes(Deno.env.get('DNA_CADASTRO_HMAC_KEY_HEX')!),{name:'HMAC',hash:'SHA-256'},false,['sign'])
+    const enc=new TextEncoder()
+    const iv=crypto.getRandomValues(new Uint8Array(12))
+    const encrypted=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},aes,enc.encode(JSON.stringify(validated))))
+    // payload no banco = IV(12 bytes) + ciphertext|tag (AES-GCM).
+    const joined=new Uint8Array(iv.length+encrypted.length);joined.set(iv);joined.set(encrypted,iv.length)
+    const digest=new Uint8Array(await crypto.subtle.sign('HMAC',hmac,enc.encode(validated.cpf)))
+    const cpfHmac=Array.from(digest).map(x=>x.toString(16).padStart(2,'0')).join('')
+    const {data,error}=await supabase.rpc('dna_cadastro_criar',{
+      p_solicitante:user.id,p_idempotencia:validated.idempotencia,
+      p_cpf_hmac:cpfHmac,p_cpf_final4:validated.cpf.slice(-4),
+      p_lojas:validated.lojas,p_perfil:validated.perfil,p_cifra_base64:b64(joined)
+    })
+    if(error) {
+      const code=['23505','42501','22023'].includes(error.code)?error.code:'FALHA'
+      return result(code==='23505'?409:code==='42501'?403:400,{erro:code},origin)
+    }
+    return result(201,{id:data,status:'na_fila'},origin)
+  } catch {
+    return result(500,{erro:'ERRO_INTERNO'},origin)
+  }
+})
+```
+
+### `cadastro-dna/schema_seguro_v02.sql`
+```sql
+-- CADASTRO DNA V0.2: proposta transacional, NAO APLICAR em producao sem testes.
+-- Integracao separada de dna_web_*; dados sensiveis cifrados na Edge Function.
+-- Chaves AES/HMAC jamais sao armazenadas no banco.
+begin;
+
+create schema if not exists dna_cadastro_private;
+revoke all on schema dna_cadastro_private from public, anon, authenticated;
+grant usage on schema dna_cadastro_private to service_role;
+
+-- Chave de liberacao: desligada por padrao, inclusive apos aplicar esquema.
+create table if not exists public.dna_cadastro_config (
+ chave text primary key,
+ ativo boolean not null default false,
+ atualizado_em timestamptz not null default now(),
+ constraint dna_cadastro_config_chave check (chave='cadastro_ativo')
+);
+insert into public.dna_cadastro_config(chave,ativo) values('cadastro_ativo',false)
+on conflict(chave) do nothing;
+alter table public.dna_cadastro_config enable row level security;
+revoke all on public.dna_cadastro_config from public,anon,authenticated;
+grant select on public.dna_cadastro_config to authenticated;
+grant select,insert,update on public.dna_cadastro_config to service_role;
+drop policy if exists dna_cadastro_config_entrada on public.dna_cadastro_config;
+create policy dna_cadastro_config_entrada on public.dna_cadastro_config
+for select to authenticated using(true);
+
+create table if not exists public.dna_cadastro_solicitacoes (
+ id uuid primary key default gen_random_uuid(),
+ solicitante_id uuid not null references auth.users(id),
+ idempotencia uuid not null,
+ cpf_hmac text not null check(cpf_hmac ~ '^[0-9a-f]{64}$'),
+ cpf_final4 text not null check(cpf_final4 ~ '^[0-9]{4}$'),
+ lojas text[] not null check(coalesce(array_length(lojas,1),0) between 1 and 100),
+ perfil text not null check(perfil in ('CONSULTOR','SUPERVISOR')),
+ subperfil text not null check(subperfil in ('CONSULTOR_2','SUPERVISOR_2')),
+ constraint dna_cadastro_perfil_subperfil_oficial check (
+   (perfil='CONSULTOR' and subperfil='CONSULTOR_2') or
+   (perfil='SUPERVISOR' and subperfil='SUPERVISOR_2')
+ ),
+ status text not null default 'na_fila'
+   check(status in ('na_fila','processando','aguardando_validacao','ativo','erro','revisao')),
+ etapa text not null default 'fila',
+ motivo_publico text,
+ worker text,
+ token_reserva uuid,
+ reserva_ate timestamptz,
+ validacao_inicio timestamptz,
+ validacao_limite timestamptz,
+ proxima_consulta timestamptz,
+ tentativas smallint not null default 0 check(tentativas between 0 and 3),
+ dna_usuario_id text,
+ criado_em timestamptz not null default now(),
+ atualizado_em timestamptz not null default now(),
+ unique(solicitante_id,idempotencia)
+);
+-- Evitar pedidos concorrentes para mesmo CPF, independentemente de solicitante.
+create unique index if not exists dna_cadastro_cpf_unico
+on public.dna_cadastro_solicitacoes(cpf_hmac);
+-- Um CPF ja processado nao pode ser recadastrado automaticamente.
+-- Reprocessamento futuro exige conciliacao e fluxo administrativo separado.
+
+create table if not exists dna_cadastro_private.dna_cadastro_payloads (
+ solicitacao_id uuid primary key references public.dna_cadastro_solicitacoes(id),
+ cifra_base64 text not null check(length(cifra_base64) between 40 and 20000),
+ criado_em timestamptz not null default now()
+);
+
+create table if not exists public.dna_cadastro_eventos (
+ id bigint generated always as identity primary key,
+ solicitacao_id uuid not null references public.dna_cadastro_solicitacoes(id),
+ tipo text not null check(length(tipo) between 3 and 80),
+ detalhe_publico text,
+ criado_em timestamptz not null default now()
+);
+
+-- Auditoria append-only: nem worker pode editar/remover eventos.
+create or replace function dna_cadastro_private.dna_cadastro_evento_imutavel()
+returns trigger language plpgsql set search_path='' as $$
+begin
+ raise exception using errcode='42501',message='AUDITORIA_IMUTAVEL';
+end;
+$$;
+drop trigger if exists trg_dna_cadastro_evento_imutavel on public.dna_cadastro_eventos;
+create trigger trg_dna_cadastro_evento_imutavel before update or delete
+on public.dna_cadastro_eventos for each row
+execute function dna_cadastro_private.dna_cadastro_evento_imutavel();
+
+alter table public.dna_cadastro_solicitacoes enable row level security;
+alter table public.dna_cadastro_eventos enable row level security;
+alter table dna_cadastro_private.dna_cadastro_payloads enable row level security;
+
+revoke all on public.dna_cadastro_solicitacoes from public, anon, authenticated;
+revoke all on public.dna_cadastro_eventos from public, anon, authenticated;
+revoke all on dna_cadastro_private.dna_cadastro_payloads from public, anon, authenticated;
+grant select on public.dna_cadastro_solicitacoes to authenticated;
+grant select on public.dna_cadastro_eventos to authenticated;
+grant select,insert,update on public.dna_cadastro_solicitacoes to service_role;
+grant select,insert on public.dna_cadastro_eventos to service_role;
+grant usage,select on sequence public.dna_cadastro_eventos_id_seq to service_role;
+grant select,insert on dna_cadastro_private.dna_cadastro_payloads to service_role;
+
+drop policy if exists dna_cadastro_ver_proprias on public.dna_cadastro_solicitacoes;
+create policy dna_cadastro_ver_proprias on public.dna_cadastro_solicitacoes
+for select to authenticated using (solicitante_id = (select auth.uid()));
+
+drop policy if exists dna_cadastro_eventos_ver_proprios on public.dna_cadastro_eventos;
+create policy dna_cadastro_eventos_ver_proprios on public.dna_cadastro_eventos
+for select to authenticated using (
+ exists(select 1 from public.dna_cadastro_solicitacoes s
+ where s.id=solicitacao_id and s.solicitante_id=(select auth.uid()))
+);
+
+-- Ponto unico de criacao, chamado somente pelo service_role no endpoint seguro.
+create or replace function public.dna_cadastro_criar(
+ p_solicitante uuid, p_idempotencia uuid, p_cpf_hmac text, p_cpf_final4 text,
+ p_lojas text[], p_perfil text, p_cifra_base64 text
+) returns uuid language plpgsql security invoker set search_path = ''
+as $$
+declare v_id uuid; v_count integer; v_distinct_count integer;
+begin
+ if not exists(select 1 from public.dna_cadastro_config
+               where chave='cadastro_ativo' and ativo=true) then
+   raise exception using errcode='42501',message='CADASTRO_DESABILITADO';
+ end if;
+ if p_solicitante is null or p_idempotencia is null
+    or p_cpf_hmac !~ '^[0-9a-f]{64}$' or p_cpf_final4 !~ '^[0-9]{4}$'
+    or p_perfil not in ('CONSULTOR','SUPERVISOR')
+    or length(p_cifra_base64) not between 40 and 20000
+    or coalesce(array_length(p_lojas,1),0) not between 1 and 100 then
+   raise exception using errcode='22023',message='PARAMETROS_INVALIDOS';
+ end if;
+ select count(distinct codigo) into v_count from public.franquias_mop
+ where codigo=any(p_lojas) and ativo=true;
+ select count(distinct loja.codigo) into v_distinct_count
+ from unnest(p_lojas) as loja(codigo)
+ where loja.codigo ~ '^[0-9]+$';
+ if v_count<>array_length(p_lojas,1) or v_distinct_count<>array_length(p_lojas,1) then
+   raise exception using errcode='42501',message='LOJA_INVALIDA';
+ end if;
+ -- NUNCA fazer ON CONFLICT por CPF. Conflito gera revisao/consulta, nao nova inclusao.
+ insert into public.dna_cadastro_solicitacoes
+ (solicitante_id,idempotencia,cpf_hmac,cpf_final4,lojas,perfil,subperfil)
+ values(p_solicitante,p_idempotencia,p_cpf_hmac,p_cpf_final4,p_lojas,p_perfil,
+   case p_perfil when 'CONSULTOR' then 'CONSULTOR_2' when 'SUPERVISOR' then 'SUPERVISOR_2' end)
+ on conflict(solicitante_id,idempotencia) do nothing returning id into v_id;
+ if v_id is null then
+   select id into v_id from public.dna_cadastro_solicitacoes
+   where solicitante_id=p_solicitante and idempotencia=p_idempotencia
+     and cpf_hmac=p_cpf_hmac and lojas=p_lojas and perfil=p_perfil;
+   if v_id is null then
+     raise exception using errcode='23505',message='IDEMPOTENCIA_CONFLITANTE';
+   end if;
+   return v_id;
+ end if;
+ insert into dna_cadastro_private.dna_cadastro_payloads(solicitacao_id,cifra_base64)
+ values(v_id,p_cifra_base64);
+ insert into public.dna_cadastro_eventos(solicitacao_id,tipo,detalhe_publico)
+ values(v_id,'criado','Solicitacao recebida; sem cadastro realizado no DNA.');
+ return v_id;
+end;
+$$;
+
+-- Reservar apenas novos itens. NUNCA reassumir processando expirado:
+-- apos queda do Windows, escrita pode ter ocorrido e exige conciliacao manual.
+create or replace function public.dna_cadastro_reservar(p_worker text)
+returns table(id uuid, token uuid, cifra_base64 text, perfil text, subperfil text, lojas text[])
+language plpgsql security invoker set search_path='' as $$
+declare v_id uuid; v_token uuid := gen_random_uuid();
+begin
+ if length(coalesce(p_worker,'')) not between 3 and 100 then
+  raise exception using errcode='22023',message='WORKER_INVALIDO';
+ end if;
+ select s.id into v_id from public.dna_cadastro_solicitacoes s
+ where s.status='na_fila' order by s.criado_em
+ limit 1 for update skip locked;
+ if v_id is null then return; end if;
+ update public.dna_cadastro_solicitacoes s set status='processando',
+  etapa='reservado',worker=p_worker,token_reserva=v_token,
+  reserva_ate=now()+interval '20 minutes',tentativas=s.tentativas+1,
+  atualizado_em=now()
+ where s.id=v_id;
+ insert into public.dna_cadastro_eventos(solicitacao_id,tipo)
+ values(v_id,'reservado');
+ return query select s.id,v_token,p.cifra_base64,s.perfil,s.subperfil,s.lojas
+ from public.dna_cadastro_solicitacoes s
+ join dna_cadastro_private.dna_cadastro_payloads p on p.solicitacao_id=s.id
+ where s.id=v_id;
+end;
+$$;
+
+create or replace function public.dna_cadastro_finalizar(
+ p_id uuid, p_token uuid, p_status text, p_etapa text, p_motivo_publico text default null
+) returns boolean language plpgsql security invoker set search_path='' as $$
+declare v_old text;
+begin
+ if p_status not in ('aguardando_validacao','ativo','erro','revisao')
+ or length(coalesce(p_etapa,'')) not between 3 and 80
+ or length(coalesce(p_motivo_publico,''))>240 then
+   raise exception using errcode='22023',message='FINALIZACAO_INVALIDA';
+ end if;
+ select status into v_old from public.dna_cadastro_solicitacoes
+ where id=p_id and token_reserva=p_token and status='processando' for update;
+ if v_old is null then return false; end if;
+ update public.dna_cadastro_solicitacoes set
+ status=p_status,etapa=p_etapa,motivo_publico=p_motivo_publico,
+ atualizado_em=now(),reserva_ate=null,token_reserva=null,
+ validacao_inicio=case when p_status='aguardando_validacao' then coalesce(validacao_inicio,now()) else validacao_inicio end,
+ validacao_limite=case when p_status='aguardando_validacao' then coalesce(validacao_limite,now()+interval '10 minutes') else validacao_limite end,
+ proxima_consulta=case when p_status='aguardando_validacao' then now()+interval '30 seconds' else null end
+ where id=p_id;
+ insert into public.dna_cadastro_eventos(solicitacao_id,tipo,detalhe_publico)
+ values(p_id,'finalizado',p_status);
+ return true;
+end;
+$$;
+
+-- Reserva de consulta nao causa nova inclusao; resultado incerto sempre requer revisao.
+create or replace function public.dna_cadastro_reservar_validacao(p_worker text)
+returns table(id uuid, token uuid, cifra_base64 text, perfil text, subperfil text, lojas text[],
+ validacao_limite timestamptz)
+language plpgsql security invoker set search_path='' as $$
+declare v_id uuid; v_token uuid := gen_random_uuid();
+begin
+ if length(coalesce(p_worker,'')) not between 3 and 100 then
+  raise exception using errcode='22023',message='WORKER_INVALIDO';
+ end if;
+ select s.id into v_id from public.dna_cadastro_solicitacoes s
+ where s.status='aguardando_validacao' and s.proxima_consulta<=now()
+ order by s.proxima_consulta limit 1 for update skip locked;
+ if v_id is null then return; end if;
+ update public.dna_cadastro_solicitacoes s set status='processando',etapa='validando',
+ worker=p_worker,token_reserva=v_token,reserva_ate=now()+interval '5 minutes',
+ atualizado_em=now() where s.id=v_id;
+ insert into public.dna_cadastro_eventos(solicitacao_id,tipo)
+ values(v_id,'consulta_reservada');
+ return query select s.id,v_token,p.cifra_base64,s.perfil,s.lojas,s.validacao_limite
+ from public.dna_cadastro_solicitacoes s
+ join dna_cadastro_private.dna_cadastro_payloads p on p.solicitacao_id=s.id
+ where s.id=v_id;
+end;
+$$;
+
+-- Limpador conservador: nao reassume tarefa cujo worker caiu.
+-- Uma escrita anterior pode ter sido efetivada.
+create or replace function public.dna_cadastro_sinalizar_expirados()
+returns integer language plpgsql security invoker set search_path='' as $$
+declare v_total integer;
+begin
+ with changed as (
+  update public.dna_cadastro_solicitacoes set status='revisao',
+    etapa='reserva_expirada',
+    motivo_publico='Execucao interrompida: conferir no DNA antes de qualquer novo cadastro.',
+    token_reserva=null,reserva_ate=null,atualizado_em=now()
+  where status='processando' and reserva_ate<now()
+  returning id
+ ), audited as (
+  insert into public.dna_cadastro_eventos(solicitacao_id,tipo)
+  select id,'reserva_expirada' from changed returning id
+ ) select count(*) into v_total from audited;
+ return v_total;
+end;
+$$;
+
+-- O worker nao deve aceitar ATIVO sem verificacao independente do DNA.
+-- O banco nao verifica a evidencia; esse gate adicional deve existir no worker
+-- e ser testado antes da implantacao.
+revoke all on function public.dna_cadastro_criar(uuid,uuid,text,text,text[],text,text) from public,anon,authenticated;
+revoke all on function public.dna_cadastro_reservar(text) from public,anon,authenticated;
+revoke all on function public.dna_cadastro_reservar_validacao(text) from public,anon,authenticated;
+revoke all on function public.dna_cadastro_sinalizar_expirados() from public,anon,authenticated;
+revoke all on function public.dna_cadastro_finalizar(uuid,uuid,text,text,text) from public,anon,authenticated;
+grant execute on function public.dna_cadastro_criar(uuid,uuid,text,text,text[],text,text) to service_role;
+grant execute on function public.dna_cadastro_reservar(text) to service_role;
+grant execute on function public.dna_cadastro_reservar_validacao(text) to service_role;
+grant execute on function public.dna_cadastro_sinalizar_expirados() to service_role;
+grant execute on function public.dna_cadastro_finalizar(uuid,uuid,text,text,text) to service_role;
+
+commit;
+```
+
