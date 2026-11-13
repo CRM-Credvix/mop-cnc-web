@@ -1361,3 +1361,460 @@ if __name__=="__main__":
     unittest.main()
 ```
 
+### `worker/cadastro_dna/test_formulario.py`
+```python
+"""Teste da politica de leitura e das garantias de fail-closed (offline)."""
+import unittest
+from .contrato_formulario import atributo_publicavel, validar_inspecao, EstruturaInsegura
+
+
+class FormularioContratoTests(unittest.TestCase):
+    def setUp(self):
+        self.payload={"formulario":"manutencao_usuario_novo","botao_cadastrar":1,
+                      "controles":{name:1 for name in (
+                          "Nome:", "CPF:", "Data de Nascimento:", "E-mail:",
+                          "Telefone Celular:", "Perfil:", "Sub Perfil:")},
+                      "opcoes":{"Consultor":"Consultor 2","Supervisor":"Supervisor 2"}}
+
+    def test_estrutura_correta_nao_libera_escrita(self):
+        result=validar_inspecao(self.payload)
+        self.assertFalse(result["pode_cadastrar"])
+
+    def test_cadastrar_duplicado_bloqueado(self):
+        self.payload["botao_cadastrar"]=2
+        with self.assertRaises(EstruturaInsegura):
+            validar_inspecao(self.payload)
+
+    def test_campo_ausente_bloqueado(self):
+        self.payload["controles"]["CPF:"]=0
+        with self.assertRaises(EstruturaInsegura):
+            validar_inspecao(self.payload)
+
+    def test_supervisor_1_bloqueado(self):
+        self.payload["opcoes"]["Supervisor"]="Supervisor 1"
+        with self.assertRaises(EstruturaInsegura):
+            validar_inspecao(self.payload)
+
+    def test_identificador_dinamico_nao_publicado(self):
+        self.assertEqual(atributo_publicavel("usuario.acessoSso"),"usuario.acessoSso")
+        self.assertEqual(atributo_publicavel("CPF: 12345678909"),"")
+        self.assertEqual(atributo_publicavel("a\" onclick=\"test"),"")
+
+
+if __name__=="__main__":
+    unittest.main()
+```
+
+### `worker/cadastro_dna/test_guarda_validar_cpf.py`
+```python
+"""Testes offline: nao permitir clique baseado apenas na posicao do icone."""
+import tempfile
+import unittest
+from pathlib import Path
+
+from .guarda_validar_cpf import (
+    AssinaturaValidada, CliqueBloqueado, validar_alvo,
+)
+
+
+class MockBotao:
+    def __init__(self, signature=None, enabled=True):
+        self.signature=signature
+        self.enabled=enabled
+    def is_visible(self): return True
+    def is_enabled(self): return self.enabled
+    def get_attribute(self,name): return self.signature if name=="ng-click" else None
+    def element_handle(self): return self
+    def evaluate(self,code,other): return self is other
+
+
+class MockLocators:
+    def __init__(self, buttons):
+        self.buttons=buttons
+    def count(self): return len(self.buttons)
+    def nth(self,index): return self.buttons[index]
+    @property
+    def first(self): return self.buttons[0]
+
+
+class MockLinha:
+    def __init__(self,buttons): self.buttons=buttons
+    def count(self): return 1
+    def locator(self,selector):
+        if selector.startswith("button, a"):
+            return MockLocators(self.buttons)
+        return MockLocators([x for x in self.buttons if x.signature=="validarCpf()"])
+
+
+class GuardaTests(unittest.TestCase):
+    def setUp(self):
+        self.botoes=[MockBotao() for _ in range(7)]
+        self.botoes[2].signature="validarCpf()"
+        self.linha=MockLinha(self.botoes)
+        self.assinatura=AssinaturaValidada("ng-click","validarCpf()",True)
+
+    def test_indice_tres_confirmado_com_assinatura(self):
+        alvo=validar_alvo(self.linha,self.assinatura,identidade_confirmada=True)
+        self.assertIs(alvo,self.botoes[2])
+
+    def test_nao_homologado_bloqueia(self):
+        with self.assertRaises(CliqueBloqueado):
+            validar_alvo(self.linha,AssinaturaValidada("ng-click","validarCpf()"),
+                         identidade_confirmada=True)
+
+    def test_identidade_ambigua_bloqueia(self):
+        with self.assertRaises(CliqueBloqueado):
+            validar_alvo(self.linha,self.assinatura,identidade_confirmada=False)
+
+    def test_icone_trocou_de_posicao_bloqueia(self):
+        self.botoes[2].signature=None
+        self.botoes[3].signature="validarCpf()"
+        with self.assertRaises(CliqueBloqueado):
+            validar_alvo(self.linha,self.assinatura,identidade_confirmada=True)
+
+    def test_icone_desabilitado_bloqueia(self):
+        self.botoes[2].enabled=False
+        with self.assertRaises(CliqueBloqueado):
+            validar_alvo(self.linha,self.assinatura,identidade_confirmada=True)
+
+    def test_somente_seis_icones_bloqueia(self):
+        self.botoes.pop()
+        with self.assertRaises(CliqueBloqueado):
+            validar_alvo(self.linha,self.assinatura,identidade_confirmada=True)
+
+    def test_registra_log_sem_dados_pessoais(self):
+        with tempfile.TemporaryDirectory() as td:
+            log=Path(td)/"guard.jsonl"
+            with self.assertRaises(CliqueBloqueado):
+                validar_alvo(self.linha,None,identidade_confirmada=True,arquivo_log=log)
+            txt=log.read_text(encoding="utf-8")
+            self.assertIn("assinatura_nao_homologada",txt)
+            self.assertIn('"clique_executado": false',txt)
+
+
+if __name__=="__main__":
+    unittest.main()
+```
+
+### `worker/cadastro_dna/test_homologacao_unificada.py`
+```python
+"""Testes offline de validacao das duas capturas estruturais."""
+import unittest
+from .homologacao_unificada import confirmar_opcoes, DiagnosticoInconclusivo
+
+
+def exemplo(perfil="Consultor",subperfil="Consultor 2"):
+    return {
+        "situacao":"estrutura_lida",
+        "estrutura":{"botao_cadastrar":1,"selects":[
+            {"opcoes_reconhecidas":["Consultor","Supervisor","Caixa","SAF"],
+             "selecionado_reconhecido":perfil},
+            {"opcoes_reconhecidas":[subperfil,"Supervisor 1" if subperfil=="Supervisor 2" else "Consultor 1"],
+             "selecionado_reconhecido":subperfil}
+        ]}
+    }
+
+
+class TesteUnificada(unittest.TestCase):
+    def test_consultor(self):
+        confirmar_opcoes(exemplo(),"Consultor","Consultor 2")
+
+    def test_supervisor(self):
+        confirmar_opcoes(exemplo("Supervisor","Supervisor 2"),"Supervisor","Supervisor 2")
+
+    def test_perfil_errado(self):
+        with self.assertRaises(DiagnosticoInconclusivo):
+            confirmar_opcoes(exemplo("Supervisor","Consultor 2"),"Consultor","Consultor 2")
+
+    def test_subperfil_errado(self):
+        with self.assertRaises(DiagnosticoInconclusivo):
+            confirmar_opcoes(exemplo("Supervisor","Supervisor 1"),"Supervisor","Supervisor 2")
+
+    def test_botao_duplo(self):
+        data=exemplo()
+        data["estrutura"]["botao_cadastrar"]=2
+        with self.assertRaises(DiagnosticoInconclusivo):
+            confirmar_opcoes(data,"Consultor","Consultor 2")
+
+
+if __name__=="__main__":
+    unittest.main()
+```
+
+### `worker/cadastro_dna/test_inspecao_validar_cpf.py`
+```python
+"""Testa a filtragem privada e as regras do novo inspetor de 7 icones."""
+import unittest
+
+from .inspecao_validar_cpf import _safe_ident, _safe_classes, ler_barras
+
+
+class FrameFalso:
+    def evaluate(self, script):
+        assert "querySelectorAll" in script
+        icons=[{"tag":"button","id":"","ng_model":"","ng_click_funcao":"",
+                "classe_icone":"fa fa-square","rotulo_validar_cpf":False,
+                "visivel":True,"desabilitado":False} for _ in range(7)]
+        icons[2].update({"ng_click_funcao":"usuario.validarCpf",
+                         "classe_icone":"fa fa-refresh",
+                         "desabilitado":True})
+        return {"quantidade_barras":1,"barras":[{"icones":icons}]}
+
+
+class InspetorTerceiroIconeTests(unittest.TestCase):
+    def test_sete_icones_e_terceiro(self):
+        result=ler_barras(FrameFalso())
+        self.assertEqual(result["quantidade_barras"],1)
+        self.assertEqual(result["barras"][0]["terceiro_indice"],2)
+        self.assertEqual(result["barras"][0]["icones"][2]["ng_click_funcao"],"usuario.validarCpf")
+        self.assertTrue(result["barras"][0]["icones"][2]["desabilitado"])
+        self.assertTrue(result["nenhum_clique"])
+
+    def test_rejeita_conteudo_dinamico(self):
+        self.assertEqual(_safe_ident("usuario.validarCpf"),"usuario.validarCpf")
+        self.assertEqual(_safe_ident("cpf=12345678909;"),"")
+        self.assertEqual(_safe_classes("fa fa-refresh cpf=12345678909;"),["fa","fa-refresh"])
+
+
+if __name__=="__main__":
+    unittest.main()
+```
+
+### `worker/cadastro_dna/test_mapeamento_campos.py`
+```python
+"""Teste de leitura: apenas metadados, sem acessar valores do formulario."""
+import unittest
+from .mapeamento_campos import mapear_campos, ROTULOS
+
+
+class FakeLocator:
+    def __init__(self, attributes=None, count=1):
+        self.attributes=attributes or {}
+        self._count=count
+    def count(self):
+        return self._count
+    def evaluate(self, _js):
+        return self.attributes
+
+
+class FakeFrame:
+    def get_by_label(self, label, exact=False):
+        assert exact is True and label in ROTULOS
+        return FakeLocator({"tag":"input","type":"text","id":"nome","name":"campoNome","ng_model":"usuario.nome"})
+    def locator(self, selector):
+        assert selector == '[ng-model="usuario.acessoSso"], [data-ng-model="usuario.acessoSso"]'
+        return FakeLocator({"tag":"input","type":"checkbox","id":"sso"},1)
+
+
+class MapeamentoTests(unittest.TestCase):
+    def test_mapeia_apenas_atributos(self):
+        result=mapear_campos(FakeFrame())
+        self.assertTrue(result["sem_valores_pessoais"])
+        self.assertTrue(result["sem_escrita"])
+        self.assertEqual(result["sso_ng_model"]["quantidade"],1)
+        self.assertEqual(result["campos"]["Nome:"]["identificadores"]["ng_model"],"usuario.nome")
+        self.assertNotIn("value",str(result).lower())
+
+
+if __name__=="__main__":
+    unittest.main()
+```
+
+### `worker/cadastro_dna/test_monitor.py`
+```python
+"""Testes offline para validar sem executar cadastro real."""
+import unittest
+from datetime import datetime, timedelta, timezone
+from .monitor import Sinal, Observacao, decidir, observacao_de_consulta_identidade
+
+NOW = datetime(2026, 11, 12, 12, 0, tzinfo=timezone.utc)
+LIMITE = NOW + timedelta(minutes=10)
+
+
+class MonitorTest(unittest.TestCase):
+    def test_ativo_exige_prova_cpf(self):
+        obs=Observacao(True,True,False,Sinal.ATIVO)
+        self.assertEqual(decidir(obs,limite=LIMITE,agora=NOW)[0], "aguardando_validacao")
+
+    def test_ativo_com_todas_as_provas(self):
+        obs=Observacao(True,True,True,Sinal.ATIVO)
+        self.assertEqual(decidir(obs,limite=LIMITE,agora=NOW)[0], "ativo")
+
+    def test_conta_ativa_nao_prova_validacao_cpf(self):
+        obs=observacao_de_consulta_identidade({"status":"trinca_consistente_na_tela","contas_mesmo_cpf":1})
+        self.assertFalse(obs.validacao_cpf_confirmada)
+        self.assertEqual(decidir(obs,limite=LIMITE,agora=NOW)[0], "aguardando_validacao")
+
+    def test_ambiguo_exige_revisao(self):
+        self.assertEqual(decidir(Observacao(False,False,False,Sinal.AMBIGUO),
+                                limite=LIMITE,agora=NOW)[0],"revisao")
+
+    def test_prazo_expirado_revisao_sem_nova_escrita(self):
+        self.assertEqual(decidir(Observacao(True,True,False,Sinal.PENDENTE),
+                                limite=LIMITE,agora=LIMITE)[0],"revisao")
+
+    def test_erro_so_dna_confirmado(self):
+        self.assertEqual(decidir(Observacao(True,False,False,Sinal.ERRO,"CPF recusado"),
+                                limite=LIMITE,agora=NOW)[0],"erro")
+
+    def test_nao_aceita_data_ingenua(self):
+        with self.assertRaises(ValueError):
+            decidir(Observacao(True,False,False,Sinal.PENDENTE),
+                    limite=datetime(2026,11,12),agora=NOW)
+
+
+if __name__ == "__main__":
+    unittest.main()
+```
+
+### `worker/cadastro_dna/test_perfis.py`
+```python
+"""Regressao do padrao oficial de subperfis de cadastro."""
+import unittest
+from .perfis import SUBPERFIL_OFICIAL, Perfil, ROTULO_DNA, subperfil_oficial, verificar_subperfil
+
+
+class TestPerfisCadastro(unittest.TestCase):
+    def test_consultor(self):
+        self.assertEqual(subperfil_oficial("CONSULTOR"), "CONSULTOR_2")
+        self.assertEqual(ROTULO_DNA["CONSULTOR_2"], "Consultor 2")
+
+    def test_supervisor(self):
+        self.assertEqual(subperfil_oficial("SUPERVISOR"), "SUPERVISOR_2")
+        self.assertEqual(ROTULO_DNA["SUPERVISOR_2"], "Supervisor 2")
+
+    def test_so_duas_opcoes(self):
+        self.assertEqual(set(SUBPERFIL_OFICIAL), {Perfil.CONSULTOR, Perfil.SUPERVISOR})
+
+    def test_nao_aceita_subperfis_alternativos(self):
+        for profile, sub in [
+            ("CONSULTOR","CONSULTOR_1"),("CONSULTOR","CONSULTOR_3"),
+            ("CONSULTOR","CONSULTOR_B2C"),("CONSULTOR","CONSULTOR_HIBRIDO"),
+            ("SUPERVISOR","SUPERVISOR_1")
+        ]:
+            with self.subTest(profile=profile, sub=sub):
+                self.assertFalse(verificar_subperfil(profile,sub))
+
+    def test_outros_perfis_rejeitados(self):
+        for profile in ("CAIXA","SAF","",None,"consultor","SUPERVISOR_1"):
+            with self.subTest(profile=profile):
+                with self.assertRaises(ValueError):
+                    subperfil_oficial(profile)
+
+
+if __name__ == "__main__":
+    unittest.main()
+```
+
+### `worker/cadastro_dna/test_preflight_perfil.py`
+```python
+"""Preflight validado com estrutura reduzida dos dois relatorios DNA."""
+import unittest
+from copy import deepcopy
+from .preflight_perfil import verificar_relatorio
+from .contrato_formulario import EstruturaInsegura
+
+
+def exemplo(perfil):
+    consulta = perfil == "CONSULTOR"
+    nome = "Consultor" if consulta else "Supervisor"
+    sub = "Consultor 2" if consulta else "Supervisor 2"
+    opcoes = (["Consultor 1", "Consultor 2", "Consultor 3", "Consultor B2C",
+                "Consultor Híbrido"] if consulta else ["Supervisor 1", "Supervisor 2"])
+    return {
+      "situacao":"estrutura_lida","formulario":"manutencao_usuario_novo",
+      "estrutura":{
+        "botao_cadastrar":1,
+        "campos":{key:1 for key in ("Nome:","CPF:","Data de Nascimento:","E-mail:",
+                  "Telefone Celular:","Perfil:","Sub Perfil:")},
+        "selects":[
+            {"identificadores":{"id":"perfilVenda","ng-model":"usuario.perfilVenda.id"},
+             "opcoes_reconhecidas":["Caixa","Consultor","SAF","Supervisor"],
+             "selecionado_reconhecido":nome},
+            {"identificadores":{"id":"subPerfilVenda","ng-model":"usuario.subPerfilVenda.id"},
+             "opcoes_reconhecidas":opcoes,"selecionado_reconhecido":sub}
+        ]}}
+
+
+class PreflightTest(unittest.TestCase):
+    def test_consultor(self):
+        report=verificar_relatorio(exemplo("CONSULTOR"),"CONSULTOR")
+        self.assertEqual(report.subperfil,"Consultor 2")
+        self.assertFalse(report.autorizacao_cadastrar)
+
+    def test_supervisor(self):
+        report=verificar_relatorio(exemplo("SUPERVISOR"),"SUPERVISOR")
+        self.assertEqual(report.subperfil,"Supervisor 2")
+        self.assertFalse(report.autorizacao_cadastrar)
+
+    def test_troca_de_perfil(self):
+        with self.assertRaises(EstruturaInsegura):
+            verificar_relatorio(exemplo("CONSULTOR"),"SUPERVISOR")
+
+    def test_ng_model_divergente(self):
+        dado=exemplo("CONSULTOR")
+        dado["estrutura"]["selects"][0]["identificadores"]["ng-model"]="outro"
+        with self.assertRaises(EstruturaInsegura):
+            verificar_relatorio(dado,"CONSULTOR")
+
+    def test_nao_aceita_duplo_cadastrar(self):
+        dado=exemplo("SUPERVISOR")
+        dado["estrutura"]["botao_cadastrar"]=2
+        with self.assertRaises(EstruturaInsegura):
+            verificar_relatorio(dado,"SUPERVISOR")
+
+
+if __name__=="__main__":
+    unittest.main()
+```
+
+### `worker/cadastro_dna/test_sql_invariantes.py`
+```python
+"""Verificacao esttica de invariantes SQL; nao substitui teste em PostgreSQL."""
+from pathlib import Path
+import unittest
+
+SQL = (Path(__file__).resolve().parents[2] / "cadastro-dna" / "schema_seguro_v02.sql").read_text(encoding="utf-8")
+
+
+class TesteSql(unittest.TestCase):
+    def test_um_commit_uma_transacao(self):
+        self.assertEqual(SQL.count("\ncommit;"),1)
+        self.assertEqual(SQL.count("\nbegin;"),1)
+
+    def test_delimitadores_plpgsql_em_pares(self):
+        self.assertEqual(SQL.count("as $"),6)
+        self.assertEqual(SQL.count("$;"),6)
+        self.assertNotIn("as $\n",SQL)
+
+    def test_configuracao_bloqueada_por_padrao(self):
+        self.assertIn("values('cadastro_ativo',false)",SQL)
+        self.assertIn("CADASTRO_DESABILITADO",SQL)
+
+    def test_subperfil_oficial_e_consistente(self):
+        self.assertIn("subperfil text not null check(subperfil in ('CONSULTOR_2','SUPERVISOR_2'))",SQL)
+        self.assertIn("dna_cadastro_perfil_subperfil_oficial",SQL)
+        self.assertIn("when 'CONSULTOR' then 'CONSULTOR_2'",SQL)
+        self.assertIn("when 'SUPERVISOR' then 'SUPERVISOR_2'",SQL)
+
+    def test_controle_cpf(self):
+        self.assertIn("create unique index if not exists dna_cadastro_cpf_unico",SQL)
+
+    def test_isolamento_esquema(self):
+        self.assertIn("dna_cadastro_private.dna_cadastro_payloads",SQL)
+        self.assertNotIn("mop_private.",SQL)
+
+    def test_sem_reserva_incerteza(self):
+        self.assertIn("where s.status='na_fila'",SQL)
+        self.assertIn("where s.status='aguardando_validacao'",SQL)
+        self.assertIn("reserva_expirada",SQL)
+
+    def test_eventos_append_only(self):
+        self.assertIn("trg_dna_cadastro_evento_imutavel",SQL)
+        self.assertIn("grant select,insert on public.dna_cadastro_eventos",SQL)
+
+
+if __name__=="__main__":
+    unittest.main()
+```
+
