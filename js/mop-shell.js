@@ -6,6 +6,7 @@
   const ADMIN_EMAIL = 'crm@credvix.com';
   const VERSION = 'v2026-10-23-02';
   const isDna = /(?:^|\/)perfis-dna\.html$/i.test(location.pathname);
+  const isCadastro = /(?:^|\/)cadastro-colaboradores\.html$/i.test(location.pathname);
   const routes = ['gestao', 'acompanhamento', 'auditoria'];
   const menu = Object.freeze([
     {id:'app',label:'Nova solicitação',icon:'⌂',href:'app.html'},
