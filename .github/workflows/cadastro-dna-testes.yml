@@ -7,6 +7,7 @@ on:
       - "css/cadastro-colaboradores.css"
       - "js/cadastro-colaboradores.js"
       - "js/mop-shell.js"
+      - "tests/test_mop_shell_cadastro.cjs"
       - "worker/cadastro_dna/**"
       - ".github/workflows/cadastro-dna-testes.yml"
   workflow_dispatch:
@@ -31,6 +32,7 @@ jobs:
         run: |
           node --check js/cadastro-colaboradores.js
           node --check js/mop-shell.js
+          node tests/test_mop_shell_cadastro.cjs
           node --check cadastro-dna/formulario.js
       - name: Verificar alteracoes sem whitespace incorreto
         run: git diff --check
