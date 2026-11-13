@@ -37,6 +37,12 @@ class TesteSql(unittest.TestCase):
         self.assertIn("where s.status='aguardando_validacao'",SQL)
         self.assertIn("reserva_expirada",SQL)
 
+    def test_reserva_validacao_retorna_todas_as_sete_colunas(self):
+        self.assertIn(
+            "return query select s.id,v_token,p.cifra_base64,s.perfil,s.subperfil,s.lojas,s.validacao_limite",
+            SQL,
+        )
+
     def test_eventos_append_only(self):
         self.assertIn("trg_dna_cadastro_evento_imutavel",SQL)
         self.assertIn("grant select,insert on public.dna_cadastro_eventos",SQL)
