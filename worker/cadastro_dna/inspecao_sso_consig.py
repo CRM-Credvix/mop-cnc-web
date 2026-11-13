@@ -61,7 +61,7 @@ def resumir_estrutura(estrutura: dict) -> dict:
 def inspecionar(cdp: str = "http://127.0.0.1:9222") -> dict:
     # Reaproveita o fail-closed do inspetor ja homologado: exatamente um
     # formulario com botao Cadastrar, em URL DNA permitida e CDP local.
-        import sys
+    import sys
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from dna_diagnostico import _verify_local_cdp, allowed_url
     from playwright.sync_api import sync_playwright
