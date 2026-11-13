@@ -1,56 +1,83 @@
-"""Descoberta somente leitura da acao Validar CPF na Manutencao do DNA.
+"""Identificacao SOMENTE LEITURA do terceiro icone na barra de 7 acoes.
 
-Somente atributos tecnicos de elementos cuja ROTULAGEM PUBLICA contenha
-"validar" e "cpf". Nao le tabela de usuarios, nomes, CPF nem links/URLs.
+Nao le valores de campos, texto de linhas, CPF, nomes ou URLs.
+Nao clica, nao valida CPF e nunca habilita gravacao.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
-from urllib.parse import urlsplit
 
-from .contrato_formulario import atributo_publicavel
+JS_INSPECAO = r"""() => {
+  const css='button,a,[role="button"],input[type="button"],input[type="submit"]';
+  const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+  const visivel=e=>!!e.getClientRects().length;
+  const technical=e=>{
+    const raw=e.getAttribute('ng-click') || e.getAttribute('data-ng-click') || '';
+    // Exporta SOMENTE nome de funcao sem argumentos de usuarios.
+    const func=raw.match(/^\s*([a-zA-Z_$][\w$]*(?:\.[a-zA-Z_$][\w$]*){0,5})\s*\(/);
+    const labels=[e.getAttribute('title'),e.getAttribute('aria-label'),
+                  e.getAttribute('data-original-title')];
+    return {
+      tag:e.tagName.toLowerCase(), id:e.getAttribute('id')||'',
+      ng_model:e.getAttribute('ng-model')||'',
+      ng_click_funcao:func?func[1]:'',
+      classe_icone:(e.querySelector('i,svg')?.getAttribute('class')||''),
+      rotulo_validar_cpf:labels.some(t=>norm(t).includes('validar')&&norm(t).includes('cpf')),
+      visivel:visivel(e), desabilitado:!!e.disabled || e.getAttribute('aria-disabled')==='true'
+    };
+  };
+  const linhas=[...document.querySelectorAll('tr')].filter(visivel);
+  const barras=[];
+  for (const linha of linhas) {
+    const celulas=[...linha.querySelectorAll(':scope > td')];
+    for (const celula of celulas) {
+      const acoes=[...celula.querySelectorAll(css)].filter(visivel);
+      if (acoes.length!==7) continue;
+      const descricoes=acoes.map(technical);
+      barras.push({quantidade_icones:acoes.length,icones:descricoes,
+        terceiro_indice:2,terceiro:descricoes[2]});
+    }
+  }
+  return {barras:barras.slice(0,10),quantidade_barras:barras.length,
+          apenas_metadados:true,clicou:false};
+}"""
 
 
-def ler_acoes(frame) -> dict:
-    js = """() => {
-      const normal = s => String(s||'').normalize('NFD')
-        .replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/\\s+/g,' ').trim();
-      const nodes = [...document.querySelectorAll(
-        'button, a, input[type="button"], input[type="submit"], [role="button"]'
-      )];
-      return nodes.filter(el => {
-        const labels=[el.getAttribute('aria-label'),el.getAttribute('title'),
-                      el.getAttribute('data-original-title'),el.textContent,
-                      (el.matches('input')?el.getAttribute('value'):'')];
-        return labels.some(v => {
-          const t=normal(v);
-          return t.length <= 80 && t.includes('validar') && t.includes('cpf');
-        });
-      }).slice(0,20).map(el => ({
-        tag:el.tagName.toLowerCase(), type:el.getAttribute('type')||'',
-        id:el.getAttribute('id')||'', name:el.getAttribute('name')||'',
-        title:el.getAttribute('title')||'', aria:el.getAttribute('aria-label')||'',
-        ng_click:el.getAttribute('ng-click')||el.getAttribute('data-ng-click')||'',
-        visible:!!(el.getClientRects().length), disabled:!!el.disabled
-      }));
-    }"""
-    items=[]
-    for obj in frame.evaluate(js):
-        item={k:atributo_publicavel(obj.get(k)) for k in
-              ("tag","type","id","name","ng_click")}
-        # Do not publish free text, even if UI has user-derived title content.
-        item.update({"rotulo_title_compativel": "cpf" in obj.get("title","").lower()
-                     and "validar" in obj.get("title","").lower(),
-                     "rotulo_aria_compativel": "cpf" in obj.get("aria","").lower()
-                     and "validar" in obj.get("aria","").lower(),
-                     "visivel":bool(obj.get("visible")),
-                     "desabilitado":bool(obj.get("disabled"))})
-        items.append(item)
-    return {"quantidade_candidatos":len(items),"candidatos":items,
-            "clicou":False,"leu_dados_pessoais":False}
+def _safe_ident(text: object, maxlen=90) -> str:
+    return text if isinstance(text,str) and len(text)<=maxlen and re.fullmatch(r"[A-Za-z_$][A-Za-z0-9_.$:-]*",text) else ""
+
+
+def _safe_classes(text: object) -> list[str]:
+    # Lista de tokens CSS sem conteudo dinamico.
+    return [t for t in str(text or "").split()[:8] if _safe_ident(t,64)]
+
+
+def ler_barras(frame) -> dict:
+    raw=frame.evaluate(JS_INSPECAO)
+    result=[]
+    for b in raw.get("barras",[]):
+        icones=[]
+        for item in b.get("icones",[]):
+            icones.append({
+                "tag":_safe_ident(item.get("tag")),
+                "id":_safe_ident(item.get("id")),
+                "ng_model":_safe_ident(item.get("ng_model")),
+                "ng_click_funcao":_safe_ident(item.get("ng_click_funcao")),
+                "classes_icone":_safe_classes(item.get("classe_icone")),
+                "rotulo_validar_cpf":bool(item.get("rotulo_validar_cpf")),
+                "visivel":bool(item.get("visivel")),
+                "desabilitado":bool(item.get("desabilitado")),
+            })
+        if len(icones)==7:
+            result.append({"quantidade_icones":7,"terceiro_indice":2,
+                           "icones":icones})
+    return {"quantidade_barras":int(raw.get("quantidade_barras",0)),
+            "barras":result,
+            "nenhum_clique":True,"nenhum_dado_pessoal":True}
 
 
 def inspecionar(cdp: str) -> dict:
@@ -58,37 +85,41 @@ def inspecionar(cdp: str) -> dict:
     from dna_diagnostico import _verify_local_cdp, allowed_url
     from playwright.sync_api import sync_playwright
     _verify_local_cdp(cdp)
-    with sync_playwright() as p:
-        browser=p.chromium.connect_over_cdp(cdp)
+    with sync_playwright() as playwright:
+        browser=playwright.chromium.connect_over_cdp(cdp)
         try:
-            frames=[]
-            for ctx in browser.contexts:
-                for page in ctx.pages:
-                    for frame in page.frames:
-                        if allowed_url(frame.url):
-                            frames.append(frame)
-            if len(frames)!=1:
-                return {"situacao":"revisao","motivo":"Esperado um frame DNA unico."}
-            info=ler_acoes(frames[0])
-            return {"situacao":"acao_candidata" if info["quantidade_candidatos"]==1 else "revisao",
-                    "acao":"validar_cpf","estrutura":info}
+            valid=[frame for ctx in browser.contexts for page in ctx.pages
+                   for frame in page.frames if allowed_url(frame.url)]
+            if len(valid)!=1:
+                return {"situacao":"revisao","motivo":"frame_dna_nao_unico",
+                        "quantidade_frames":len(valid)}
+            info=ler_barras(valid[0])
+            # Mesmo com apenas uma barra, o 3o icone requer homologacao.
+            return {"situacao":"estrutura_lida" if info["quantidade_barras"] else "revisao",
+                    "acao":"identificar_terceiro_icone","estrutura":info,
+                    "assinatura_homologada":False}
         finally:
             browser.close()
 
 
 def main() -> int:
-    parser=argparse.ArgumentParser(description="Inspecao da acao Validar CPF sem cliques")
+    parser=argparse.ArgumentParser(description="Ler barra de 7 icones sem clicar")
     parser.add_argument("--cdp",default="http://127.0.0.1:9222")
-    parser.add_argument("--saida",type=Path,default=Path("RELATORIOS_CADASTRO_DNA/validar_cpf.json"))
+    parser.add_argument("--saida",type=Path,
+                        default=Path("RELATORIOS_CADASTRO_DNA/validar_cpf_terceiro_icone.json"))
     args=parser.parse_args()
     try:
-        resultado=inspecionar(args.cdp)
+        result=inspecionar(args.cdp)
         args.saida.parent.mkdir(parents=True,exist_ok=True)
-        args.saida.write_text(json.dumps(resultado,indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
-        print("Resultado:",resultado["situacao"],"| Arquivo:",args.saida)
-        return 0 if resultado["situacao"]=="acao_candidata" else 2
-    except Exception:
-        print("Inspecao inconclusiva. Nenhuma alteracao no DNA.")
+        args.saida.write_text(json.dumps(result,indent=2,ensure_ascii=False)+"\n",
+                              encoding="utf-8")
+        print("Situacao:",result["situacao"])
+        print("Relatorio:",args.saida)
+        print("Nao foi feito nenhum clique.")
+        return 0 if result["situacao"]=="estrutura_lida" else 2
+    except Exception as exc:
+        print("Nao foi possivel inspecionar:",type(exc).__name__)
+        print("Nenhum clique executado.")
         return 2
 
 
