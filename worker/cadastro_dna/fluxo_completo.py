@@ -94,9 +94,17 @@ def executar_controlado(pedido: Pedido, gateway, *, autorizado: bool=False):
     gateway.garantir_primeira_funcao_consig_marcada()
     gateway.confirmar_loja(pedido.loja)
     gateway.cadastrar_uma_vez()
-    gateway.confirmar_cadastro_concluido()
+    # Somente True literal confirma o retorno do DNA. None, textos e outros
+    # resultados ambiguos bloqueiam qualquer passo adicional.
+    if gateway.confirmar_cadastro_concluido() is not True:
+        raise ExecucaoBloqueada(
+            "Cadastro nao confirmado; revisar no DNA antes de tentar novamente."
+        )
     gateway.abrir_usuario_manutencao()
     gateway.pesquisar_nome_completo(pedido.nome)
-    gateway.confirmar_identidade_inequivoca(pedido)
+    if gateway.confirmar_identidade_inequivoca(pedido) is not True:
+        raise ExecucaoBloqueada(
+            "Identidade nao confirmada; validacao CPF bloqueada."
+        )
     gateway.validar_cpf_uma_vez()
     return gateway.consultar_situacao_cpf()
