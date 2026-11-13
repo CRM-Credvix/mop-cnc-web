@@ -9,11 +9,18 @@ def pedido(perfil="CONSULTOR"):
 
 
 class GatewayFake:
-    def __init__(self):
+    def __init__(self, *, cadastro_confirmado=True, identidade_confirmada=True):
         self.calls=[]
+        self.cadastro_confirmado=cadastro_confirmado
+        self.identidade_confirmada=identidade_confirmada
+
     def __getattr__(self,name):
         def call(*a):
             self.calls.append(name)
+            if name=="confirmar_cadastro_concluido":
+                return self.cadastro_confirmado
+            if name=="confirmar_identidade_inequivoca":
+                return self.identidade_confirmada
             return "nao_confirmado"
         return call
 
@@ -35,6 +42,24 @@ class FluxoTests(unittest.TestCase):
         with self.assertRaises(ExecucaoBloqueada):
             executar_controlado(pedido(),gateway)
         self.assertEqual(gateway.calls,[])
+
+    def test_cadastro_sem_confirmacao_interrompe_antes_manutencao(self):
+        for resposta in (None, False, "nao_confirmado", 1):
+            with self.subTest(resposta=resposta):
+                gateway=GatewayFake(cadastro_confirmado=resposta)
+                with self.assertRaises(ExecucaoBloqueada):
+                    executar_controlado(pedido(), gateway, autorizado=True)
+                self.assertNotIn("abrir_usuario_manutencao",gateway.calls)
+                self.assertNotIn("validar_cpf_uma_vez",gateway.calls)
+
+    def test_identidade_ambigua_interrompe_antes_validacao(self):
+        for resposta in (None, False, "sim", 1):
+            with self.subTest(resposta=resposta):
+                gateway=GatewayFake(identidade_confirmada=resposta)
+                with self.assertRaises(ExecucaoBloqueada):
+                    executar_controlado(pedido(), gateway, autorizado=True)
+                self.assertNotIn("validar_cpf_uma_vez",gateway.calls)
+                self.assertNotIn("consultar_situacao_cpf",gateway.calls)
 
     def test_ordem_com_gateway_falso(self):
         gateway=GatewayFake()
