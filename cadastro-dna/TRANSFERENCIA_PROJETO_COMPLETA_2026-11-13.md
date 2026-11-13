@@ -807,3 +807,557 @@ if __name__=="__main__":
     raise SystemExit(main())
 ```
 
+### `worker/cadastro_dna/inspecao_validar_cpf.py`
+```python
+"""Identificacao SOMENTE LEITURA do terceiro icone na barra de 7 acoes.
+
+Nao le valores de campos, texto de linhas, CPF, nomes ou URLs.
+Nao clica, nao valida CPF e nunca habilita gravacao.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import re
+import sys
+from pathlib import Path
+
+JS_INSPECAO = r"""() => {
+  const css='button,a,[role="button"],input[type="button"],input[type="submit"]';
+  const norm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+  const visivel=e=>!!e.getClientRects().length;
+  const technical=e=>{
+    const raw=e.getAttribute('ng-click') || e.getAttribute('data-ng-click') || '';
+    // Exporta SOMENTE nome de funcao sem argumentos de usuarios.
+    const func=raw.match(/^\s*([a-zA-Z_$][\w$]*(?:\.[a-zA-Z_$][\w$]*){0,5})\s*\(/);
+    const labels=[e.getAttribute('title'),e.getAttribute('aria-label'),
+                  e.getAttribute('data-original-title')];
+    return {
+      tag:e.tagName.toLowerCase(), id:e.getAttribute('id')||'',
+      ng_model:e.getAttribute('ng-model')||'',
+      ng_click_funcao:func?func[1]:'',
+      classe_icone:(e.querySelector('i,svg')?.getAttribute('class')||''),
+      rotulo_validar_cpf:labels.some(t=>norm(t).includes('validar')&&norm(t).includes('cpf')),
+      visivel:visivel(e), desabilitado:!!e.disabled || e.getAttribute('aria-disabled')==='true'
+    };
+  };
+  const linhas=[...document.querySelectorAll('tr')].filter(visivel);
+  const barras=[];
+  for (const linha of linhas) {
+    const celulas=[...linha.querySelectorAll(':scope > td')];
+    for (const celula of celulas) {
+      const acoes=[...celula.querySelectorAll(css)].filter(visivel);
+      if (acoes.length!==7) continue;
+      const descricoes=acoes.map(technical);
+      barras.push({quantidade_icones:acoes.length,icones:descricoes,
+        terceiro_indice:2,terceiro:descricoes[2]});
+    }
+  }
+  return {barras:barras.slice(0,10),quantidade_barras:barras.length,
+          apenas_metadados:true,clicou:false};
+}"""
+
+
+def _safe_ident(text: object, maxlen=90) -> str:
+    return text if isinstance(text,str) and len(text)<=maxlen and re.fullmatch(r"[A-Za-z_$][A-Za-z0-9_.$:-]*",text) else ""
+
+
+def _safe_classes(text: object) -> list[str]:
+    # Lista de tokens CSS sem conteudo dinamico.
+    return [t for t in str(text or "").split()[:8] if _safe_ident(t,64)]
+
+
+def ler_barras(frame) -> dict:
+    raw=frame.evaluate(JS_INSPECAO)
+    result=[]
+    for b in raw.get("barras",[]):
+        icones=[]
+        for item in b.get("icones",[]):
+            icones.append({
+                "tag":_safe_ident(item.get("tag")),
+                "id":_safe_ident(item.get("id")),
+                "ng_model":_safe_ident(item.get("ng_model")),
+                "ng_click_funcao":_safe_ident(item.get("ng_click_funcao")),
+                "classes_icone":_safe_classes(item.get("classe_icone")),
+                "rotulo_validar_cpf":bool(item.get("rotulo_validar_cpf")),
+                "visivel":bool(item.get("visivel")),
+                "desabilitado":bool(item.get("desabilitado")),
+            })
+        if len(icones)==7:
+            result.append({"quantidade_icones":7,"terceiro_indice":2,
+                           "icones":icones})
+    return {"quantidade_barras":int(raw.get("quantidade_barras",0)),
+            "barras":result,
+            "nenhum_clique":True,"nenhum_dado_pessoal":True}
+
+
+def inspecionar(cdp: str) -> dict:
+    sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+    from dna_diagnostico import _verify_local_cdp, allowed_url
+    from playwright.sync_api import sync_playwright
+    _verify_local_cdp(cdp)
+    with sync_playwright() as playwright:
+        browser=playwright.chromium.connect_over_cdp(cdp)
+        try:
+            valid=[frame for ctx in browser.contexts for page in ctx.pages
+                   for frame in page.frames if allowed_url(frame.url)]
+            if len(valid)!=1:
+                return {"situacao":"revisao","motivo":"frame_dna_nao_unico",
+                        "quantidade_frames":len(valid)}
+            info=ler_barras(valid[0])
+            # Mesmo com apenas uma barra, o 3o icone requer homologacao.
+            return {"situacao":"estrutura_lida" if info["quantidade_barras"] else "revisao",
+                    "acao":"identificar_terceiro_icone","estrutura":info,
+                    "assinatura_homologada":False}
+        finally:
+            browser.close()
+
+
+def main() -> int:
+    parser=argparse.ArgumentParser(description="Ler barra de 7 icones sem clicar")
+    parser.add_argument("--cdp",default="http://127.0.0.1:9222")
+    parser.add_argument("--saida",type=Path,
+                        default=Path("RELATORIOS_CADASTRO_DNA/validar_cpf_terceiro_icone.json"))
+    args=parser.parse_args()
+    try:
+        result=inspecionar(args.cdp)
+        args.saida.parent.mkdir(parents=True,exist_ok=True)
+        args.saida.write_text(json.dumps(result,indent=2,ensure_ascii=False)+"\n",
+                              encoding="utf-8")
+        print("Situacao:",result["situacao"])
+        print("Relatorio:",args.saida)
+        print("Nao foi feito nenhum clique.")
+        return 0 if result["situacao"]=="estrutura_lida" else 2
+    except Exception as exc:
+        print("Nao foi possivel inspecionar:",type(exc).__name__)
+        print("Nenhum clique executado.")
+        return 2
+
+
+if __name__=="__main__":
+    raise SystemExit(main())
+```
+
+### `worker/cadastro_dna/mapeamento_campos.py`
+```python
+"""Mapeia identificadores tecnicos do formulario DNA, sem ler valores.
+
+Nao executa acao sobre campos: apenas conta correspondencias e atributos
+estaticos de controles vinculados aos rotulos permitidos.
+"""
+from __future__ import annotations
+
+from .contrato_formulario import atributo_publicavel
+
+ROTULOS = (
+    "Nome:", "CPF:", "Data de Nascimento:", "E-mail:",
+    "Telefone Celular:", "Login IB Consig:", "Descrição uso Perfil:",
+    "Observação:", "Perfil:", "Sub Perfil:",
+)
+SSO_NG_MODEL = "usuario.acessoSso"
+
+
+def mapear_campos(frame) -> dict:
+    """Nao chama input_value, text_content, screenshot, fill nem click."""
+    campos = {}
+    for rotulo in ROTULOS:
+        locator = frame.get_by_label(rotulo, exact=True)
+        quantidade = locator.count()
+        item = {"quantidade": quantidade}
+        if quantidade == 1:
+            static = locator.evaluate("""el => ({
+              tag: el.tagName.toLowerCase(),
+              type: el.getAttribute('type') || '',
+              id: el.getAttribute('id') || '',
+              name: el.getAttribute('name') || '',
+              ng_model: el.getAttribute('ng-model') || el.getAttribute('data-ng-model') || ''
+            })""")
+            item["identificadores"] = {
+                k: atributo_publicavel(static.get(k)) for k in
+                ("tag", "type", "id", "name", "ng_model")
+            }
+        campos[rotulo] = item
+    sso = frame.locator('[ng-model="usuario.acessoSso"], [data-ng-model="usuario.acessoSso"]')
+    quantidade = sso.count()
+    controle_sso = {"quantidade": quantidade}
+    if quantidade == 1:
+        static = sso.evaluate("""el => ({
+            tag: el.tagName.toLowerCase(),
+            type: el.getAttribute('type') || '',
+            id: el.getAttribute('id') || ''
+        })""")
+        controle_sso.update({
+            "tag": atributo_publicavel(static.get("tag")),
+            "tipo": atributo_publicavel(static.get("type")),
+            "id": atributo_publicavel(static.get("id")),
+        })
+    return {
+        "campos": campos,
+        "sso_ng_model": controle_sso,
+        "sem_valores_pessoais": True,
+        "sem_escrita": True,
+    }
+```
+
+### `worker/cadastro_dna/monitor.py`
+```python
+"""Monitor de validacao: status ATIVO exige identificacao unica E evidencia
+explicita do retorno da acao CPF. Consulta de conta ativa, sozinha, nao basta.
+Sem rede ou Playwright: recebe observacoes produzidas por adaptadores auditados.
+"""
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from enum import Enum
+
+
+class Sinal(str, Enum):
+    PENDENTE = "pendente"
+    ATIVO = "ativo"
+    ERRO = "erro"
+    AMBIGUO = "ambiguo"
+
+
+@dataclass(frozen=True)
+class Observacao:
+    identidade_unica: bool
+    situacao_usuario_ativo: bool
+    validacao_cpf_confirmada: bool
+    sinal: Sinal
+    motivo_publico: str = ""
+
+
+def decidir(observacao: Observacao, *, limite: datetime, agora: datetime | None = None):
+    """Retorna (estado, motivo), sem emitir cliques ou repetir cadastro."""
+    if agora is None:
+        agora = datetime.now(timezone.utc)
+    if agora.tzinfo is None or limite.tzinfo is None:
+        raise ValueError("Datas precisam de timezone.")
+    if observacao.sinal == Sinal.AMBIGUO:
+        return "revisao", "Identidade ou resultado ambiguo: conferir manualmente."
+    if observacao.sinal in (Sinal.ATIVO, Sinal.ERRO) and not observacao.identidade_unica:
+        return "revisao", "Resultado sem identidade unica: conferir manualmente."
+    if observacao.sinal == Sinal.ERRO:
+        return "erro", (observacao.motivo_publico or "Erro informado pelo DNA.")[:240]
+    if (observacao.sinal == Sinal.ATIVO and observacao.situacao_usuario_ativo
+            and observacao.validacao_cpf_confirmada):
+        return "ativo", "CPF validado e usuario ativo, identidade conferida."
+    if agora >= limite:
+        return "revisao", "Validacao sem confirmacao apos 10 minutos; revisar no DNA."
+    return "aguardando_validacao", "Aguardando confirmacao da validacao CPF."
+
+
+def observacao_de_consulta_identidade(consulta: dict) -> Observacao:
+    """A consulta existente prova a identidade na manutencao, mas NAO a acao CPF."""
+    status = str(consulta.get("status", ""))
+    identidade = status == "trinca_consistente_na_tela" and consulta.get("contas_mesmo_cpf") == 1
+    pendente = status == "nao_encontrado" and consulta.get("contas_mesmo_cpf") == 0
+    return Observacao(
+        identidade_unica=identidade,
+        situacao_usuario_ativo=identidade,
+        validacao_cpf_confirmada=False,
+        sinal=Sinal.PENDENTE if identidade or pendente else Sinal.AMBIGUO,
+    )
+```
+
+### `worker/cadastro_dna/perfis.py`
+```python
+"""Mapeamento OFICIAL exclusivo do NOVO Cadastro DNA.
+
+Os quatro modelos do modulo de padronizacao existente nao sao modificados.
+A escolha e derivada do perfil, nunca informada livremente pelo operador.
+"""
+from __future__ import annotations
+
+from enum import Enum
+
+
+class Perfil(str, Enum):
+    CONSULTOR = "CONSULTOR"
+    SUPERVISOR = "SUPERVISOR"
+
+
+SUBPERFIL_OFICIAL = {
+    Perfil.CONSULTOR: "CONSULTOR_2",
+    Perfil.SUPERVISOR: "SUPERVISOR_2",
+}
+
+ROTULO_DNA = {
+    "CONSULTOR_2": "Consultor 2",
+    "SUPERVISOR_2": "Supervisor 2",
+}
+
+
+def subperfil_oficial(perfil: str) -> str:
+    """Falha fechada para Caixa, SAF, Consultor 1/3/B2C/Hibrido e Supervisor 1."""
+    try:
+        return SUBPERFIL_OFICIAL[Perfil(perfil)]
+    except (ValueError, KeyError, TypeError) as exc:
+        raise ValueError("Perfil não autorizado para Cadastro DNA.") from exc
+
+
+def verificar_subperfil(perfil: str, subperfil: str) -> bool:
+    """Verifica correspondencia exata, sem conversao silenciosa."""
+    return subperfil_oficial(perfil) == subperfil
+```
+
+### `worker/cadastro_dna/preflight_perfil.py`
+```python
+"""Preflight de PERFIL e SUBPERFIL DNA - somente leitura.
+
+Validado contra relatorios de 12/11/2026. O preflight nao preenche dados,
+nao altera permissoes, nao salva e nunca clica Cadastrar.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+from .contrato_formulario import EstruturaInsegura
+
+PERFIL_ID = "perfilVenda"
+SUBPERFIL_ID = "subPerfilVenda"
+PERFIL_NG_MODEL = "usuario.perfilVenda.id"
+SUBPERFIL_NG_MODEL = "usuario.subPerfilVenda.id"
+PADRAO = {"CONSULTOR": ("Consultor", "Consultor 2"),
+          "SUPERVISOR": ("Supervisor", "Supervisor 2")}
+
+
+@dataclass(frozen=True)
+class Preflight:
+    perfil: str
+    subperfil: str
+    pronto_para_inspecao: bool = True
+    autorizacao_cadastrar: bool = False
+
+
+def verificar_relatorio(dados: dict, perfil_desejado: str) -> Preflight:
+    """Analisa exclusivamente metadados estruturais capturados pelo inspetor."""
+    if perfil_desejado not in PADRAO:
+        raise EstruturaInsegura("Perfil fora do padrao oficial.")
+    if not isinstance(dados, dict) or dados.get("situacao") != "estrutura_lida":
+        raise EstruturaInsegura("Captura invalida.")
+    if dados.get("formulario") != "manutencao_usuario_novo":
+        raise EstruturaInsegura("Formulario de inclusao nao reconhecido.")
+    estrutura = dados.get("estrutura") or {}
+    if estrutura.get("botao_cadastrar") != 1:
+        raise EstruturaInsegura("Botao Cadastrar ausente ou duplicado.")
+    for campo in ("Nome:", "CPF:", "Data de Nascimento:", "E-mail:",
+                  "Telefone Celular:", "Perfil:", "Sub Perfil:"):
+        if (estrutura.get("campos") or {}).get(campo) != 1:
+            raise EstruturaInsegura("Campo obrigatorio nao identificado: " + campo)
+    selects = estrutura.get("selects")
+    if not isinstance(selects, list) or len(selects) != 2:
+        raise EstruturaInsegura("Esperados dois selects identificados.")
+    por_id = {}
+    for item in selects:
+        identificadores = item.get("identificadores") or {}
+        element_id = identificadores.get("id")
+        if element_id in por_id:
+            raise EstruturaInsegura("Seletor duplicado.")
+        por_id[element_id] = item
+    if set(por_id) != {PERFIL_ID, SUBPERFIL_ID}:
+        raise EstruturaInsegura("Ids dos selects inesperados.")
+    if por_id[PERFIL_ID]["identificadores"].get("ng-model") != PERFIL_NG_MODEL:
+        raise EstruturaInsegura("Ng-model Perfil divergiu.")
+    if por_id[SUBPERFIL_ID]["identificadores"].get("ng-model") != SUBPERFIL_NG_MODEL:
+        raise EstruturaInsegura("Ng-model Subperfil divergiu.")
+    perfil, subperfil = PADRAO[perfil_desejado]
+    if por_id[PERFIL_ID].get("selecionado_reconhecido") != perfil:
+        raise EstruturaInsegura("Perfil selecionado divergiu.")
+    if por_id[SUBPERFIL_ID].get("selecionado_reconhecido") != subperfil:
+        raise EstruturaInsegura("Subperfil selecionado divergiu.")
+    if perfil not in (por_id[PERFIL_ID].get("opcoes_reconhecidas") or []):
+        raise EstruturaInsegura("Opcao de perfil indisponivel.")
+    if subperfil not in (por_id[SUBPERFIL_ID].get("opcoes_reconhecidas") or []):
+        raise EstruturaInsegura("Opcao de subperfil indisponivel.")
+    return Preflight(perfil, subperfil)
+```
+
+### `worker/cadastro_dna/requirements.txt`
+```text
+-r ../requirements_dna.txt
+cryptography==46.0.4
+```
+
+### `worker/cadastro_dna/selecionar_perfis.py`
+```python
+"""Selecao real do Perfil e Sub Perfil, isolada do envio do cadastro.
+
+Integra apenas os dois campos ja confirmados pelos diagnosticos. Nao clica
+em Cadastrar nem modifica Funcoes Consig. Requer aba autorizada e aberta.
+"""
+from __future__ import annotations
+
+from .contrato_formulario import EstruturaInsegura
+from .preflight_perfil import (
+    PADRAO, PERFIL_ID, SUBPERFIL_ID, PERFIL_NG_MODEL, SUBPERFIL_NG_MODEL,
+)
+
+
+def _select_unico(frame, selector: str, expected_model: str):
+    locator=frame.locator(selector)
+    if locator.count()!=1:
+        raise EstruturaInsegura("Campo de perfil ausente ou duplicado.")
+    current=locator.get_attribute("ng-model") or locator.get_attribute("data-ng-model")
+    if current!=expected_model:
+        raise EstruturaInsegura("Contrato ng-model divergente: "+selector)
+    if locator.evaluate("el => el.tagName.toLowerCase()")!="select":
+        raise EstruturaInsegura("Controle nao e select.")
+    return locator
+
+
+def _selecionado(locator) -> str:
+    return locator.evaluate("el => (el.selectedOptions[0]?.textContent||'').trim()")
+
+
+def selecionar_perfil_subperfil(frame, perfil: str) -> tuple[str,str]:
+    if perfil not in PADRAO:
+        raise EstruturaInsegura("Perfil nao autorizado.")
+    rotulo_perfil,rotulo_subperfil=PADRAO[perfil]
+    principal=_select_unico(frame,"#"+PERFIL_ID,PERFIL_NG_MODEL)
+    principal.select_option(label=rotulo_perfil,timeout=10000)
+    if _selecionado(principal)!=rotulo_perfil:
+        raise EstruturaInsegura("Perfil nao confirmado.")
+    # A aplicacao Angular recarrega as opcoes do subperfil apos mudar Perfil.
+    sub=_select_unico(frame,"#"+SUBPERFIL_ID,SUBPERFIL_NG_MODEL)
+    sub.locator("option").filter(has_text=rotulo_subperfil).first.wait_for(state="attached",timeout=10000)
+    opcoes=sub.locator("option").all_text_contents()
+    if sum(1 for t in opcoes if t.strip()==rotulo_subperfil)!=1:
+        raise EstruturaInsegura("Subperfil oficial ausente ou duplicado.")
+    sub.select_option(label=rotulo_subperfil,timeout=10000)
+    if _selecionado(principal)!=rotulo_perfil or _selecionado(sub)!=rotulo_subperfil:
+        raise EstruturaInsegura("Perfil e subperfil nao confirmados.")
+    return rotulo_perfil,rotulo_subperfil
+```
+
+### `worker/cadastro_dna/test_criptografia.py`
+```python
+"""Testes de contrato criptografico sem usar CPF ou chave real."""
+import base64
+import json
+import unittest
+from .criptografia import decifrar, DadosProtegidosInvalidos
+
+
+class TestCifra(unittest.TestCase):
+    def setUp(self):
+        try:
+            from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+        except ImportError:
+            self.skipTest("Dependencia cryptography nao instalada")
+        self.chave=bytes(range(32))
+        self.data={"nome":"Pessoa Exemplo","cpf":"12345678909","nascimento":"1990-01-01",
+                   "email":"exemplo@invalid.test","telefone":"27999999999","perfil":"CONSULTOR",
+                   "lojas":["51545"],"idempotencia":"00000000-0000-4000-8000-000000000000"}
+        self.iv=b"abcdefghijkl"
+        raw=self.iv+AESGCM(self.chave).encrypt(self.iv,json.dumps(self.data).encode(),None)
+        self.payload=base64.b64encode(raw).decode()
+
+    def test_decifra(self):
+        self.assertEqual(decifrar(self.payload,self.chave.hex()),self.data)
+
+    def test_chave_incorreta(self):
+        with self.assertRaises(DadosProtegidosInvalidos):
+            decifrar(self.payload,(b"x"*32).hex())
+
+    def test_adulteracao(self):
+        raw=bytearray(base64.b64decode(self.payload))
+        raw[-1]^=1
+        with self.assertRaises(DadosProtegidosInvalidos):
+            decifrar(base64.b64encode(raw).decode(),self.chave.hex())
+
+    def test_payload_corrompido(self):
+        with self.assertRaises(DadosProtegidosInvalidos):
+            decifrar("%%%invalid%%%",self.chave.hex())
+
+
+if __name__=="__main__":
+    unittest.main()
+```
+
+### `worker/cadastro_dna/test_estado.py`
+```python
+"""Testes sem acesso a DNA/Supabase. Executar com:
+python -m unittest worker.cadastro_dna.test_estado -v
+"""
+import unittest
+from .estado import Evidencia, Status, classificar, nova_tentativa_autorizada
+
+
+class EstadoTests(unittest.TestCase):
+    def test_ativo_exige_identidade(self):
+        self.assertEqual(classificar(Evidencia.ATIVACAO_CONFIRMADA, identidade_confirmada=False).status, Status.REVISAO)
+
+    def test_ativo_apenas_com_evidencia(self):
+        self.assertEqual(classificar(Evidencia.ATIVACAO_CONFIRMADA, identidade_confirmada=True).status, Status.ATIVO)
+
+    def test_salvar_nao_e_suficiente(self):
+        self.assertEqual(classificar(Evidencia.VALIDACAO_SOLICITADA, identidade_confirmada=True).status, Status.AGUARDANDO_VALIDACAO)
+
+    def test_estado_incerto_nao_reexecuta(self):
+        self.assertEqual(classificar(Evidencia.ESTADO_INCERTO, identidade_confirmada=True).status, Status.REVISAO)
+        self.assertFalse(nova_tentativa_autorizada(confirmado_existente=False, estado_incerto=True))
+
+    def test_cadastro_existente_nao_reexecuta(self):
+        self.assertFalse(nova_tentativa_autorizada(confirmado_existente=True, estado_incerto=False))
+
+
+if __name__ == "__main__":
+    unittest.main()
+```
+
+### `worker/cadastro_dna/test_fluxo_completo.py`
+```python
+"""Teste offline: ordem das etapas e veto a qualquer gravacao por padrao."""
+import unittest
+from .fluxo_completo import Pedido, Etapa, PASSOS, planejar, executar_controlado, ExecucaoBloqueada
+
+
+def pedido(perfil="CONSULTOR"):
+    return Pedido("53743","Nome Exemplo","12345678909","01/01/2000",
+                  "exemplo@example.org","27","999999999",perfil)
+
+
+class GatewayFake:
+    def __init__(self):
+        self.calls=[]
+    def __getattr__(self,name):
+        def call(*a):
+            self.calls.append(name)
+            return "nao_confirmado"
+        return call
+
+
+class FluxoTests(unittest.TestCase):
+    def test_ordem_perfil_antes_subperfil(self):
+        etapas=planejar(pedido()).etapas
+        self.assertLess(etapas.index(Etapa.PERFIL),etapas.index(Etapa.SUBPERFIL))
+        self.assertLess(etapas.index(Etapa.SSO),etapas.index(Etapa.CADASTRAR))
+        self.assertLess(etapas.index(Etapa.CADASTRAR),etapas.index(Etapa.VALIDAR))
+
+    def test_padrao_supervisor(self):
+        plano=planejar(pedido("SUPERVISOR"))
+        self.assertEqual((plano.perfil,plano.subperfil),("Supervisor","Supervisor 2"))
+        self.assertFalse(plano.autorizado_escrever)
+
+    def test_bloqueio_por_padrao(self):
+        gateway=GatewayFake()
+        with self.assertRaises(ExecucaoBloqueada):
+            executar_controlado(pedido(),gateway)
+        self.assertEqual(gateway.calls,[])
+
+    def test_ordem_com_gateway_falso(self):
+        gateway=GatewayFake()
+        executar_controlado(pedido(),gateway,autorizado=True)
+        esperado=["abrir_loja_por_codigo","preencher_dados","selecionar_perfil",
+                  "aguardar_subperfis","selecionar_subperfil","confirmar_perfil_subperfil",
+                  "garantir_sso_marcado","garantir_primeira_funcao_consig_marcada",
+                  "confirmar_loja","cadastrar_uma_vez","confirmar_cadastro_concluido",
+                  "abrir_usuario_manutencao","pesquisar_nome_completo",
+                  "confirmar_identidade_inequivoca","validar_cpf_uma_vez",
+                  "consultar_situacao_cpf"]
+        self.assertEqual(gateway.calls,esperado)
+
+
+if __name__=="__main__":
+    unittest.main()
+```
+
