@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR" class="mop-shell-loading">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cadastro de colaboradores DNA | CREDVIX</title>
+<script src="js/theme.js"></script>
+<link rel="stylesheet" href="css/tokens.css"><link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/mop-shell.css">
+<link rel="stylesheet" href="css/cadastro-colaboradores.css">
+</head>
+<body>
+<div class="mop-shell" id="cadastroShell" hidden>
+<aside class="mop-nav" data-mop-shell-sidebar aria-label="Menu de navegação"></aside>
+<div class="app-main"><header class="topbar mop-shared-topbar" data-mop-shell-topbar></header>
+<main class="content cvx-cadastro">
+<p class="cvx-eyebrow">MÓDULO ADMINISTRATIVO</p>
+<h1>Cadastro de <span>Colaboradores DNA</span></h1>
+<p>Cadastre colaboradores e acompanhe a validação do CPF. A execução automática permanece bloqueada até homologação.</p>
+<section class="cvx-card" aria-label="Nova solicitação">
+<div class="cvx-heading"><h2>Dados do colaborador</h2><strong class="cvx-flag">Em homologação</strong></div>
+<form id="cadastroForm" novalidate>
+<div class="cvx-grid">
+<label>Nome completo<input name="nome" autocomplete="off" required minlength="5"></label>
+<label>CPF<input name="cpf" inputmode="numeric" autocomplete="off" required></label>
+<label>Data de nascimento<input name="nascimento" type="date" required></label>
+<label>E-mail<input name="email" type="email" autocomplete="off" required></label>
+<label>Telefone com DDD<input name="telefone" inputmode="tel" autocomplete="off" required></label>
+<label>Perfil<select name="perfil" required><option value="">Selecione</option><option value="CONSULTOR">Consultor</option><option value="SUPERVISOR">Supervisor</option></select></label>
+<label>Subperfil oficial<input id="subperfilOficial" aria-label="Subperfil oficial" value="Selecione o perfil" readonly disabled><small id="subperfilAviso">Definido automaticamente: Consultor 2 ou Supervisor 2. Não editável.</small></label>
+</div>
+<fieldset><legend>Loja(s) de vínculo</legend><p id="lojasInfo" role="status">Carregando lojas cadastradas no MOP-CNC…</p><div id="lojasLista" class="cvx-lojas"></div></fieldset>
+<div class="cvx-actions">
+<button type="button" id="validar" class="cvx-button">Conferir preenchimento</button>
+<button type="submit" disabled id="solicitar" class="cvx-button" aria-describedby="avisoBloqueio">Solicitar cadastro (bloqueado)</button>
+</div>
+<p id="avisoBloqueio">Nenhum cadastro será enviado. A fila segura e o agente Windows ainda não foram homologados.</p>
+<p id="formFeedback" role="status" aria-live="polite"></p>
+</form></section>
+<section class="cvx-card" aria-label="Acompanhamento de cadastros">
+<div class="cvx-heading"><h2>Acompanhamento</h2><button type="button" id="atualizar" class="cvx-button">Atualizar</button></div>
+<p id="filaInfo" role="status">Aguardando autenticação…</p>
+<div class="cvx-scroll"><table><thead><tr><th>Solicitação</th><th>Situação</th><th>Etapa</th><th>Atualização</th><th>Motivo</th></tr></thead><tbody id="filaRows"></tbody></table></div>
+</section>
+</main></div></div>
+<p id="cadastroDenied" class="cvx-denied" hidden>Acesso administrativo não autorizado. <a href="app.html">Voltar ao MOP-CNC</a></p>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script><script src="js/mop-shell.js"></script>
+<script src="js/cadastro-colaboradores.js"></script>
+</body></html>

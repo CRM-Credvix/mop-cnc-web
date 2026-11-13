@@ -1,0 +1,2 @@
+-r ../requirements_dna.txt
+cryptography==46.0.4

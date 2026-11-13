@@ -1,0 +1,39 @@
+name: Cadastro DNA - testes offline
+on:
+  pull_request:
+    paths:
+      - "cadastro-dna/**"
+      - "cadastro-colaboradores.html"
+      - "css/cadastro-colaboradores.css"
+      - "js/cadastro-colaboradores.js"
+      - "js/mop-shell.js"
+      - "tests/test_mop_shell_cadastro.cjs"
+      - "worker/cadastro_dna/**"
+      - "INICIAR_CADASTRO_DNA_V03.bat"
+      - ".github/workflows/cadastro-dna-testes.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testes-offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Instalar dependencias de teste
+        run: python -m pip install --disable-pip-version-check "cryptography==46.0.4"
+      - name: Testar estado, monitor e AES-GCM
+        run: python -m unittest -v worker.cadastro_dna.test_estado worker.cadastro_dna.test_monitor worker.cadastro_dna.test_criptografia worker.cadastro_dna.test_sql_invariantes worker.cadastro_dna.test_perfis worker.cadastro_dna.test_formulario worker.cadastro_dna.test_homologacao_unificada worker.cadastro_dna.test_preflight_perfil worker.cadastro_dna.test_mapeamento_campos worker.cadastro_dna.test_fluxo_completo worker.cadastro_dna.test_guarda_validar_cpf worker.cadastro_dna.test_inspecao_validar_cpf worker.cadastro_dna.test_inspecao_sso_consig worker.cadastro_dna.test_robo_v03
+      - name: Validar sintaxe de scripts
+        run: |
+          node --check js/cadastro-colaboradores.js
+          node --check js/mop-shell.js
+          node tests/test_mop_shell_cadastro.cjs
+          node --check cadastro-dna/formulario.js
+      - name: Verificar alteracoes sem whitespace incorreto
+        run: git diff --check
