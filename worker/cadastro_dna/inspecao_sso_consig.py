@@ -8,12 +8,11 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from .inspecao_campos import inspecionar as inspecionar_formulario
 
 SCRIPT = r"""() => {
   const wanted = /(?:sso|consig|funcao|fun[cç][aã]o)/i;
   const safe = s => typeof s === 'string' &&
-    s.length <= 96 && /^[a-zA-Z0-9_.\\[\\]-]+$/.test(s) && wanted.test(s);
+    s.length <= 96 && /^[a-zA-Z0-9_.-]+$/.test(s) && wanted.test(s);
   const attrs = ['id','name','ng-model','data-ng-model','formcontrolname'];
   const selectors = 'input[type="checkbox"],input[type="radio"],[role="checkbox"]';
   const matches = [...document.querySelectorAll(selectors)]
@@ -62,10 +61,7 @@ def resumir_estrutura(estrutura: dict) -> dict:
 def inspecionar(cdp: str = "http://127.0.0.1:9222") -> dict:
     # Reaproveita o fail-closed do inspetor ja homologado: exatamente um
     # formulario com botao Cadastrar, em URL DNA permitida e CDP local.
-    from .inspecao_campos import inspecionar as _inspecionar
-    from .inspecao_campos import ler_frame  # noqa: F401
-    from pathlib import Path
-    import sys
+        import sys
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from dna_diagnostico import _verify_local_cdp, allowed_url
     from playwright.sync_api import sync_playwright
