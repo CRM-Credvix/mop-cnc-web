@@ -22,3 +22,10 @@ O robo nao pode clicar apenas no terceiro icone por posicao. Antes de qualquer c
 
 ## Pendente
 Identificar assinatura HTML exata do **terceiro controle** na barra de sete (sem clicar ou expor dados pessoais) e associar ao gateway Playwright. O robô completo permanece bloqueado para escrita. Modulo antigo de padronizacao preservado.
+
+## Inspetor especifico da barra (13/11/2026)
+O diagnostico anterior retornou zero candidatos porque os icones nao tem, necessariamente, o texto "Validar CPF" em title/aria-label. Foi corrigido para localizar **barras com sete acoes dentro da mesma celula de tabela**, identificar o terceiro controle (indice 2) e ler apenas metadados seguros, como tag, id, nome da funcao ng-click sem argumentos, classes do icone e disabled. Nenhum dado de colaborador e lido; nenhum botao e acionado.
+
+Arquivos atualizados: `worker/cadastro_dna/inspecao_validar_cpf.py` e `IDENTIFICAR_BOTAO_VALIDAR_CPF.bat`. O BAT passa a abrir o Edge corretamente; evita a etapa de Consultor/Supervisor ja concluida. Relatorio `RELATORIOS_CADASTRO_DNA/validar_cpf_terceiro_icone.json`.
+
+**Atencao:** mesmo identificada a funcao do terceiro icone, sua assinatura so sera homologada depois de comparar o DOM com a acao confirmada. A guardia segue bloqueando o clique real sem assinatura homologada e identidade unica.
