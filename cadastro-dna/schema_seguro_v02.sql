@@ -233,7 +233,7 @@ begin
  atualizado_em=now() where s.id=v_id;
  insert into public.dna_cadastro_eventos(solicitacao_id,tipo)
  values(v_id,'consulta_reservada');
- return query select s.id,v_token,p.cifra_base64,s.perfil,s.lojas,s.validacao_limite
+ return query select s.id,v_token,p.cifra_base64,s.perfil,s.subperfil,s.lojas,s.validacao_limite
  from public.dna_cadastro_solicitacoes s
  join dna_cadastro_private.dna_cadastro_payloads p on p.solicitacao_id=s.id
  where s.id=v_id;
