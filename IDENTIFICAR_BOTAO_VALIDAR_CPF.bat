@@ -1,7 +1,7 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-echo CREDVIX | IDENTIFICAR BOTAO VALIDAR CPF
+echo CREDVIX - IDENTIFICAR BOTAO VALIDAR CPF
 echo SOMENTE LEITURA. Nenhum click sera feito.
 set "PY=.venv_cadastro_dna\Scripts\python.exe"
 if not exist "%PY%" (
