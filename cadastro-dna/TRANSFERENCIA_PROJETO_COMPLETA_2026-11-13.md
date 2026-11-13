@@ -2802,3 +2802,23 @@ diagnostico_cadastro_dna_campos.json
 RELATORIOS_CADASTRO_DNA/
 ```
 
+## 8. PRÓXIMOS PASSOS
+1. **Homologar 3º ícone:** captar DOM da barra de sete; confirmar assinatura e vinculação à linha. **Resultado:** seletor confiável, sem clique.
+2. **Implementar gateway real:** loja, preenchimento, Perfil → Subperfil, SSO, Consig, Cadastrar e manutenção. **Resultado:** fluxo executável controlado, com logs.
+3. **Homologar ponta a ponta:** teste autorizado, CPF validado, duplicidade bloqueada, SQL/Edge revisados. **Resultado:** liberação consciente, sem afetar Padronização.
+
+## 9. PROMPT DE INÍCIO
+> Continue o projeto Credvix Cadastro DNA/MOP-CNC, usando este documento integral como fonte.
+> Repositório: `CRM-Credvix/mop-cnc-web`, branch `feature/cadastro-colaboradores-dna-v01`, PR #56.
+> Stack: Windows, Python/Playwright, Edge CDP, HTML/JS, Supabase proposto.
+> Perfil Consultor → Subperfil Consultor 2; Perfil Supervisor → Subperfil Supervisor 2.
+> Loja pelo código → preencher dados → Perfil → Subperfil → marcar SSO → primeira Função Consig.
+> Cadastrar uma vez → Usuário/Manutenção → localizar identidade → Validar CPF.
+> Validar CPF é visualmente o 3º de 7 ícones. Jamais clicar só pela posição.
+> Identificar atributo DOM real, checar identidade, habilitação e assinatura única.
+> Se houver divergência, bloquear imediatamente e registrar log sem dados pessoais.
+> Último JSON trouxe 0 candidatos; inspetor de barra foi atualizado, ainda não homologado.
+> 45 testes anteriores passaram; atualizações posteriores não têm confirmação local.
+> Não repetir diagnósticos já concluídos; manter uma pasta e respostas curtas.
+> Não modificar motor de Padronização, não dar merge/deploy ou realizar escrita sem autorização.
+> Confirme em 3 linhas que entendeu e pergunte só o que faltar.
