@@ -10,6 +10,117 @@
   let carregando = false;
   let testes = [];
   let atualizacao = null;
+  let cadastroAtivo = false;
+  let enviando = false;
+  let idempotencia = crypto.randomUUID();
+  let pedidos = [];
+  const ESTADOS = Object.freeze({
+    na_fila:'Na fila',processando:'Em execução',
+    aguardando_validacao:'Validando CPF',ativo:'Validado',
+    erro:'Erro',revisao:'Revisão necessária'
+  });
+  function validarCPF(cpf) {
+    if (!/^\\d{11}$/.test(cpf) || /^(\\d)\\1{10}$/.test(cpf)) return false;
+    for (let n=9;n<=10;n++) {
+      let soma=0;
+      for (let j=0;j<n;j++) soma+=Number(cpf[j])*(n+1-j);
+      if (Number(cpf[n])!==((soma*10)%11)%10) return false;
+    }
+    return true;
+  }
+  async function carregarConfig() {
+    try {
+      const {data,error}=await client.from('dna_cadastro_config')
+        .select('ativo').eq('chave','cadastro_ativo').single();
+      cadastroAtivo=!error && data?.ativo === true;
+    } catch (_) {cadastroAtivo=false;}
+    $('solicitar').disabled=!cadastroAtivo;
+    $('cadastroEstado').textContent=cadastroAtivo ? '● Solicitações habilitadas' : '● Em homologação';
+    $('avisoBloqueio').textContent=cadastroAtivo
+      ? 'A solicitação será registrada na fila segura. O resultado depende do robô Windows.'
+      : 'O envio permanece bloqueado até a configuração privada da API e a homologação do robô.';
+  }
+  async function carregarPedidos() {
+    if (!user) return;
+    const corpo=$('filaCadastroRows');
+    $('atualizarCadastros').disabled=true;
+    try {
+      const {data,error}=await client.from('dna_cadastro_solicitacoes')
+        .select('id,cpf_final4,lojas,perfil,subperfil,status,etapa,motivo_publico,atualizado_em')
+        .order('criado_em',{ascending:false}).limit(50);
+      if(error)throw new Error('fila_inacessivel');
+      pedidos=data||[];
+      corpo.replaceChildren();
+      for(const pedido of pedidos){
+        const tr=document.createElement('tr');
+        for(const val of [String(pedido.id).slice(0,8),'***'+pedido.cpf_final4,
+          (pedido.lojas||[]).join(', '),pedido.perfil,pedido.etapa,
+          ESTADOS[pedido.status]||pedido.status,dataPt(pedido.atualizado_em)]){
+          const td=document.createElement('td');td.textContent=String(val||'—');tr.append(td);
+        }
+        const td=document.createElement('td'),botao=document.createElement('button');
+        botao.type='button';botao.textContent='Detalhes';
+        botao.addEventListener('click',()=>mostrarPedido(pedido));
+        td.append(botao);tr.append(td);corpo.append(tr);
+      }
+      if(!pedidos.length){
+        const tr=document.createElement('tr'),td=document.createElement('td');
+        td.colSpan=8;td.textContent='Nenhuma solicitação de cadastro registrada.';
+        tr.append(td);corpo.append(tr);
+      }
+      $('filaCadastroInfo').textContent=pedidos.length+
+        ' solicitações encontradas. A exibição não comprova execução no DNA.';
+    }catch(_){$('filaCadastroInfo').textContent='Fila indisponível ou sem permissão para este usuário.';}
+    finally{$('atualizarCadastros').disabled=false;}
+  }
+  function mostrarPedido(pedido){
+    $('detalheId').textContent=String(pedido.id).slice(0,8);
+    $('detalheEtapa').textContent=pedido.etapa||'—';
+    $('detalheAtualizado').textContent=dataPt(pedido.atualizado_em);
+    $('detalheSituacao').textContent=ESTADOS[pedido.status]||pedido.status;
+    $('detalheStatus').textContent=ESTADOS[pedido.status]||pedido.status;
+    $('detalheTexto').textContent=pedido.motivo_publico||
+      'Acompanhe o pedido no DNA. Sem confirmação explícita, o status não será Validado.';
+    aba('detalhe');
+  }
+  async function enviarCadastro() {
+    if (!cadastroAtivo || !user || enviando) return;
+    if(!conferir()) return;
+    const cpf=form.elements.namedItem('cpf').value.replace(/\\D/g,'');
+    if(!validarCPF(cpf)){
+      $('formFeedback').textContent='CPF inválido. Nenhum pedido foi enviado.';
+      return;
+    }
+    const dados={
+      idempotencia,
+      nome:form.elements.namedItem('nome').value.trim(),
+      cpf,
+      nascimento:form.elements.namedItem('nascimento').value,
+      email:form.elements.namedItem('email').value.trim(),
+      telefone:form.elements.namedItem('telefone').value.replace(/\\D/g,''),
+      perfil:form.elements.namedItem('perfil').value,
+      lojas:[form.elements.namedItem('loja').value]
+    };
+    enviando=true;
+    $('solicitar').disabled=true;
+    $('formFeedback').textContent='Enviando pedido à API segura…';
+    try {
+      const {data,error}=await client.functions.invoke('cadastro-dna-criar',{body:dados});
+      if(error || !data?.id)throw new Error('RESPOSTA_NAO_CONFIRMADA');
+      $('formFeedback').textContent='Pedido '+String(data.id).slice(0,8)+
+        ' registrado. Acompanhe a fila; isso ainda não confirma cadastro no DNA.';
+      form.reset();idempotencia=crypto.randomUUID();resumo();
+      await carregarPedidos();
+      aba('acompanhamento');
+    }catch(_){
+      $('formFeedback').textContent=
+        'Não foi possível confirmar o envio. Antes de tentar novamente, confira o acompanhamento para evitar duplicação.';
+      // Sem resposta conclusiva, NUNCA gerar nova idempotencia nem repetir automaticamente.
+    }finally{
+      enviando=false;
+      $('solicitar').disabled=!cadastroAtivo;
+    }
+  }
   const html = document.documentElement;
 
   function dataPt(v) {
@@ -170,9 +281,11 @@
         .select('codigo,nome').eq('ativo',true).order('nome');
       if (!lojas.error) renderLojas(lojas.data||[]);
       else $('filaInfo').textContent='Catálogo de lojas indisponível.';
+      await carregarConfig();
+      await carregarPedidos();
       await atualizarConexao();
       atualizacao = window.setInterval(() => {
-        if (user && !document.hidden) atualizarConexao();
+        if (user && !document.hidden) {atualizarConexao();carregarPedidos();}
       },15000);
     } catch (_) {
       $('cadastroDenied').hidden=false;
@@ -187,12 +300,10 @@
   form.elements.namedItem('loja').addEventListener('change',resumo);
   form.addEventListener('input',limparFeedback);
   $('validar').addEventListener('click',conferir);
-  form.addEventListener('submit',event => {
-    event.preventDefault();
-    $('formFeedback').textContent='Cadastro DNA ainda bloqueado. Nenhum dado pessoal foi transmitido.';
-  });
+  form.addEventListener('submit',event => {event.preventDefault();enviarCadastro();});
   $('testarConexao').addEventListener('click',testarConexao);
   $('atualizar').addEventListener('click',atualizarConexao);
+  $('atualizarCadastros').addEventListener('click',carregarPedidos);
   window.addEventListener('hashchange',()=>aba(location.hash.slice(1),false));
   window.addEventListener('pagehide',()=>{if(atualizacao)clearInterval(atualizacao);});
   resumo();
