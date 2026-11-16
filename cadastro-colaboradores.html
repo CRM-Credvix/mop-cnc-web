@@ -21,7 +21,7 @@
     <div><p class="cvx-eyebrow">MÓDULO ADMINISTRATIVO · CREDVIX</p>
       <h1>Cadastro de <span>colaboradores DNA</span></h1>
       <p class="cvx-description">Solicitações, acompanhamento e histórico do processo de cadastro no DNA, em um único lugar.</p></div>
-    <span class="cvx-state">● Em homologação</span>
+    <span class="cvx-state" id="cadastroEstado">● Configurando integração</span>
   </div>
   <nav class="cvx-tabs" aria-label="Cadastro DNA">
     <button type="button" data-tab="solicitacao" aria-current="page">♧ &nbsp; Nova solicitação</button>
@@ -69,7 +69,7 @@
             <button type="button" class="cvx-btn cvx-btn--outline" id="validar">Conferir preenchimento</button>
             <button type="submit" class="cvx-btn cvx-btn--primary" id="solicitar" disabled>Solicitar cadastro</button>
           </div>
-          <p class="cvx-banner cvx-banner--warning" id="avisoBloqueio">Homologação: o envio de cadastros reais ainda não está disponível.</p>
+          <p class="cvx-banner cvx-banner--warning" id="avisoBloqueio">O envio só será habilitado após a instalação do robô e a liberação da fila segura.</p>
           <p id="formFeedback" role="status" aria-live="polite"></p>
         </form>
       </article>
@@ -99,6 +99,11 @@
       <div class="cvx-metric"><span>✓ Validados</span><strong>—</strong><small>Sem integração com o DNA</small></div>
       <div class="cvx-metric"><span>! Revisão</span><strong>—</strong><small>Sem dados operacionais</small></div>
     </div>
+    <article class="cvx-card cvx-panel" style="margin-bottom:18px">
+      <div class="cvx-panel-header"><div><h3>Pedidos de cadastro DNA</h3><p>Status de solicitações reais. Nenhum CPF completo é exibido.</p></div><button class="cvx-btn cvx-btn--outline" type="button" id="atualizarCadastros">Atualizar pedidos</button></div>
+      <p class="cvx-info" id="filaCadastroInfo" role="status">Verificando disponibilidade da fila…</p>
+      <div class="cvx-table-scroll"><table><thead><tr><th>Pedido</th><th>CPF final</th><th>Loja</th><th>Perfil</th><th>Etapa</th><th>Status</th><th>Atualizado</th><th>Ação</th></tr></thead><tbody id="filaCadastroRows"></tbody></table></div>
+    </article>
     <article class="cvx-card cvx-panel">
       <div class="cvx-panel-header"><div><h3>Fila de solicitações</h3><p>Esta tabela mostra somente testes de conectividade, sem dados pessoais.</p></div><div class="cvx-actions"><button type="button" class="cvx-btn cvx-btn--outline" id="testarConexao" disabled>Enviar teste de conexão</button><button type="button" class="cvx-btn cvx-btn--outline" id="atualizar" disabled>Atualizar</button></div></div>
       <p class="cvx-info" id="filaInfo" role="status">Aguardando autenticação…</p>
@@ -139,5 +144,5 @@
 <p id="cadastroDenied" class="cvx-denied" hidden>Acesso administrativo não autorizado. <a href="app.html">Voltar ao MOP-CNC</a></p>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script><script src="js/mop-shell.js?v=20261116-cadastro"></script>
-<script src="js/cadastro-colaboradores.js?v=20261116-ui1"></script>
+<script src="js/cadastro-colaboradores.js?v=20261116-fila-ativa1"></script>
 </body></html>
