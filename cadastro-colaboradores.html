@@ -37,13 +37,13 @@
 <p id="formFeedback" role="status" aria-live="polite"></p>
 </form></section>
 <section class="cvx-card" aria-label="Acompanhamento de cadastros">
-<div class="cvx-heading"><h2>Acompanhamento (indisponível até homologação)</h2><button type="button" id="atualizar" class="cvx-button">Atualizar</button></div>
-<p id="filaInfo" role="status">Aguardando autenticação…</p>
+<div class="cvx-heading"><h2>Conectividade do robô (teste)</h2><div class="cvx-actions"><button type="button" id="testarConexao" class="cvx-button" disabled>Enviar teste de conexão</button><button type="button" id="atualizar" class="cvx-button">Atualizar</button></div></div>
+<p id="filaInfo" role="status">Aguardando autenticação…</p><p>Teste sem dados pessoais: registra somente uma solicitação de conectividade. Não executa cadastros no DNA.</p>
 <div class="cvx-scroll"><table><thead><tr><th>Solicitação</th><th>Situação</th><th>Etapa</th><th>Atualização</th><th>Motivo</th></tr></thead><tbody id="filaRows"></tbody></table></div>
 </section>
 </main></div></div>
 <p id="cadastroDenied" class="cvx-denied" hidden>Acesso administrativo não autorizado. <a href="app.html">Voltar ao MOP-CNC</a></p>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script><script src="js/mop-shell.js"></script>
-<script src="js/cadastro-colaboradores.js"></script>
+<script src="js/cadastro-colaboradores.js?v=20261116-ping"></script>
 </body></html>
