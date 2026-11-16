@@ -4,46 +4,140 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Cadastro de colaboradores DNA | CREDVIX</title>
 <script src="js/theme.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/tokens.css"><link rel="stylesheet" href="css/app.css">
-<link rel="stylesheet" href="css/mop-shell.css">
-<link rel="stylesheet" href="css/cadastro-colaboradores.css">
+<link rel="stylesheet" href="css/mop-shell.css?v=20261116-cadastro">
+<link rel="stylesheet" href="css/cadastro-colaboradores.css?v=20261116-ui1">
 </head>
 <body>
 <div class="mop-shell" id="cadastroShell" hidden>
 <aside class="mop-nav" data-mop-shell-sidebar aria-label="Menu de navegação"></aside>
 <div class="app-main"><header class="topbar mop-shared-topbar" data-mop-shell-topbar></header>
-<main class="content cvx-cadastro">
-<p class="cvx-eyebrow">MÓDULO ADMINISTRATIVO</p>
-<h1>Cadastro de <span>Colaboradores DNA</span></h1>
-<p>Módulo em homologação: confira a estrutura do cadastro. O envio de solicitações permanece desabilitado.</p>
-<section class="cvx-card" aria-label="Nova solicitação">
-<div class="cvx-heading"><h2>Dados do colaborador</h2><strong class="cvx-flag">Em homologação</strong></div>
-<form id="cadastroForm" novalidate>
-<div class="cvx-grid">
-<label>Nome completo<input name="nome" autocomplete="off" required minlength="5"></label>
-<label>CPF<input name="cpf" inputmode="numeric" autocomplete="off" required></label>
-<label>Data de nascimento<input name="nascimento" type="date" required></label>
-<label>E-mail<input name="email" type="email" autocomplete="off" required></label>
-<label>Telefone com DDD<input name="telefone" inputmode="tel" autocomplete="off" required></label>
-<label>Perfil<select name="perfil" required><option value="">Selecione</option><option value="CONSULTOR">Consultor</option><option value="SUPERVISOR">Supervisor</option></select></label>
-<label>Subperfil oficial<input id="subperfilOficial" aria-label="Subperfil oficial" value="Selecione o perfil" readonly disabled><small id="subperfilAviso">Definido automaticamente: Consultor 2 ou Supervisor 2. Não editável.</small></label>
-</div>
-<fieldset><legend>Loja(s) de vínculo</legend><p id="lojasInfo" role="status">Carregando lojas cadastradas no MOP-CNC…</p><div id="lojasLista" class="cvx-lojas"></div></fieldset>
-<div class="cvx-actions">
-<button type="button" id="validar" class="cvx-button">Conferir preenchimento</button>
-<button type="submit" disabled id="solicitar" class="cvx-button" aria-describedby="avisoBloqueio">Solicitar cadastro (bloqueado)</button>
-</div>
-<p id="avisoBloqueio">Nenhum cadastro será enviado. A fila segura e o agente Windows ainda não foram homologados.</p>
-<p id="formFeedback" role="status" aria-live="polite"></p>
-</form></section>
-<section class="cvx-card" aria-label="Acompanhamento de cadastros">
-<div class="cvx-heading"><h2>Conectividade do robô (teste)</h2><div class="cvx-actions"><button type="button" id="testarConexao" class="cvx-button" disabled>Enviar teste de conexão</button><button type="button" id="atualizar" class="cvx-button">Atualizar</button></div></div>
-<p id="filaInfo" role="status">Aguardando autenticação…</p><p>Teste sem dados pessoais: registra somente uma solicitação de conectividade. Não executa cadastros no DNA.</p>
-<div class="cvx-scroll"><table><thead><tr><th>Solicitação</th><th>Situação</th><th>Etapa</th><th>Atualização</th><th>Motivo</th></tr></thead><tbody id="filaRows"></tbody></table></div>
-</section>
+<main class="content cvx-cadastro" id="cadastroMain">
+  <div class="cvx-page-title">
+    <div class="cvx-page-icon" aria-hidden="true">♧</div>
+    <div><p class="cvx-eyebrow">MÓDULO ADMINISTRATIVO · CREDVIX</p>
+      <h1>Cadastro de <span>colaboradores DNA</span></h1>
+      <p class="cvx-description">Solicitações, acompanhamento e histórico do processo de cadastro no DNA, em um único lugar.</p></div>
+    <span class="cvx-state">● Em homologação</span>
+  </div>
+  <nav class="cvx-tabs" aria-label="Cadastro DNA">
+    <button type="button" data-tab="solicitacao" aria-current="page">♧ &nbsp; Nova solicitação</button>
+    <button type="button" data-tab="acompanhamento">◷ &nbsp; Acompanhamento</button>
+    <button type="button" data-tab="detalhe">☷ &nbsp; Detalhes do processo</button>
+  </nav>
+
+  <section data-view="solicitacao" aria-label="Nova solicitação">
+    <div class="cvx-two-col">
+      <article class="cvx-card cvx-card--primary">
+        <div class="cvx-stepper" aria-label="Etapas da solicitação">
+          <span class="cvx-step current"><b>1</b> Dados</span><span class="cvx-step-line"></span>
+          <span class="cvx-step"><b>2</b> Permissões</span><span class="cvx-step-line"></span>
+          <span class="cvx-step"><b>3</b> Revisão</span>
+        </div>
+        <div class="cvx-card-heading"><div><h2>Nova solicitação</h2><p>Informe os dados do colaborador e confira as regras antes de avançar.</p></div></div>
+        <form id="cadastroForm" novalidate autocomplete="off">
+          <div class="cvx-form-grid">
+            <label class="cvx-field cvx-span-2">Nome completo <em>*</em><input name="nome" placeholder="Nome e sobrenome" maxlength="140" required></label>
+            <label class="cvx-field">CPF <em>*</em><input name="cpf" placeholder="000.000.000-00" inputmode="numeric" maxlength="14" required></label>
+            <label class="cvx-field">Data de nascimento <em>*</em><input name="nascimento" type="date" required></label>
+            <label class="cvx-field cvx-span-2">E-mail <em>*</em><input name="email" type="email" placeholder="nome@empresa.com.br" required></label>
+            <label class="cvx-field">Telefone <em>*</em><input name="telefone" type="tel" inputmode="tel" placeholder="(27) 99999-9999" required></label>
+            <label class="cvx-field">Loja solicitada <em>*</em>
+              <select name="loja" id="lojaSelect" required><option value="">Selecione a loja</option></select>
+            </label>
+            <label class="cvx-field">Perfil <em>*</em>
+              <select name="perfil" id="perfilSelect" required>
+                <option value="">Selecione o perfil</option>
+                <option value="CONSULTOR">Consultor</option>
+                <option value="SUPERVISOR">Supervisor</option>
+              </select>
+            </label>
+            <label class="cvx-field">Subperfil oficial <span class="cvx-hint">Automático</span>
+              <input id="subperfilOficial" value="Selecione o perfil" disabled readonly>
+            </label>
+          </div>
+          <label class="cvx-switch-row"><input type="checkbox" id="sso" checked disabled><span class="cvx-switch-visual" aria-hidden="true"></span>
+            <span><strong>SSO — acesso único</strong><small>Obrigatório no cadastro; configurado pelo robô.</small></span></label>
+          <fieldset class="cvx-fieldset"><legend>Função Consig</legend>
+            <div class="cvx-radio-choice"><span aria-hidden="true">◉</span><span><strong>Primeira função</strong><small>Configuração oficial do cadastro; não altera outras permissões.</small></span></div>
+            <p class="cvx-hint">A seleção exata será confirmada na homologação do DNA.</p>
+          </fieldset>
+          <div class="cvx-form-footer">
+            <button type="button" class="cvx-btn cvx-btn--outline" id="validar">Conferir preenchimento</button>
+            <button type="submit" class="cvx-btn cvx-btn--primary" id="solicitar" disabled>Solicitar cadastro</button>
+          </div>
+          <p class="cvx-banner cvx-banner--warning" id="avisoBloqueio">Homologação: o envio de cadastros reais ainda não está disponível.</p>
+          <p id="formFeedback" role="status" aria-live="polite"></p>
+        </form>
+      </article>
+
+      <div class="cvx-aside">
+        <article class="cvx-card"><h2>▤ &nbsp; Resumo da solicitação</h2><p>Confira as informações principais antes de solicitar.</p>
+          <div class="cvx-summary-row"><span>Status</span><strong class="cvx-pill cvx-pill--warn">Rascunho</strong></div>
+          <div class="cvx-summary-row"><span>Loja solicitada</span><strong id="resumoLoja">—</strong></div>
+          <div class="cvx-summary-row"><span>Perfil</span><strong id="resumoPerfil">—</strong></div>
+          <div class="cvx-summary-row"><span>Subperfil oficial</span><strong id="resumoSubperfil">—</strong></div>
+          <div class="cvx-summary-row"><span>SSO</span><strong>Obrigatório</strong></div>
+        </article>
+        <article class="cvx-card"><h2>♢ &nbsp; Regras de segurança</h2>
+          <div class="cvx-rule"><b>✓</b><div><strong>Prevenção de duplicidade</strong><p>Um CPF não pode gerar dois cadastros automáticos sem conciliação.</p></div></div>
+          <div class="cvx-rule"><b>✓</b><div><strong>Validação após o cadastro</strong><p>O resultado só será confirmado após a resposta do DNA.</p></div></div>
+          <div class="cvx-rule"><b>✓</b><div><strong>Revisão em caso de divergência</strong><p>Resultado incerto exige conferência antes de uma nova tentativa.</p></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section data-view="acompanhamento" hidden aria-label="Acompanhamento do Cadastro DNA">
+    <div class="cvx-section-title"><div><h2>Acompanhamento do Cadastro DNA</h2><p>Visualização da estrutura de acompanhamento. Ainda não há cadastros reais processados pelo robô.</p></div><span class="cvx-live">○ Integração operacional pendente</span></div>
+    <div class="cvx-metrics">
+      <div class="cvx-metric"><span>◷ Pendentes</span><strong id="metricPendentes">—</strong><small>Fila de cadastros não ativada</small></div>
+      <div class="cvx-metric"><span>↻ Em execução</span><strong>—</strong><small>Robô não conectado</small></div>
+      <div class="cvx-metric"><span>✓ Validados</span><strong>—</strong><small>Sem integração com o DNA</small></div>
+      <div class="cvx-metric"><span>! Revisão</span><strong>—</strong><small>Sem dados operacionais</small></div>
+    </div>
+    <article class="cvx-card cvx-panel">
+      <div class="cvx-panel-header"><div><h3>Fila de solicitações</h3><p>Esta tabela mostra somente testes de conectividade, sem dados pessoais.</p></div><div class="cvx-actions"><button type="button" class="cvx-btn cvx-btn--outline" id="testarConexao" disabled>Enviar teste de conexão</button><button type="button" class="cvx-btn cvx-btn--outline" id="atualizar" disabled>Atualizar</button></div></div>
+      <p class="cvx-info" id="filaInfo" role="status">Aguardando autenticação…</p>
+      <div class="cvx-table-scroll"><table><thead><tr><th>ID do teste</th><th>Tipo</th><th>Etapa</th><th>Status</th><th>Atualizado</th><th>Ação</th></tr></thead><tbody id="filaRows"></tbody></table></div>
+      <p class="cvx-footnote">Atualização automática a cada 15 segundos enquanto esta página estiver visível.</p>
+    </article>
+  </section>
+
+  <section data-view="detalhe" hidden aria-label="Detalhe da solicitação">
+    <div class="cvx-section-title"><div><h2>Detalhes da automação</h2><p>Etapas previstas para cada solicitação quando o serviço Windows estiver habilitado.</p></div><span class="cvx-pill cvx-pill--warn" id="detalheSituacao">Fluxo ilustrativo</span></div>
+    <div class="cvx-detail-grid">
+      <article class="cvx-card"><h2>↳ &nbsp; Andamento da automação</h2><p>Visualização do processo planejado — não representa uma execução real no DNA.</p>
+        <ol class="cvx-timeline">
+          <li><b>Solicitação recebida</b><span>O site registra a solicitação autorizada.</span></li>
+          <li><b>Fila Supabase</b><span>Pedido reservado com controle de duplicidade.</span></li>
+          <li><b>Robô iniciado</b><span>Serviço Windows assume o pedido.</span></li>
+          <li><b>Login no DNA</b><span>Autenticação segura na conta operacional.</span></li>
+          <li><b>Cadastro na loja</b><span>Loja, perfil, subperfil, SSO e função são conferidos.</span></li>
+          <li><b>Validação de CPF</b><span>Solicitação somente após cadastro confirmado.</span></li>
+          <li><b>Acompanhamento</b><span>Consulta a cada minuto, por até 10 minutos.</span></li>
+          <li><b>Resultado final</b><span>Validado, não validado ou revisão necessária.</span></li>
+        </ol>
+      </article>
+      <div class="cvx-aside">
+        <article class="cvx-card"><h2>◷ &nbsp; Status da solicitação</h2>
+          <div class="cvx-big-state" id="detalheStatus">Aguardando homologação</div><p id="detalheTexto">Selecione um teste de conectividade no acompanhamento para visualizar seu registro.</p></article>
+        <article class="cvx-card"><h2>▤ &nbsp; Resumo</h2>
+          <div class="cvx-summary-row"><span>ID de teste</span><strong id="detalheId">—</strong></div>
+          <div class="cvx-summary-row"><span>Etapa</span><strong id="detalheEtapa">—</strong></div>
+          <div class="cvx-summary-row"><span>Última atualização</span><strong id="detalheAtualizado">—</strong></div>
+        </article>
+        <article class="cvx-card"><h2>⌘ &nbsp; Retorno técnico</h2><p>Nenhum log de execução do DNA disponível. O robô Windows ainda não consome essa fila.</p></article>
+      </div>
+    </div>
+    <div class="cvx-detail-actions"><button type="button" class="cvx-btn cvx-btn--outline" id="voltarFila">Voltar ao acompanhamento</button></div>
+  </section>
 </main></div></div>
 <p id="cadastroDenied" class="cvx-denied" hidden>Acesso administrativo não autorizado. <a href="app.html">Voltar ao MOP-CNC</a></p>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="js/config.js"></script><script src="js/mop-shell.js"></script>
-<script src="js/cadastro-colaboradores.js?v=20261116-ping"></script>
+<script src="js/config.js"></script><script src="js/mop-shell.js?v=20261116-cadastro"></script>
+<script src="js/cadastro-colaboradores.js?v=20261116-ui1"></script>
 </body></html>
