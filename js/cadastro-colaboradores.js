@@ -20,7 +20,7 @@
     erro:'Erro',revisao:'Revisão necessária'
   });
   function validarCPF(cpf) {
-    if (!/^\\d{11}$/.test(cpf) || /^(\\d)\\1{10}$/.test(cpf)) return false;
+    if (!/^\d{11}$/.test(cpf) || /^(\d)\1{10}$/.test(cpf)) return false;
     for (let n=9;n<=10;n++) {
       let soma=0;
       for (let j=0;j<n;j++) soma+=Number(cpf[j])*(n+1-j);
@@ -86,7 +86,7 @@
   async function enviarCadastro() {
     if (!cadastroAtivo || !user || enviando) return;
     if(!conferir()) return;
-    const cpf=form.elements.namedItem('cpf').value.replace(/\\D/g,'');
+    const cpf=form.elements.namedItem('cpf').value.replace(/\D/g,'');
     if(!validarCPF(cpf)){
       $('formFeedback').textContent='CPF inválido. Nenhum pedido foi enviado.';
       return;
@@ -97,7 +97,7 @@
       cpf,
       nascimento:form.elements.namedItem('nascimento').value,
       email:form.elements.namedItem('email').value.trim(),
-      telefone:form.elements.namedItem('telefone').value.replace(/\\D/g,''),
+      telefone:form.elements.namedItem('telefone').value.replace(/\D/g,''),
       perfil:form.elements.namedItem('perfil').value,
       lojas:[form.elements.namedItem('loja').value]
     };
