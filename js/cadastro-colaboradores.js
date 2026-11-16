@@ -126,7 +126,12 @@
       await atualizarConexao();
     } catch (_) {
       $('lojasInfo').textContent = 'Catálogo indisponível. Nenhum dado enviado.';
+      await atualizarConexao();
     }
+    // Atualiza somente enquanto a pagina estiver visivel e a sessao estiver ativa.
+    window.setInterval(() => {
+      if (user && !document.hidden) atualizarConexao();
+    }, 15000);
   }
   $('atualizar').addEventListener('click',atualizarConexao);
   $('testarConexao').addEventListener('click',criarTesteConexao);
