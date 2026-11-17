@@ -307,24 +307,17 @@
     }
     const seq = ++consultaLojaSeq;
     $('lojaFeedback').textContent = 'Consultando a loja ' + codigo + '…';
-    const {data,error} = await client.from('franquias_mop')
-      .select('codigo,nome').eq('codigo',codigo).eq('ativo',true).limit(1);
+    const {data,error} = await client.functions.invoke('cadastro-dna-lojas',{body:{}});
     if (seq !== consultaLojaSeq || $('lojaBusca').value.trim() !== codigo) return;
-    if (error) {
-      $('lojaFeedback').textContent = 'Falha ao consultar o catálogo. Tente novamente.';
+    if (error || !Array.isArray(data?.lojas)) {
+      $('lojaFeedback').textContent = 'Consulta de lojas indisponível. Não é possível confirmar o código.';
       return;
     }
-    if (data?.length === 1) {
-      const loja = {codigo:String(data[0].codigo),nome:String(data[0].nome),
-        label:String(data[0].codigo)+' — '+String(data[0].nome)};
-      catalogoLojas = [...catalogoLojas.filter(l => l.codigo !== loja.codigo),loja];
-      const opt = document.createElement('option');
-      opt.value = loja.codigo;
-      opt.label = loja.nome;
-      $('lojasDisponiveis').append(opt);
-      validarLojaDigitada();
+    const encontrada = data.lojas.filter(l => String(l.codigo) === codigo);
+    if (encontrada.length === 1) {
+      renderLojas(data.lojas);
     } else {
-      $('lojaFeedback').textContent = 'Código não encontrado ou sem permissão de acesso nesta conta.';
+      $('lojaFeedback').textContent = 'Código não encontrado no catálogo autorizado do DNA.';
     }
   }
   function renderLojas(lojas) {
@@ -366,10 +359,9 @@
       window.MOP_SHELL?.setUser(user);
       $('atualizar').disabled=false;
       $('testarConexao').disabled=false;
-      const lojas = await client.from('franquias_mop')
-        .select('codigo,nome').eq('ativo',true).order('nome');
-      if (!lojas.error) renderLojas(lojas.data||[]);
-      else $('lojaFeedback').textContent='Não foi possível carregar as lojas. Reabra a página ou contate o administrador.';
+      const lojas = await client.functions.invoke('cadastro-dna-lojas',{body:{}});
+      if (!lojas.error && Array.isArray(lojas.data?.lojas)) renderLojas(lojas.data.lojas);
+      else $('lojaFeedback').textContent='Não foi possível carregar o catálogo autorizado de lojas. Confirme a sessão administrativa.';
       await carregarConfig();
       await carregarPedidos();
       await atualizarConexao();
