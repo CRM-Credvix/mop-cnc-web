@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR" class="mop-shell-loading">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MultiExtrações | MOP</title>
+  <script src="js/theme.js"></script>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/mop-shell.css?v=20261023-02b">
+  <style>
+    .multi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:16px}
+    .multi-panel{margin-bottom:20px}.multi-field{display:flex;flex-direction:column;gap:7px}
+    .multi-field select{width:100%;min-height:42px;padding:9px;border:1px solid #bec4cd;border-radius:8px;background:var(--surface,white);color:inherit}
+    .multi-status{margin-top:12px;padding:10px;border-radius:8px;background:#f0f4f7;color:#183044}
+    .multi-status[hidden]{display:none}.multi-table{width:100%;border-collapse:collapse}
+    .multi-table th,.multi-table td{padding:12px;text-align:left;border-bottom:1px solid #e2e7ee}
+  </style>
+</head>
+<body>
+  <div class="mop-shell">
+    <aside class="mop-nav" data-mop-shell-sidebar aria-label="Menu de navegação"></aside>
+    <div class="app-main">
+      <header class="topbar mop-shared-topbar" data-mop-shell-topbar></header>
+      <main class="content">
+        <section class="page-header"><div><p class="eyebrow eyebrow--dark">MOP MULTIEXTRAÇÕES</p>
+        <h1>Nova <span class="brand-text">extração</span></h1>
+        <p>Selecione um dos sete produtos e uma franquia autorizada. Os pedidos CNC continuam no módulo original.</p></div></section>
+        <section class="card multi-panel">
+          <h2>Solicitar extração</h2>
+          <form id="multiForm" class="multi-grid">
+            <label class="multi-field">Produto
+              <select id="multiProduto" required><option value="">Selecione...</option>
+                <option value="FGTS">FGTS</option><option value="CNC">CNC</option>
+                <option value="CONSIGNADO">Consignado</option>
+                <option value="ANTECIPAÇÃO DE BENEFÍCIO">Antecipação de Benefício</option>
+                <option value="BMG CARD">BMG Card</option>
+                <option value="CARTAO BENEFICIO">Cartão Benefício</option>
+                <option value="CONSIGNADO PRIVADO">Consignado Privado</option>
+              </select>
+            </label>
+            <label class="multi-field">Franquia
+              <select id="multiFranquia" required><option value="">Carregando franquias autorizadas...</option></select>
+            </label>
+            <div style="align-self:end"><button class="button button--primary" id="multiEnviar" type="submit" disabled>Solicitar extração</button></div>
+          </form>
+          <p class="multi-status" id="multiFeedback" role="status" aria-live="polite" hidden></p>
+        </section>
+        <section class="card multi-panel"><div class="section-heading"><div><h2>Histórico das extrações</h2><p>Pedidos visíveis conforme as permissões do seu login.</p></div></div>
+          <div class="table-wrap"><table class="multi-table"><thead><tr><th>Pedido</th><th>Produto</th><th>Franquia</th><th>Status</th><th>Registros</th><th>Solicitado em</th><th>Arquivo</th></tr></thead><tbody id="multiHistorico"><tr><td colspan="7">Carregando...</td></tr></tbody></table></div>
+          <button class="button button--secondary" type="button" id="multiAtualizar">Atualizar histórico</button>
+        </section>
+        <p class="inline-alert">A solicitação entra na fila MultiExtrações. O processamento e a disponibilização dos XLSX só serão liberados após a homologação do worker unificado.</p>
+      </main>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/config.js"></script><script src="js/data.js"></script>
+  <script src="js/mop-shell.js?v=20261023-02"></script>
+  <script src="js/multiextracoes.js?v=20261023-01"></script>
+</body>
+</html>
