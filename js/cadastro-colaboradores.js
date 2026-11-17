@@ -1,4 +1,4 @@
-/* Cadastro DNA — interface de homologacao. Nunca envia dados pessoais nem cria cadastro. */
+/* Cadastro DNA — solicitacao cifrada pelo servidor; piloto unico com controle de permissao. */
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
@@ -30,16 +30,23 @@
     return true;
   }
   async function carregarConfig() {
+    let piloto = false;
     try {
-      const {data,error}=await client.from('dna_cadastro_config')
-        .select('ativo').eq('chave','cadastro_ativo').single();
-      cadastroAtivo=!error && data?.ativo === true;
+      const [producao,teste] = await Promise.all([
+        client.from('dna_cadastro_config').select('ativo').eq('chave','cadastro_ativo').single(),
+        client.from('dna_cadastro_piloto').select('habilitado,pedido_id,utilizado').eq('chave','piloto').maybeSingle()
+      ]);
+      piloto = !teste.error && teste.data?.habilitado === true
+        && !teste.data?.pedido_id && teste.data?.utilizado !== true;
+      cadastroAtivo = (!producao.error && producao.data?.ativo === true) || piloto;
     } catch (_) {cadastroAtivo=false;}
     $('solicitar').disabled=!cadastroAtivo;
-    $('cadastroEstado').textContent=cadastroAtivo ? '● Solicitações habilitadas' : '● Em homologação';
-    $('avisoBloqueio').textContent=cadastroAtivo
-      ? 'A solicitação será registrada na fila segura. O resultado depende do robô Windows.'
-      : 'O envio permanece bloqueado até a configuração privada da API e a homologação do robô.';
+    $('cadastroEstado').textContent=piloto ? '● Piloto único autorizado'
+      : cadastroAtivo ? '● Solicitações habilitadas' : '● Em homologação';
+    $('avisoBloqueio').textContent=piloto
+      ? 'PILOTO SUPERVISIONADO: somente um pedido poderá ser enviado. A gravação no DNA poderá ocorrer ao executar o piloto no Windows. Use apenas colaborador autorizado.'
+      : cadastroAtivo ? 'A solicitação será registrada na fila segura. O resultado depende do robô Windows.'
+      : 'O envio permanece bloqueado. A produção não foi habilitada e o piloto não está disponível.';
   }
   async function carregarPedidos() {
     if (!user) return;
@@ -138,6 +145,7 @@
       $('formFeedback').textContent='Pedido '+String(data.id).slice(0,8)+
         ' registrado. Acompanhe a fila; isso ainda não confirma cadastro no DNA.';
       form.reset();idempotencia=crypto.randomUUID();resumo();
+      await carregarConfig();
       await carregarPedidos();
       aba('acompanhamento');
     }catch(_){
@@ -189,7 +197,7 @@
       tel.length >= 10 && tel.length <= 13 && Boolean(data) &&
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !!perfil && !!loja;
     $('formFeedback').textContent = valido
-      ? 'Campos preenchidos para revisão visual. Nenhum dado foi transmitido. O envio continua bloqueado.'
+      ? 'Campos preenchidos. Nenhum dado foi transmitido pela conferência; use Solicitar cadastro para enviar o piloto autorizado.'
       : 'Confira nome completo, CPF, nascimento, e-mail, telefone, loja e perfil. Nenhum dado foi transmitido.';
     return valido;
   }
