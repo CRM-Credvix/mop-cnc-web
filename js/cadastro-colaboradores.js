@@ -73,7 +73,34 @@
     }catch(_){$('filaCadastroInfo').textContent='Fila indisponível ou sem permissão para este usuário.';}
     finally{$('atualizarCadastros').disabled=false;}
   }
+  async function mostrarEventos(pedidoId) {
+    const lista=$('eventosLista');
+    lista.replaceChildren();
+    $('eventosInfo').textContent='Consultando histórico autorizado…';
+    try {
+      const {data,error}=await client.from('dna_cadastro_eventos')
+        .select('tipo,detalhe_publico,criado_em')
+        .eq('solicitacao_id',pedidoId)
+        .order('criado_em',{ascending:true}).limit(100);
+      if(error)throw new Error('historico_indisponivel');
+      for(const evento of data||[]){
+        const linha=document.createElement('li');
+        const tipo=document.createElement('b');
+        tipo.textContent=String(evento.tipo||'Evento');
+        const texto=document.createElement('span');
+        // Os detalhes sao mensagens tecnicas, nunca HTML.
+        texto.textContent=dataPt(evento.criado_em)+
+          (evento.detalhe_publico?' · '+String(evento.detalhe_publico):'');
+        linha.append(tipo,texto);lista.append(linha);
+      }
+      $('eventosInfo').textContent=(data||[]).length
+        ? 'Histórico atualizado.':'Nenhum evento publicado para esta solicitação.';
+    }catch(_){
+      $('eventosInfo').textContent='Não foi possível acessar os eventos desta solicitação.';
+    }
+  }
   function mostrarPedido(pedido){
+    mostrarEventos(pedido.id);
     $('detalheId').textContent=String(pedido.id).slice(0,8);
     $('detalheEtapa').textContent=pedido.etapa||'—';
     $('detalheAtualizado').textContent=dataPt(pedido.atualizado_em);
@@ -166,6 +193,8 @@
     return valido;
   }
   function mostrarDetalhe(item) {
+    $('eventosLista').replaceChildren();
+    $('eventosInfo').textContent='Este registro é somente um teste de conectividade.';
     $('detalheId').textContent = item ? String(item.id).slice(0,8) : '—';
     $('detalheEtapa').textContent = item?.etapa || '—';
     $('detalheAtualizado').textContent = item ? dataPt(item.atualizado_em) : '—';
