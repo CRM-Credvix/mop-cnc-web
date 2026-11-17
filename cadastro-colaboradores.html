@@ -49,7 +49,7 @@
               <input id="lojaBusca" name="lojaBusca" list="lojasDisponiveis" placeholder="Digite o código ou nome da loja" autocomplete="off" aria-describedby="lojaFeedback" required>
               <datalist id="lojasDisponiveis"></datalist>
               <input type="hidden" name="loja" id="lojaSelect" value="">
-              <span class="cvx-hint" id="lojaFeedback" role="status">Digite, por exemplo, 55634 ou CREDVIX Digital 1, e selecione a loja.</span>
+              <span class="cvx-hint" id="lojaFeedback" role="status">Digite o código (ex.: 55634) para selecionar automaticamente ou escolha uma sugestão pelo nome.</span>
             </label>
             <label class="cvx-field">Perfil <em>*</em>
               <select name="perfil" id="perfilSelect" required>
@@ -147,5 +147,5 @@
 <p id="cadastroDenied" class="cvx-denied" hidden>Acesso administrativo não autorizado. <a href="index.html">Voltar ao CREDVIX HUB</a></p>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script><script src="js/mop-shell.js?v=20261117-hub1"></script>
-<script src="js/cadastro-colaboradores.js?v=20261117-loja-busca-v1"></script>
+<script src="js/cadastro-colaboradores.js?v=20261117-loja-codigo-v2"></script>
 </body></html>
