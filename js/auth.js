@@ -5,6 +5,7 @@
   const error=document.getElementById('loginError');
   const button=form?.querySelector('button[type="submit"]');
   const toggle=document.getElementById('togglePass');
+  const RH_EMAIL='rh@credvix.com';
   const messages={
     'sem-loja':'Seu e-mail não possui loja liberada. Solicite o vínculo ao administrador.',
     erro:'Não foi possível validar seu acesso. Tente novamente.'
@@ -14,6 +15,12 @@
 
   function showError(message){error.className='field-error';error.textContent=message;error.hidden=false;}
   async function enter(){
+    const {data:userData,error:userError}=await window.MOP_SUPABASE.auth.getUser();
+    if(userError||!userData?.user){showError(messages.erro);return false;}
+    if(String(userData.user.email||'').trim().toLowerCase()===RH_EMAIL){
+      location.replace('cadastro-colaboradores.html');
+      return true;
+    }
     const {data,error:accessError}=await window.MOP_SUPABASE
       .from('franquias_mop').select('codigo').limit(1);
     if(accessError){showError(messages.erro);return false;}
@@ -30,7 +37,7 @@
     const params=new URLSearchParams(location.search);
     if(params.get('senha')==='definida'){
       error.className='inline-alert success';
-      error.textContent='Senha definida. Entre com seu e-mail e a nova senha. A loja precisa estar liberada pelo administrador.';
+      error.textContent='Senha definida. Entre com seu e-mail e a nova senha. Seu acesso precisa estar liberado pelo administrador.';
       error.hidden=false;
       return;
     }
