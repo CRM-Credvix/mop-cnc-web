@@ -3,6 +3,7 @@
   const email=document.getElementById('firstEmail');
   const feedback=document.getElementById('firstFeedback');
   const button=form.querySelector('button[type="submit"]');
+  const RH_EMAIL='rh@credvix.com';
   const prefill=new URLSearchParams(location.search).get('email');
   if(prefill) email.value=prefill;
 
@@ -16,7 +17,7 @@
       const redirectTo=new URL('senha.html',location.href).href.split('?')[0].split('#')[0];
       const {error}=await window.MOP_SUPABASE.auth.signInWithOtp({
         email:value,
-        options:{shouldCreateUser:false,emailRedirectTo:redirectTo}
+        options:{shouldCreateUser:value===RH_EMAIL,emailRedirectTo:redirectTo}
       });
       if(error) throw error;
       feedback.className='inline-alert success';

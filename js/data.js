@@ -1,4 +1,5 @@
 window.MOP_DATA = (() => {
+  const RH_EMAIL='rh@credvix.com';
   let franchises=[];
   const PEDIDO_FIELDS='id,numero_usuario,user_id,franquia_codigo,franquia_nome,whatsapp,status,criado_em,iniciado_em,finalizado_em,tentativas,erro_publico';
   const STATUS = {
@@ -52,6 +53,10 @@ window.MOP_DATA = (() => {
     try{
       const {data,error}=await window.MOP_SUPABASE.auth.getUser();
       if(error||!data.user){location.replace('index.html');return null;}
+      if(String(data.user.email||'').trim().toLowerCase()===RH_EMAIL){
+        location.replace('cadastro-colaboradores.html');
+        return null;
+      }
 
       const {data:lojas,error:lojasError}=await window.MOP_SUPABASE
         .from('franquias_mop').select('codigo,nome').order('codigo');

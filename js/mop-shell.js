@@ -4,7 +4,8 @@
   const CACHE_KEY = 'mop-ui-verified-user-v1';
   const MAX_AGE = 8 * 60 * 60 * 1000;
   const ADMIN_EMAIL = 'crm@credvix.com';
-  const VERSION = 'v2026-10-23-02';
+  const RH_EMAIL = 'rh@credvix.com';
+  const VERSION = 'v2026-11-17-rh';
   const isDna = /(?:^|\/)perfis-dna\.html$/i.test(location.pathname);
   const isCadastro = /(?:^|\/)cadastro-colaboradores\.html$/i.test(location.pathname);
   const routes = ['gestao', 'acompanhamento', 'auditoria'];
@@ -19,6 +20,12 @@
   ]);
 
   const normalize = value => String(value||'').trim().toLowerCase();
+  function accessRole(email) {
+    const value=normalize(email);
+    if(value===ADMIN_EMAIL)return 'admin';
+    if(value===RH_EMAIL)return 'rh';
+    return 'user';
+  }
   function readCache() {
     try {
       const s = JSON.parse(sessionStorage.getItem(CACHE_KEY)||'null');
@@ -58,16 +65,26 @@
   function renderSidebar() {
     const host=$('[data-mop-shell-sidebar]');
     if (!host) return;
-    const adminCached=normalize(displayEmail)===ADMIN_EMAIL;
+    const role=accessRole(displayEmail);
+    const emissionItems=role==='rh'?[]:menu.filter(item=>!item.admin);
+    const adminItems=role==='admin'
+      ? menu.filter(item=>item.admin)
+      : role==='rh'
+      ? menu.filter(item=>item.id==='cadastro')
+      : [];
+    const homeHref=role==='rh'?'cadastro-colaboradores.html':'app.html';
+    const product=role==='rh'
+      ? '<strong>Cadastro DNA</strong><span>Colaboradores</span>'
+      : '<strong>MOP - CNC</strong><span>Sistema de Emissões</span>';
     host.innerHTML=`
       <div class="mop-nav__backdrop" data-mop-nav-dismiss aria-hidden="true"></div>
       <div class="mop-nav__panel" id="mop-nav-panel">
-        <a class="mop-nav__brand" href="app.html" aria-label="CREDVIX — início"><span>CRED</span><strong>VIX</strong></a>
-        <div class="mop-nav__product"><strong>MOP - CNC</strong><span>Sistema de Emissões</span></div>
-        <nav class="mop-nav__links" aria-label="Emissões">${menu.filter(item=>!item.admin).map(menuItem).join('')}</nav>
-        <section class="mop-nav__admin" ${adminCached?'':'hidden'} aria-label="Administração">
-          <h2 class="mop-nav__section">ADMINISTRAÇÃO</h2>
-          <nav class="mop-nav__links" aria-label="Administração">${menu.filter(item=>item.admin).map(menuItem).join('')}</nav>
+        <a class="mop-nav__brand" href="${homeHref}" aria-label="CREDVIX — início"><span>CRED</span><strong>VIX</strong></a>
+        <div class="mop-nav__product">${product}</div>
+        ${emissionItems.length?`<nav class="mop-nav__links" aria-label="Emissões">${emissionItems.map(menuItem).join('')}</nav>`:''}
+        <section class="mop-nav__admin" ${adminItems.length?'':'hidden'} aria-label="${role==='rh'?'RH':'Administração'}">
+          <h2 class="mop-nav__section">${role==='rh'?'RH':'ADMINISTRAÇÃO'}</h2>
+          <nav class="mop-nav__links" aria-label="${role==='rh'?'RH':'Administração'}">${adminItems.map(menuItem).join('')}</nav>
         </section>
         <div class="mop-nav__footer"><span class="mop-nav__status" aria-hidden="true"></span><span>~by: fraquinn.<small>${VERSION}</small></span></div>
       </div>`;
@@ -102,7 +119,11 @@
     const node=$('#userName'),sub=$('#mopUserSubtitle');
     if (node) node.textContent=email||'Verificando acesso…';
     if (sub) sub.textContent=email
-      ? (normalize(email)===ADMIN_EMAIL?'Administrador • acesso exclusivo':'Usuário autenticado')
+      ? (accessRole(email)==='admin'
+          ? 'Administrador • acesso exclusivo'
+          : accessRole(email)==='rh'
+          ? 'RH • Cadastro de colaboradores'
+          : 'Usuário autenticado')
       : 'Identidade em verificação';
   }
 
@@ -139,16 +160,15 @@
     verifiedEmail=email;displayEmail=email;cachedEmail=email;
     try{sessionStorage.setItem(CACHE_KEY,JSON.stringify({email,when:Date.now()}));}catch(_){}
     setDisplayedUser(email);
-    const admin=$('.mop-nav__admin');
-    if(admin)admin.hidden=normalize(email)!==ADMIN_EMAIL;
+    renderSidebar();
+    syncRoute();
     document.documentElement.classList.remove('mop-shell-loading');
     if(document.body.classList.contains('mop-nav--open'))closeDrawer();
   }
   function clearUser() {
     verifiedEmail=null;cachedEmail=null;displayEmail=null;
     try{sessionStorage.removeItem(CACHE_KEY);}catch(_){}
-    const admin=$('.mop-nav__admin');if(admin)admin.hidden=true;
-    closeDrawer();setDisplayedUser(null);
+    closeDrawer();setDisplayedUser(null);renderSidebar();syncRoute();
   }
 
   function bootstrap() {

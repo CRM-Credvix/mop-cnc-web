@@ -6,6 +6,7 @@
   const client = window.MOP_SUPABASE;
   const FILA = 'dna_cadastro_conexao_testes';
   const PERFIS = Object.freeze({CONSULTOR:'Consultor 2',SUPERVISOR:'Supervisor 2'});
+  const ALLOWED_EMAILS = new Set(['crm@credvix.com','rh@credvix.com']);
   let user = null;
   let carregando = false;
   let testes = [];
@@ -296,7 +297,7 @@
     try {
       const {data,error}=await client.auth.getUser();
       if (error || !data?.user) {location.replace('index.html');return;}
-      if ((data.user.email||'').trim().toLowerCase()!=='crm@credvix.com') {
+      if (!ALLOWED_EMAILS.has((data.user.email||'').trim().toLowerCase())) {
         $('cadastroDenied').hidden=false;
         html.classList.remove('mop-shell-loading');
         return;
