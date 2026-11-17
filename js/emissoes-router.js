@@ -67,7 +67,7 @@
       const swap = () => {
         currentMain()?.replaceWith(incoming);
         if (options.push !== false) history.pushState({ mopRoute: true }, '', fileHref(url));
-        document.title = (url.pathname.endsWith('/historico.html') ? 'Histórico de emissões' : url.pathname.endsWith('/pedido.html') ? 'Detalhes do pedido' : 'Nova solicitação') + ' | MOP - CNC';
+        document.title = (url.pathname.endsWith('/historico.html') ? 'Histórico de emissões' : url.pathname.endsWith('/pedido.html') ? 'Detalhes do pedido' : 'Nova solicitação') + ' | CREDVIX HUB';
         window.MOP_SHELL?.syncRoute();
         scrollTo(0, 0);
       };
