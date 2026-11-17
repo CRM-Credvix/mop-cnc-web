@@ -301,7 +301,7 @@
   let consultaLojaSeq = 0;
   async function verificarCodigoLoja() {
     const codigo = $('lojaBusca').value.trim();
-    if (!/^\\d{5}$/.test(codigo) || !user || catalogoLojas.some(loja => loja.codigo === codigo)) {
+    if (!/^\d{5}$/.test(codigo) || !user || catalogoLojas.some(loja => loja.codigo === codigo)) {
       validarLojaDigitada();
       return;
     }
@@ -389,7 +389,7 @@
   $('lojaBusca').addEventListener('input',() => {
     consultaLojaSeq++;
     validarLojaDigitada();
-    if (/^\\d{5}$/.test($('lojaBusca').value.trim())) verificarCodigoLoja();
+    if (/^\d{5}$/.test($('lojaBusca').value.trim())) verificarCodigoLoja();
   });
   $('lojaBusca').addEventListener('change',verificarCodigoLoja);
   $('lojaBusca').addEventListener('blur',verificarCodigoLoja);
