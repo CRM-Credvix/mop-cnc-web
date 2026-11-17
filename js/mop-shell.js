@@ -5,7 +5,7 @@
   const MAX_AGE = 8 * 60 * 60 * 1000;
   const ADMIN_EMAIL = 'crm@credvix.com';
   const RH_EMAIL = 'rh@credvix.com';
-  const VERSION = 'v2026-11-17-rh';
+  const VERSION = 'v2026-11-17-hub';
   const isDna = /(?:^|\/)perfis-dna\.html$/i.test(location.pathname);
   const isCadastro = /(?:^|\/)cadastro-colaboradores\.html$/i.test(location.pathname);
   const routes = ['gestao', 'acompanhamento', 'auditoria'];
@@ -73,9 +73,7 @@
       ? menu.filter(item=>item.id==='cadastro')
       : [];
     const homeHref=role==='rh'?'cadastro-colaboradores.html':'app.html';
-    const product=role==='rh'
-      ? '<strong>Cadastro DNA</strong><span>Colaboradores</span>'
-      : '<strong>MOP - CNC</strong><span>Sistema de Emissões</span>';
+    const product='<strong>CREDVIX HUB</strong><span>Plataforma Interna</span>';
     host.innerHTML=`
       <div class="mop-nav__backdrop" data-mop-nav-dismiss aria-hidden="true"></div>
       <div class="mop-nav__panel" id="mop-nav-panel">
