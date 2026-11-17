@@ -15,6 +15,7 @@
   let enviando = false;
   let idempotencia = crypto.randomUUID();
   let pedidos = [];
+  let catalogoLojas = [];
   const ESTADOS = Object.freeze({
     na_fila:'Na fila',processando:'Em execução',
     aguardando_validacao:'Validando CPF',ativo:'Validado',
@@ -144,7 +145,7 @@
       if(error || !data?.id)throw new Error('RESPOSTA_NAO_CONFIRMADA');
       $('formFeedback').textContent='Pedido '+String(data.id).slice(0,8)+
         ' registrado. Acompanhe a fila; isso ainda não confirma cadastro no DNA.';
-      form.reset();idempotencia=crypto.randomUUID();resumo();
+      form.reset();idempotencia=crypto.randomUUID();validarLojaDigitada();
       await carregarConfig();
       await carregarPedidos();
       aba('acompanhamento');
@@ -176,10 +177,10 @@
   }
   function resumo() {
     const perfil = form.elements.namedItem('perfil').value;
-    const loja = form.elements.namedItem('loja');
+    const codigoLoja = form.elements.namedItem('loja').value;
+    const lojaSelecionada = catalogoLojas.find(l => l.codigo === codigoLoja);
     $('subperfilOficial').value = PERFIS[perfil] || 'Selecione o perfil';
-    $('resumoLoja').textContent = loja.selectedOptions[0]?.textContent || '—';
-    if (!loja.value) $('resumoLoja').textContent='—';
+    $('resumoLoja').textContent = lojaSelecionada ? lojaSelecionada.label : '—';
     $('resumoPerfil').textContent = perfil === 'CONSULTOR' ? 'Consultor' :
       perfil === 'SUPERVISOR' ? 'Supervisor' : '—';
     $('resumoSubperfil').textContent = PERFIS[perfil] || '—';
@@ -278,19 +279,37 @@
       $('testarConexao').disabled=false;
     }
   }
-  function renderLojas(lojas) {
-    const select=$('lojaSelect');
-    select.replaceChildren();
-    const prompt = document.createElement('option');
-    prompt.value='';prompt.textContent='Selecione a loja';
-    select.append(prompt);
-    for (const loja of lojas) {
-      const opt = document.createElement('option');
-      opt.value=String(loja.codigo);
-      opt.textContent=String(loja.codigo)+' — '+String(loja.nome);
-      select.append(opt);
-    }
+  function normalizarBusca(v) {
+    return String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+  }
+  function validarLojaDigitada() {
+    const campo = $('lojaBusca');
+    const pesquisa = normalizarBusca(campo.value);
+    const selecionada = catalogoLojas.find(loja =>
+      pesquisa === normalizarBusca(loja.label) || pesquisa === normalizarBusca(loja.codigo)
+    );
+    $('lojaSelect').value = selecionada ? selecionada.codigo : '';
+    $('lojaFeedback').textContent = selecionada
+      ? 'Loja selecionada: ' + selecionada.label
+      : pesquisa ? 'Selecione uma sugestão válida da lista; não basta digitar um nome incompleto.'
+        : 'Digite o código ou o nome da loja e selecione uma sugestão.';
     resumo();
+    return Boolean(selecionada);
+  }
+  function renderLojas(lojas) {
+    const lista = $('lojasDisponiveis');
+    lista.replaceChildren();
+    catalogoLojas = (lojas || []).map(loja => {
+      const codigo = String(loja.codigo);
+      const nome = String(loja.nome);
+      return {codigo,nome,label:codigo+' — '+nome};
+    });
+    for (const loja of catalogoLojas) {
+      const opt = document.createElement('option');
+      opt.value = loja.label;
+      lista.append(opt);
+    }
+    validarLojaDigitada();
   }
   async function init() {
     $('solicitar').disabled = true;
@@ -318,7 +337,7 @@
       const lojas = await client.from('franquias_mop')
         .select('codigo,nome').eq('ativo',true).order('nome');
       if (!lojas.error) renderLojas(lojas.data||[]);
-      else $('filaInfo').textContent='Catálogo de lojas indisponível.';
+      else $('lojaFeedback').textContent='Não foi possível carregar as lojas. Reabra a página ou contate o administrador.';
       await carregarConfig();
       await carregarPedidos();
       await atualizarConexao();
@@ -335,7 +354,14 @@
     btn.addEventListener('click',() => aba(btn.dataset.tab)));
   $('voltarFila').addEventListener('click',()=>aba('acompanhamento'));
   form.elements.namedItem('perfil').addEventListener('change',resumo);
-  form.elements.namedItem('loja').addEventListener('change',resumo);
+  $('lojaBusca').addEventListener('input',validarLojaDigitada);
+  $('lojaBusca').addEventListener('change',validarLojaDigitada);
+  $('lojaBusca').addEventListener('blur',() => {
+    if (validarLojaDigitada()) {
+      const atual = catalogoLojas.find(l => l.codigo === $('lojaSelect').value);
+      if (atual) $('lojaBusca').value = atual.label;
+    }
+  });
   form.addEventListener('input',limparFeedback);
   $('validar').addEventListener('click',conferir);
   form.addEventListener('submit',event => {event.preventDefault();enviarCadastro();});
