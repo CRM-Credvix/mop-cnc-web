@@ -307,17 +307,24 @@
     }
     const seq = ++consultaLojaSeq;
     $('lojaFeedback').textContent = 'Consultando a loja ' + codigo + '…';
-    const {data,error} = await client.functions.invoke('cadastro-dna-lojas',{body:{}});
+    const {data,error} = await client.from('franquias_mop')
+      .select('codigo,nome').eq('codigo',codigo).eq('ativo',true).limit(2);
     if (seq !== consultaLojaSeq || $('lojaBusca').value.trim() !== codigo) return;
-    if (error || !Array.isArray(data?.lojas)) {
-      $('lojaFeedback').textContent = 'Consulta de lojas indisponível. Não é possível confirmar o código.';
+    if (error) {
+      $('lojaFeedback').textContent = 'Falha na consulta ao Supabase. Verifique sua sessão.';
       return;
     }
-    const encontrada = data.lojas.filter(l => String(l.codigo) === codigo);
-    if (encontrada.length === 1) {
-      renderLojas(data.lojas);
+    if (data?.length === 1) {
+      const loja = {codigo:String(data[0].codigo),nome:String(data[0].nome),
+        label:String(data[0].codigo)+' — '+String(data[0].nome)};
+      catalogoLojas = [...catalogoLojas.filter(l => l.codigo !== loja.codigo),loja];
+      const opt = document.createElement('option');
+      opt.value = loja.codigo;
+      opt.label = loja.nome;
+      $('lojasDisponiveis').append(opt);
+      validarLojaDigitada();
     } else {
-      $('lojaFeedback').textContent = 'Código não encontrado no catálogo autorizado do DNA.';
+      $('lojaFeedback').textContent = 'Código não disponível para sua conta. Procure o administrador.';
     }
   }
   function renderLojas(lojas) {
@@ -359,9 +366,16 @@
       window.MOP_SHELL?.setUser(user);
       $('atualizar').disabled=false;
       $('testarConexao').disabled=false;
-      const lojas = await client.functions.invoke('cadastro-dna-lojas',{body:{}});
-      if (!lojas.error && Array.isArray(lojas.data?.lojas)) renderLojas(lojas.data.lojas);
-      else $('lojaFeedback').textContent='Não foi possível carregar o catálogo autorizado de lojas. Confirme a sessão administrativa.';
+      const lojas = await client.from('franquias_mop')
+        .select('codigo,nome').eq('ativo',true).order('nome').limit(2000);
+      if (!lojas.error && Array.isArray(lojas.data)) {
+        renderLojas(lojas.data);
+        if (!$('lojaBusca').value.trim())
+          $('lojaFeedback').textContent='Catálogo carregado: '+lojas.data.length+
+            ' lojas disponíveis. Digite o código exato (ex.: 55634) ou escolha pelo nome.';
+      } else {
+        $('lojaFeedback').textContent='Não foi possível carregar o catálogo. Verifique sua sessão e tente novamente.';
+      }
       await carregarConfig();
       await carregarPedidos();
       await atualizarConexao();
