@@ -283,18 +283,49 @@
     return String(v || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
   }
   function validarLojaDigitada() {
-    const campo = $('lojaBusca');
-    const pesquisa = normalizarBusca(campo.value);
-    const selecionada = catalogoLojas.find(loja =>
-      pesquisa === normalizarBusca(loja.label) || pesquisa === normalizarBusca(loja.codigo)
+    const pesquisa = normalizarBusca($('lojaBusca').value);
+    const exatas = catalogoLojas.filter(loja =>
+      pesquisa === normalizarBusca(loja.label) ||
+      pesquisa === normalizarBusca(loja.codigo) ||
+      pesquisa === normalizarBusca(loja.nome)
     );
-    $('lojaSelect').value = selecionada ? selecionada.codigo : '';
+    const selecionada = exatas.length === 1 ? exatas[0] : null;
+    $('lojaSelect').value = selecionada?.codigo || '';
     $('lojaFeedback').textContent = selecionada
       ? 'Loja selecionada: ' + selecionada.label
-      : pesquisa ? 'Selecione uma sugestão válida da lista; não basta digitar um nome incompleto.'
-        : 'Digite o código ou o nome da loja e selecione uma sugestão.';
+      : pesquisa ? 'Loja não confirmada. Digite o código completo ou selecione uma sugestão.'
+        : 'Digite o código ou parte do nome e escolha uma loja.';
     resumo();
     return Boolean(selecionada);
+  }
+  let consultaLojaSeq = 0;
+  async function verificarCodigoLoja() {
+    const codigo = $('lojaBusca').value.trim();
+    if (!/^\\d{5}$/.test(codigo) || !user || catalogoLojas.some(loja => loja.codigo === codigo)) {
+      validarLojaDigitada();
+      return;
+    }
+    const seq = ++consultaLojaSeq;
+    $('lojaFeedback').textContent = 'Consultando a loja ' + codigo + '…';
+    const {data,error} = await client.from('franquias_mop')
+      .select('codigo,nome').eq('codigo',codigo).eq('ativo',true).limit(1);
+    if (seq !== consultaLojaSeq || $('lojaBusca').value.trim() !== codigo) return;
+    if (error) {
+      $('lojaFeedback').textContent = 'Falha ao consultar o catálogo. Tente novamente.';
+      return;
+    }
+    if (data?.length === 1) {
+      const loja = {codigo:String(data[0].codigo),nome:String(data[0].nome),
+        label:String(data[0].codigo)+' — '+String(data[0].nome)};
+      catalogoLojas = [...catalogoLojas.filter(l => l.codigo !== loja.codigo),loja];
+      const opt = document.createElement('option');
+      opt.value = loja.codigo;
+      opt.label = loja.nome;
+      $('lojasDisponiveis').append(opt);
+      validarLojaDigitada();
+    } else {
+      $('lojaFeedback').textContent = 'Código não encontrado ou sem permissão de acesso nesta conta.';
+    }
   }
   function renderLojas(lojas) {
     const lista = $('lojasDisponiveis');
@@ -306,7 +337,8 @@
     });
     for (const loja of catalogoLojas) {
       const opt = document.createElement('option');
-      opt.value = loja.label;
+      opt.value = loja.codigo;
+      opt.label = loja.nome;
       lista.append(opt);
     }
     validarLojaDigitada();
@@ -354,14 +386,13 @@
     btn.addEventListener('click',() => aba(btn.dataset.tab)));
   $('voltarFila').addEventListener('click',()=>aba('acompanhamento'));
   form.elements.namedItem('perfil').addEventListener('change',resumo);
-  $('lojaBusca').addEventListener('input',validarLojaDigitada);
-  $('lojaBusca').addEventListener('change',validarLojaDigitada);
-  $('lojaBusca').addEventListener('blur',() => {
-    if (validarLojaDigitada()) {
-      const atual = catalogoLojas.find(l => l.codigo === $('lojaSelect').value);
-      if (atual) $('lojaBusca').value = atual.label;
-    }
+  $('lojaBusca').addEventListener('input',() => {
+    consultaLojaSeq++;
+    validarLojaDigitada();
+    if (/^\\d{5}$/.test($('lojaBusca').value.trim())) verificarCodigoLoja();
   });
+  $('lojaBusca').addEventListener('change',verificarCodigoLoja);
+  $('lojaBusca').addEventListener('blur',verificarCodigoLoja);
   form.addEventListener('input',limparFeedback);
   $('validar').addEventListener('click',conferir);
   form.addEventListener('submit',event => {event.preventDefault();enviarCadastro();});
